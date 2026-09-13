@@ -3,7 +3,7 @@
 ## Stack
 
 - PHP 8.3+, `declare(strict_types=1)` in every file.
-- Laravel 12 (`illuminate/support`, `illuminate/database`, `illuminate/http`).
+- Laravel 12 and 13 (`illuminate/support`, `illuminate/database`, `illuminate/http`).
 - Blade for the default (overridable) UI.
 - Laravel session auth (`Auth::login`, session regenerate on login) — no API/token guard in this package.
 - PHPUnit (project owner's explicit choice; not Pest, despite Pest being the usual default elsewhere).
