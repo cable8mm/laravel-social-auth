@@ -33,7 +33,9 @@ src/
   Repositories/      SocialAccountRepository
   Events/            SocialAccountLinked, SocialAccountUnlinked
   Exceptions/        SocialAuthException and subclasses
-  Http/Controllers/  SocialLoginController, SocialLinkController
+  Http/Controllers/
+    SocialAuth/       SocialLoginController, SocialRegistrationController,
+                      SocialLinkController
 config/social-auth.php
 routes/web.php
 database/migrations/            (social_accounts — auto-loaded)

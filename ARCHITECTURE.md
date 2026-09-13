@@ -34,7 +34,9 @@ Any code calling these directly requires a live observation before a correspondi
 - `ProviderProfileMapper` — applies the per-provider `name_mapping` config; nickname is never provider-sourced.
 - `ChallengeGenerator` — issues and session-stores the Google nonce and Kakao/Naver OAuth state values, called from the button views.
 - `SocialAccountLinked` / `SocialAccountUnlinked` — events.
-- `SocialLoginController` / `SocialLinkController` — HTTP layer; thin, delegate everything to `SocialLoginManager`.
+- `SocialLoginController` — nonce/state endpoints and provider callback; thin, delegates to `SocialLoginManager`.
+- `SocialRegistrationController` — consent screen and registration completion; thin, delegates to `SocialLoginManager`.
+- `SocialLinkController` — authenticated connect/disconnect endpoints; thin, delegates to `SocialLoginManager`.
 
 ## Data model
 
@@ -48,13 +50,13 @@ Unique indexes: `(provider, provider_id)`, `(user_id, provider)`.
 **Login / registration callback** (`SocialLoginController::callback`):
 provider authenticate -> `SocialUser`. If a matching `social_accounts` row exists, log its owner in (`Auth::login` + session regenerate). Otherwise store `PendingSocialRegistration` in session and redirect to the consent screen — no `User` row is created yet.
 
-**Consent completion** (`SocialLoginController::completeConsent`):
+**Consent completion** (`SocialRegistrationController::store`):
 Validate consent payload -> inside a DB transaction, create the `User` row (email/email_verified_at per policy, password null) and the `SocialAccount` row together -> log the new user in.
 
-**Explicit linking** (`SocialLinkController::link`, `auth` middleware):
+**Explicit linking** (`SocialLinkController::connect`, `auth` middleware):
 Authenticate provider -> reject if the provider account already belongs to another user, or is already linked to this user -> create `SocialAccount` -> fire `SocialAccountLinked`.
 
-**Unlinking** (`SocialLinkController::unlink`):
+**Unlinking** (`SocialLinkController::disconnect`):
 Reject if `protect_last_login_method` is true and this is the user's only login method (no password, no email, at most one social account) -> optionally attempt remote revoke (provider-specific — only Kakao implements it in this version) -> delete local row regardless of remote revoke outcome unless `revoke_failure_deletes_local=false` -> fire `SocialAccountUnlinked`.
 
 ## Security architecture

@@ -13,7 +13,7 @@ Validation note: the local PHPUnit, Dusk, Pint, and Composer checks have been ex
 - [x] Providers: Google, Kakao, Naver
 - [x] `SocialLoginManager`
 - [x] `SocialAuthServiceProvider` (bindings, boot-time config validation, publishing, route/view/migration loading)
-- [x] HTTP controllers + `routes/web.php`
+- [x] HTTP controllers split by login, registration, and account-linking responsibilities + `routes/web.php`
 - [x] `social_accounts` migration + publishable users-nullable-columns stub migration
 - [x] Blade partials: buttons, consent, connected-accounts
 - [x] Unit tests: `GoogleCredentialVerifierTest`, `KakaoTokenVerifierTest`, `NaverTokenVerifierTest`, `DefaultNicknameGeneratorTest`, `SocialAccountRepositoryTest`, `ConfigurationValidatorTest`
