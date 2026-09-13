@@ -129,4 +129,26 @@ class RoutesAndUiTest extends TestCase
 
         $this->assertStringContainsString('id="naverIdLogin"', $html);
     }
+
+    public function test_kakao_button_includes_package_default_styling(): void
+    {
+        $html = view('social-auth::components.button', [
+            'provider' => 'kakao',
+            'context' => 'login',
+        ])->render();
+
+        $this->assertStringContainsString('class="btn-kakao"', $html);
+        $this->assertStringContainsString('background: #fee500', $html);
+        $this->assertStringContainsString('border-radius: 0.75rem', $html);
+    }
+
+    public function test_social_buttons_share_default_dimensions(): void
+    {
+        $html = view('social-auth::components.buttons', ['context' => 'login'])->render();
+
+        $this->assertStringContainsString('max-width: 17.5rem', $html);
+        $this->assertStringContainsString('height: 3rem !important', $html);
+        $this->assertStringContainsString('object-fit: contain', $html);
+        $this->assertStringContainsString('width: auto !important', $html);
+    }
 }
