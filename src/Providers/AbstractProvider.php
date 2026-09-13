@@ -25,6 +25,11 @@ abstract class AbstractProvider implements ProviderContract
         return $this->config['client_id'] ?? null;
     }
 
+    public function getJsClientId(): ?string
+    {
+        return $this->config['js_client_id'] ?? $this->getClientId();
+    }
+
     public function getJsSdkUrl(): string
     {
         return $this->config['js_sdk_url'] ?? '';

@@ -10,7 +10,7 @@
         if (!$p->isEnabled()) {
             return;
         }
-        $clientId = $p->getClientId();
+        $clientId = $p->getJsClientId();
         $jsSdkUrl = $p->getJsSdkUrl();
     } catch (\Throwable $e) {
         return;
@@ -33,6 +33,7 @@
 
 <div
     class="{{ $buttonClasses }}"
+    @if($provider === 'naver') id="naverIdLogin" @endif
     data-provider="{{ $provider }}"
     data-context="{{ $context }}"
     data-client-id="{{ $clientId }}"
@@ -49,7 +50,7 @@
         <button type="button" class="btn-kakao" onclick="window.SocialAuth && window.SocialAuth.loginKakao('{{ $context }}')">
             {{ $label }}로 {{ $context === 'connect' ? '연결' : '로그인' }}
         </button>
-        <script src="{{ $jsSdkUrl }}" integrity="sha384-TiCUE00h649CAMonG18JNtUJLrldn5NReH7zE5mO4zq2e4b0s8v9x0y1z2a3b4c5" crossorigin="anonymous"></script>
+        <script src="{{ $jsSdkUrl }}"></script>
     @elseif($provider === 'naver')
         <div id="naver-btn-{{ $context }}" class="naver-login-button"></div>
         <script src="{{ $jsSdkUrl }}"></script>

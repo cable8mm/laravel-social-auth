@@ -15,7 +15,7 @@ Google, Kakao, Naver 로그인을 하나의 Laravel 패키지에서 통합 관�
 
 - Kakao JS SDK 사용, 모바일에서 카카오톡 앱 설치 시 앱 인증 우선, 그 외 웹 로그인 fallback
 - 이메일이 제공되지 않으면 로컬 email은 null
-- 이메일이 제공되고 Kakao가 검증된 이메일이라고 보고하는 경우에만 로컬 이메일 인증 완료로 처리 [UNVERIFIED: 이 필드명이 실제 Kakao REST API 응답에서 `is_email_verified`인지 `is_email_valid`인지 라이브 응답이나 최신 공식 문서로 확인되지 않음 — ARCHITECTURE.md 동일 표시 참고]
+- 이메일이 제공되고 Kakao의 `kakao_account.is_email_verified`와 `kakao_account.is_email_valid`가 모두 true인 경우에만 로컬 이메일 인증 완료로 처리
 - Kakao 닉네임을 자동으로 users.name에 넣지 않음. 로컬 nickname은 패키지 설정의 nickname generator 사용
 
 ### Naver

@@ -35,10 +35,9 @@ return [
     'providers' => [
 
         'google' => [
-            'enabled' => env('GOOGLE_AUTH_ENABLED', false),
+            'enabled' => (bool) env('GOOGLE_CLIENT_ID'),
             'client_id' => env('GOOGLE_CLIENT_ID'),
             'client_secret' => env('GOOGLE_CLIENT_SECRET'), // optional for GIS JWT flow
-            'redirect' => env('GOOGLE_REDIRECT_URI'),
             'js_sdk_url' => 'https://accounts.google.com/gsi/client',
             'scopes' => ['openid', 'email', 'profile'],
             'name_mapping' => 'name', // maps provider name field → users.name
@@ -46,8 +45,9 @@ return [
         ],
 
         'kakao' => [
-            'enabled' => env('KAKAO_AUTH_ENABLED', false),
-            'client_id' => env('KAKAO_CLIENT_ID'),
+            'enabled' => (bool) env('KAKAO_JAVASCRIPT_KEY') && (bool) env('KAKAO_REST_API_KEY'),
+            'client_id' => env('KAKAO_REST_API_KEY'),
+            'js_client_id' => env('KAKAO_JAVASCRIPT_KEY'),
             'client_secret' => env('KAKAO_CLIENT_SECRET'),
             'redirect' => env('KAKAO_REDIRECT_URI'),
             'js_sdk_url' => 'https://t1.kakaocdn.net/kakao_js_sdk/2.7.2/kakao.min.js',
@@ -57,7 +57,7 @@ return [
         ],
 
         'naver' => [
-            'enabled' => env('NAVER_AUTH_ENABLED', false),
+            'enabled' => (bool) env('NAVER_CLIENT_ID') && (bool) env('NAVER_CLIENT_SECRET'),
             'client_id' => env('NAVER_CLIENT_ID'),
             'client_secret' => env('NAVER_CLIENT_SECRET'),
             'redirect' => env('NAVER_REDIRECT_URI'),

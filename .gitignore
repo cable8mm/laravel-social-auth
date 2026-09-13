@@ -9,3 +9,10 @@ composer.lock
 /build
 /cache
 /.phpunit.cache
+/.env.testing
+# Laravel Workbench / Orchestra Testbench
+/workbench/storage/
+/workbench/vendor/
+/workbench/bootstrap/cache/
+/workbench/.env
+workbench/database/database.sqlite

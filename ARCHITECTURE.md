@@ -34,7 +34,9 @@ Any code calling these directly requires a live observation before a correspondi
 - `ProviderProfileMapper` — applies the per-provider `name_mapping` config; nickname is never provider-sourced.
 - `ChallengeGenerator` — issues and session-stores the Google nonce and Kakao/Naver OAuth state values, called from the button views.
 - `SocialAccountLinked` / `SocialAccountUnlinked` — events.
-- `SocialLoginController` / `SocialLinkController` — HTTP layer; thin, delegate everything to `SocialLoginManager`.
+- `SocialLoginController` — nonce/state endpoints and provider callback; thin, delegates to `SocialLoginManager`.
+- `SocialRegistrationController` — consent screen and registration completion; thin, delegates to `SocialLoginManager`.
+- `SocialLinkController` — authenticated connect/disconnect endpoints; thin, delegates to `SocialLoginManager`.
 
 ## Data model
 
@@ -48,23 +50,19 @@ Unique indexes: `(provider, provider_id)`, `(user_id, provider)`.
 **Login / registration callback** (`SocialLoginController::callback`):
 provider authenticate -> `SocialUser`. If a matching `social_accounts` row exists, log its owner in (`Auth::login` + session regenerate). Otherwise store `PendingSocialRegistration` in session and redirect to the consent screen — no `User` row is created yet.
 
-**Consent completion** (`SocialLoginController::completeConsent`):
+**Consent completion** (`SocialRegistrationController::store`):
 Validate consent payload -> inside a DB transaction, create the `User` row (email/email_verified_at per policy, password null) and the `SocialAccount` row together -> log the new user in.
 
-**Explicit linking** (`SocialLinkController::link`, `auth` middleware):
+**Explicit linking** (`SocialLinkController::connect`, `auth` middleware):
 Authenticate provider -> reject if the provider account already belongs to another user, or is already linked to this user -> create `SocialAccount` -> fire `SocialAccountLinked`.
 
-**Unlinking** (`SocialLinkController::unlink`):
+**Unlinking** (`SocialLinkController::disconnect`):
 Reject if `protect_last_login_method` is true and this is the user's only login method (no password, no email, at most one social account) -> optionally attempt remote revoke (provider-specific — only Kakao implements it in this version) -> delete local row regardless of remote revoke outcome unless `revoke_failure_deletes_local=false` -> fire `SocialAccountUnlinked`.
 
 ## Security architecture
 
 - **Google**: replay protection via a nonce minted server-side and stored in session before the GIS button renders (`ChallengeGenerator::googleNonce`), compared against the JWT's `nonce` claim. This is a distinct mechanism from OAuth `state` — Google's credential flow is not a redirect/code exchange.
 - **Kakao / Naver**: standard OAuth `state` parameter, minted the same way, compared on callback before any token exchange call is made.
-- **Email trust boundary**: Google uses the `email_verified` claim in the JWT. Kakao uses an `is_email_verified`/`is_email_valid` flag on the account object [UNVERIFIED — see below]. Naver treats email presence in the profile response as sufficient, since Naver does not return unconfirmed emails.
+- **Email trust boundary**: Google uses the `email_verified` claim in the JWT. Kakao uses the nested `kakao_account.is_email_verified` and `kakao_account.is_email_valid` flags; local email verification is granted only when both are true. Naver treats email presence in the profile response as sufficient, since Naver does not return unconfirmed emails.
 - **Token storage vs remote revoke**: `ConfigurationValidator` rejects `store_tokens=false` combined with `remote_revoke_enabled=true` at boot — remote revoke needs a stored access token, so this combination is a configuration error, not a runtime edge case.
 - Sensitive tokens are stripped from the `raw` blob before it is passed into `SocialUser` / persisted (see each Provider's `authenticate()`).
-
-## UNVERIFIED
-
-- Kakao's exact verified-email field name and shape (`is_email_verified` vs `is_email_valid`, and whether it is nested under `kakao_account` in the current API version). This was implemented from general knowledge, not from a live Kakao API response or a checked current copy of the official REST API reference. Confirm against that source before relying on it in production; do not change the implemented fallback order without checking there first.
