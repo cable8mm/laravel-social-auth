@@ -156,6 +156,30 @@ composer install
 vendor/bin/phpunit
 ```
 
+### Workbench + Laravel Dusk
+
+패키지의 브라우저 테스트는 Testbench Workbench 애플리케이션을 대상으로 실행합니다. 기본 `composer test`에는 ChromeDriver가 필요한 브라우저 테스트를 포함하지 않습니다.
+
+처음 한 번 ChromeDriver를 설치합니다.
+
+```bash
+vendor/bin/testbench-dusk dusk:chrome-driver --detect
+```
+
+그 다음 Workbench 데이터베이스를 새로 만들고 브라우저 테스트를 실행합니다.
+
+```bash
+composer test:browser
+```
+
+브라우저 테스트는 다음을 검증합니다.
+
+- 실제 Workbench HTTP 서버에서 SNS 버튼이 Naver → Kakao → Google 순서로 렌더링되는지
+- 세션에 저장된 pending social registration이 약관 동의 화면을 거쳐 가입 완료되는지
+- 가입 완료 후 세션 인증과 redirect가 유지되는지
+
+실제 Google/Kakao/Naver 계정 인증은 외부 provider 경계에 의존하므로 이 테스트에 포함하지 않습니다. 실제 provider 검증은 별도의 opt-in live E2E 환경에서 수행해야 합니다.
+
 ## 실제 Provider 로그인
 
 개발 환경에서 **실제 Google/Kakao/Naver 계정 E2E 로그인은 수행하지 않았습니다.**  

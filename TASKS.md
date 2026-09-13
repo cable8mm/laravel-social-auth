@@ -18,6 +18,7 @@ Sandbox note: this codebase was written in an environment with no PHP/Composer r
 - [x] Blade partials: buttons, consent, connected-accounts
 - [x] Unit tests: `GoogleCredentialVerifierTest`, `KakaoTokenVerifierTest`, `NaverTokenVerifierTest`, `DefaultNicknameGeneratorTest`, `SocialAccountRepositoryTest`, `ConfigurationValidatorTest`
 - [x] Feature tests: `GoogleLoginTest`, `KakaoLoginTest`, `NaverLoginTest`, `RegistrationConsentTest`
+- [x] Testbench Workbench + Laravel Dusk browser harness for button order and consent completion
 
 ## Remaining
 

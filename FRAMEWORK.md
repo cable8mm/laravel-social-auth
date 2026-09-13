@@ -13,7 +13,8 @@
 
 - `firebase/php-jwt` (^6.10) — required for Google credential JWT signature verification against Google's JWKS (`JWK::parseKeySet` + `JWT::decode`). This is the one new runtime dependency in the package; justified because implementing JWKS-based RS256 verification by hand is exactly the kind of thing a vetted library should do, and Socialite (which is banned) would have been the only alternative source for this.
 - `guzzlehttp/guzzle` is pulled transitively through `illuminate/http`'s `Http` facade — not declared directly.
-- Dev-only: `orchestra/testbench` (package test harness), `phpunit/phpunit`, `laravel/pint`.
+- Dev-only: `orchestra/testbench` (package test harness), `orchestra/testbench-dusk` + `laravel/dusk` (Workbench browser/E2E harness), `phpunit/phpunit`, `laravel/pint`.
+- Dusk is limited to browser-visible package flows against the local Workbench application. Real provider authentication remains an opt-in live-boundary test and is not part of the default suite.
 - No other dependency may be added without writing down why here first.
 
 ## Package layout
