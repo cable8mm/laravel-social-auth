@@ -58,7 +58,7 @@
     "minimum-stability": "stable",
     "prefer-stable": true,
     "scripts": {
-        "test": "vendor/bin/phpunit",
+        "test": "vendor/bin/phpunit -c phpunit.xml.dist",
         "test:browser": [
             "@php vendor/bin/testbench-dusk workbench:build --ansi",
             "@php vendor/bin/testbench-dusk package:dusk"
