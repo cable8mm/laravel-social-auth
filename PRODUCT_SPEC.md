@@ -1,0 +1,79 @@
+# PRODUCT_SPEC.md — cable8mm/laravel-social-auth
+
+## 목표
+
+Google, Kakao, Naver 로그인을 하나의 Laravel 패키지에서 통합 관리한다. 다른 Laravel 프로젝트에서 재사용 가능해야 한다.
+
+## 지원 인증 방식
+
+### Google
+
+- Google Identity Services JS 버튼 사용
+- Google의 verified email이 있으면 로컬 이메일 인증 완료로 처리
+
+### Kakao
+
+- Kakao JS SDK 사용, 모바일에서 카카오톡 앱 설치 시 앱 인증 우선, 그 외 웹 로그인 fallback
+- 이메일이 제공되지 않으면 로컬 email은 null
+- 이메일이 제공되고 Kakao가 검증된 이메일이라고 보고하는 경우에만 로컬 이메일 인증 완료로 처리 [UNVERIFIED: 이 필드명이 실제 Kakao REST API 응답에서 `is_email_verified`인지 `is_email_valid`인지 라이브 응답이나 최신 공식 문서로 확인되지 않음 — ARCHITECTURE.md 동일 표시 참고]
+- Kakao 닉네임을 자동으로 users.name에 넣지 않음. 로컬 nickname은 패키지 설정의 nickname generator 사용
+
+### Naver
+
+- Naver JavaScript SDK 사용, 가능한 모바일 환경에서 네이버 앱 인증 시도, 그 외 웹 로그인 fallback
+- 이메일이 응답에 있으면 로컬 email 인증 완료로 처리, 없으면 로컬 email은 null
+- 이름과 닉네임 매핑은 설정 가능해야 함
+
+## 핵심 계정 정책
+
+### SNS 회원가입
+
+- SNS 인증 후 바로 사용자를 생성하지 않음. pending social registration을 세션에 저장
+- 필수 이용약관 + 개인정보 처리방침 동의 화면을 거쳐야 가입 완료. 마케팅 동의는 선택
+- 약관 문서의 실제 내용과 URL은 애플리케이션이 설정
+
+### 이메일 처리
+
+- provider 이메일이 없으면 users.email은 null (임시 placeholder 생성 안 함)
+- provider가 이메일을 검증됨으로 보고한 경우에만 email_verified_at = now(), 아니면 null
+- 별도의 이메일 인증 메일을 반드시 요구하지 않음
+- 기본 정책은 provider_email_verified. 정책은 설정으로 변경 가능해야 함
+
+### 기존 계정 자동 병합 금지
+
+- SNS 이메일과 기존 users.email이 같다는 이유만으로 자동 연결하지 않음
+- 이메일 주소만으로 기존 계정에 SNS 계정을 연결하지 않음
+- 기존 계정과 SNS 계정 연결은 반드시 로그인한 사용자가 프로필에서 명시적으로 실행
+
+### SNS 계정 연결 (프로필)
+
+- 인증된 사용자가 프로필에서 Google/Kakao/Naver 계정을 연결할 수 있어야 함
+- 이미 다른 사용자에 연결된 provider/provider_id는 연결 거부
+- 같은 사용자에게 같은 provider 중복 연결 금지
+- 연결 성공/실패 각각 사용자에게 안전하게 피드백
+
+### SNS 계정 연결 해제
+
+- 프로필에서 연결 해제 지원
+- 마지막 로그인 수단(비밀번호 없음 + 이메일 없음 + SNS 계정 1개)은 해제 거부 가능하도록 설정 가능
+- 로컬 연결 해제와 provider의 remote revoke는 구분되는 별개 동작
+
+### 이름과 닉네임
+
+- provider별 이름 매핑은 설정 가능 (Google/Naver는 name 매핑 가능, Kakao는 name 매핑 안 함)
+- 닉네임은 모든 provider 공통으로 항상 nickname generator가 생성 (provider 닉네임 자동 사용 금지)
+
+## 인증 UI 요구사항
+
+- 로그인 화면용 / 회원가입 화면용 SNS 버튼
+- SNS 약관 동의 화면
+- 프로필의 연결된 SNS 계정 목록 + 연결/연결해제 버튼
+- provider가 설정되지 않은 경우 해당 버튼 숨김
+- 버튼 순서 설정 가능, 기본 순서: Naver -> Kakao -> Google
+- Blade 기본 UI 제공, 애플리케이션에서 view publish 또는 override 가능해야 함
+
+## Out of scope (이번 버전)
+
+- Google 계정에 대한 remote revoke (access token을 저장하지 않는 credential 플로우이므로 미지원)
+- Naver remote revoke (adapter 경계만 존재, 구현은 추후)
+- Socialite 및 Socialite 기반 provider 확장
