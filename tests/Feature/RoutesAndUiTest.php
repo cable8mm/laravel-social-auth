@@ -56,6 +56,18 @@ class RoutesAndUiTest extends TestCase
         $response->assertStatus(422);
     }
 
+    public function test_callback_accepts_kakao_get_redirect(): void
+    {
+        Session::put(config('social-auth.session.state'), 'expected-state');
+
+        $response = $this->getJson(route('social-auth.callback', 'kakao', [
+            'code' => 'some-code',
+            'state' => 'wrong-state',
+        ]));
+
+        $response->assertStatus(422);
+    }
+
     public function test_callback_without_provider_payload_is_rejected_as_cancelled(): void
     {
         foreach (['google', 'kakao', 'naver'] as $provider) {
@@ -86,5 +98,16 @@ class RoutesAndUiTest extends TestCase
         $this->assertStringNotContainsString('data-provider="google"', $html);
         $this->assertStringContainsString('data-provider="naver"', $html);
         $this->assertStringContainsString('data-provider="kakao"', $html);
+    }
+
+    public function test_kakao_button_does_not_use_an_invalid_integrity_hash(): void
+    {
+        $html = view('social-auth::components.button', [
+            'provider' => 'kakao',
+            'context' => 'login',
+        ])->render();
+
+        $this->assertStringContainsString('src="https://t1.kakaocdn.net/kakao_js_sdk/', $html);
+        $this->assertStringNotContainsString('integrity=', $html);
     }
 }

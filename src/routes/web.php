@@ -16,7 +16,7 @@ Route::prefix($prefix)
         Route::get('nonce', [SocialLoginController::class, 'nonce'])->name('social-auth.nonce');
         Route::get('state', [SocialLoginController::class, 'state'])->name('social-auth.state');
 
-        Route::post('{provider}/callback', [SocialLoginController::class, 'callback'])
+        Route::match(['get', 'post'], '{provider}/callback', [SocialLoginController::class, 'callback'])
             ->middleware('throttle:'.config('social-auth.rate_limit.callback', '10,1'))
             ->name('social-auth.callback');
 
