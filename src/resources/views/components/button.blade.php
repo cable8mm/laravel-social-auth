@@ -3,6 +3,10 @@
     'context' => 'login',
 ])
 
+@once
+    @include('social-auth::styles')
+@endonce
+
 @php
     $manager = app(\Cable8mm\LaravelSocialAuth\Services\SocialLoginManager::class);
     try {
