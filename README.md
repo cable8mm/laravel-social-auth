@@ -83,7 +83,6 @@ $table->string('nickname')->nullable(); // 선택
 
 ```env
 GOOGLE_CLIENT_ID=your-google-client-id.apps.googleusercontent.com
-GOOGLE_REDIRECT_URI=http://localhost:8000/social-auth/google/callback
 
 KAKAO_JAVASCRIPT_KEY=your-kakao-javascript-key
 KAKAO_REST_API_KEY=your-kakao-rest-api-key
@@ -190,6 +189,31 @@ SocialAuth::generateNonce();
 composer install
 vendor/bin/phpunit
 ```
+
+### 패키지 개발자 로컬 환경
+
+Workbench에서 실제 Provider 로그인이나 브라우저 테스트를 실행하려면 로컬 테스트 환경 파일을 만듭니다. `.env.testing`은 secret을 포함하므로 Git에 커밋하지 않고, 예시 파일을 복사해서 사용합니다.
+
+```bash
+cp .env.testing.example .env.testing
+```
+
+`.env.testing`에 Google, Kakao, Naver 개발자 콘솔에서 발급받은 값을 입력합니다. 모든 Provider는 `http://localhost:8000`을 기준으로 동작하도록 예시가 작성되어 있습니다.
+
+개발자 콘솔에는 다음 주소를 등록해야 합니다.
+
+- Google: Authorized JavaScript origin `http://localhost:8000`
+- Kakao: JavaScript SDK domain `http://localhost:8000`
+- Kakao: JavaScript key와 REST API key 양쪽에 `http://localhost:8000/social-auth/kakao/callback` 등록
+- Naver: Callback URL `http://localhost:8000/social-auth/naver/callback`
+
+키를 입력한 뒤 Workbench 서버를 실행합니다.
+
+```bash
+composer serve
+```
+
+브라우저에서 `http://localhost:8000`을 열어 실제 Provider 로그인을 확인할 수 있습니다. Provider 키가 없는 경우 해당 Provider 버튼은 표시되지 않습니다.
 
 ### Workbench + Laravel Dusk
 
