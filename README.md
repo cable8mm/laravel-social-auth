@@ -14,7 +14,7 @@ Laravel SNS 인증 패키지 (Google GIS · Kakao JS SDK · Naver JS SDK).
 
 - PHP 8.3+
 - Laravel 12 or Laravel 13
-- `users.email` / `users.password` nullable 허용
+- SNS 가입을 사용하는 경우 `users.email` / `users.password` nullable 필요
 
 ## 설치
 
@@ -32,24 +32,52 @@ Laravel 패키지 자동 발견이 활성화되어 있으면 Service Provider가
 ],
 ```
 
-### 설정 파일 / 뷰 / 마이그레이션 publish
+### 설치 순서
+
+#### 1. 설정 파일 publish
 
 ```bash
 php artisan vendor:publish --tag=social-auth-config
-php artisan vendor:publish --tag=social-auth-views
-php artisan vendor:publish --tag=social-auth-migrations
+```
+
+#### 2. users 컬럼 마이그레이션 publish
+
+SNS 가입은 provider가 이메일을 제공하지 않거나 비밀번호를 사용하지 않는 경우를 지원하므로 `users.email`과 `users.password`가 nullable이어야 합니다. 이 단계는 필수입니다.
+
+```bash
+php artisan vendor:publish --tag=social-auth-user-columns
+```
+
+#### 3. 마이그레이션 실행
+
+패키지의 `social_accounts` 마이그레이션은 Service Provider가 자동으로 로드합니다. 따라서 별도로 `social-auth-migrations`를 publish하지 않아도 됩니다.
+
+```bash
 php artisan migrate
 ```
 
-### users 테이블 요구사항
+#### 4. 기본 뷰를 수정할 경우에만 views publish
 
-패키지는 `users` 마이그레이션을 강제로 변경하지 않습니다. 애플리케이션에서 다음을 허용해야 합니다.
+기본 뷰를 그대로 사용하는 경우 이 단계는 건너뛰어도 됩니다.
+
+```bash
+php artisan vendor:publish --tag=social-auth-views
+```
+
+### users 컬럼 마이그레이션을 적용하지 않는 경우
+
+애플리케이션의 `users` 테이블에서 이미 다음 조건을 만족한다면 `social-auth-user-columns` publish를 건너뛸 수 있습니다.
+
+- `users.email`이 nullable
+- `users.password`가 nullable
 
 ```php
 $table->string('email')->nullable()->unique();
 $table->string('password')->nullable();
 $table->string('nickname')->nullable(); // 선택
 ```
+
+패키지는 애플리케이션의 `users` 마이그레이션을 자동으로 변경하지 않습니다.
 
 ## .env 예시
 
