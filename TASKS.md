@@ -1,6 +1,6 @@
 # TASKS.md — cable8mm/laravel-social-auth
 
-Validation note: the local PHPUnit, Dusk, Pint, and Composer checks have been executed. Live provider verification and developer-console setup remain external prerequisites.
+Validation note: the local PHPUnit, Dusk, Pint, Composer checks, and manual live-provider verification have been completed.
 
 ## Done
 
@@ -30,11 +30,12 @@ Validation note: the local PHPUnit, Dusk, Pint, and Composer checks have been ex
 - [x] Testbench Workbench + Laravel Dusk browser harness for button order and consent completion
 - [x] Laravel 12 and 13 dependency constraints and CI coverage
 - [x] Publishable migration for nullable user email and password columns
+- [x] Register real apps in the Google / Kakao / Naver developer consoles, set redirect URIs, fill `.env`
+- [x] Manual live-boundary login verification for Google, Kakao, and Naver
 
 ## Remaining
 
-- [ ] Register real apps in the Google / Kakao / Naver developer consoles, set redirect URIs, fill `.env`
-- [ ] E2E / live-boundary login test against each real provider (AGENTS.md TASK_EXECUTION step 8 — required because this package's core logic touches an EXTERNAL_BOUNDARY on every provider)
+- None
 
 ## Explicitly not started
 
