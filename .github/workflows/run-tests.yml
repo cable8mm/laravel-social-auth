@@ -45,7 +45,7 @@ jobs:
           fi
 
           LARAVEL_CONSTRAINT="^${LARAVEL_VERSION}.0"
-          composer update --prefer-dist --no-progress --no-interaction --with-all-dependencies \
+          composer require --no-update --no-interaction \
             "illuminate/support:${LARAVEL_CONSTRAINT}" \
             "illuminate/http:${LARAVEL_CONSTRAINT}" \
             "illuminate/database:${LARAVEL_CONSTRAINT}" \
@@ -55,9 +55,11 @@ jobs:
             "illuminate/auth:${LARAVEL_CONSTRAINT}" \
             "illuminate/routing:${LARAVEL_CONSTRAINT}" \
             "illuminate/validation:${LARAVEL_CONSTRAINT}" \
-            "illuminate/view:${LARAVEL_CONSTRAINT}" \
+            "illuminate/view:${LARAVEL_CONSTRAINT}"
+          composer require --dev --no-update --no-interaction \
             "orchestra/testbench:${TESTBENCH_VERSION}" \
             "orchestra/testbench-dusk:${TESTBENCH_DUSK_VERSION}"
+          composer update --prefer-dist --no-progress --no-interaction --with-all-dependencies
 
       - name: Execute tests
         run: composer test
