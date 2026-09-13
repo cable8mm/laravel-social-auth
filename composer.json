@@ -26,6 +26,8 @@
     },
     "require-dev": {
         "orchestra/testbench": "^10.0",
+        "orchestra/testbench-dusk": "^10.11",
+        "laravel/dusk": "^8.6",
         "phpunit/phpunit": "^11.0",
         "laravel/pint": "^1.18",
         "mockery/mockery": "^1.6"
@@ -37,7 +39,10 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "Cable8mm\\LaravelSocialAuth\\Tests\\": "tests/"
+            "Cable8mm\\LaravelSocialAuth\\Tests\\": "tests/",
+            "Workbench\\App\\": "workbench/app/",
+            "Workbench\\Database\\Factories\\": "workbench/database/factories/",
+            "Workbench\\Database\\Seeders\\": "workbench/database/seeders/"
         }
     },
     "extra": {
@@ -54,7 +59,26 @@
     "prefer-stable": true,
     "scripts": {
         "test": "vendor/bin/phpunit",
-        "pint": "vendor/bin/pint"
+        "test:browser": [
+            "@php vendor/bin/testbench-dusk workbench:build --ansi",
+            "@php vendor/bin/testbench-dusk package:dusk"
+        ],
+        "pint": "vendor/bin/pint",
+        "post-autoload-dump": [
+            "@clear",
+            "@prepare"
+        ],
+        "clear": "@php vendor/bin/testbench package:purge-skeleton --ansi",
+        "prepare": "@php vendor/bin/testbench package:discover --ansi",
+        "build": "@php vendor/bin/testbench workbench:build --ansi",
+        "serve": [
+            "Composer\\Config::disableProcessTimeout",
+            "@build",
+            "@php vendor/bin/testbench serve --ansi"
+        ],
+        "lint": [
+            "@php vendor/bin/pint --ansi"
+        ]
     },
     "config": {
         "sort-packages": true,
