@@ -42,6 +42,7 @@ abstract class TestCase extends Orchestra
         $app['config']->set('social-auth.providers.google.client_id', 'test-google-client-id');
         $app['config']->set('social-auth.providers.kakao.enabled', true);
         $app['config']->set('social-auth.providers.kakao.client_id', 'test-kakao-client-id');
+        $app['config']->set('social-auth.providers.kakao.js_client_id', 'test-kakao-javascript-key');
         $app['config']->set('social-auth.providers.kakao.client_secret', 'test-kakao-secret');
         $app['config']->set('social-auth.providers.naver.enabled', true);
         $app['config']->set('social-auth.providers.naver.client_id', 'test-naver-client-id');

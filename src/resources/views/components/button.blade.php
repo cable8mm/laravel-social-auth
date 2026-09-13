@@ -10,7 +10,7 @@
         if (!$p->isEnabled()) {
             return;
         }
-        $clientId = $p->getClientId();
+        $clientId = $p->getJsClientId();
         $jsSdkUrl = $p->getJsSdkUrl();
     } catch (\Throwable $e) {
         return;

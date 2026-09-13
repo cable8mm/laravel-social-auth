@@ -82,19 +82,17 @@ $table->string('nickname')->nullable(); // 선택
 ## .env 예시
 
 ```env
-GOOGLE_AUTH_ENABLED=true
 GOOGLE_CLIENT_ID=your-google-client-id.apps.googleusercontent.com
-GOOGLE_REDIRECT_URI=https://your-app.test/social-auth/google/callback
+GOOGLE_REDIRECT_URI=http://localhost:8000/social-auth/google/callback
 
-KAKAO_AUTH_ENABLED=true
-KAKAO_CLIENT_ID=your-kakao-rest-api-key
+KAKAO_JAVASCRIPT_KEY=your-kakao-javascript-key
+KAKAO_REST_API_KEY=your-kakao-rest-api-key
 KAKAO_CLIENT_SECRET=your-kakao-client-secret
-KAKAO_REDIRECT_URI=https://your-app.test/social-auth/kakao/callback
+KAKAO_REDIRECT_URI=http://localhost:8000/social-auth/kakao/callback
 
-NAVER_AUTH_ENABLED=true
 NAVER_CLIENT_ID=your-naver-client-id
 NAVER_CLIENT_SECRET=your-naver-client-secret
-NAVER_REDIRECT_URI=https://your-app.test/social-auth/naver/callback
+NAVER_REDIRECT_URI=http://localhost:8000/social-auth/naver/callback
 
 SOCIAL_AUTH_STORE_TOKENS=true
 SOCIAL_AUTH_REMOTE_REVOKE=false
@@ -118,8 +116,10 @@ SOCIAL_AUTH_CONSENT_REDIRECT=/social-auth/consent
 ### Kakao
 
 1. Kakao Developers 앱 등록, Web 도메인 / Redirect URI 등록
-2. REST API 키 = `KAKAO_CLIENT_ID`
-3. 동의 항목: 닉네임, 이메일(선택)
+2. JavaScript 키와 REST API 키를 각각 `KAKAO_JAVASCRIPT_KEY`, `KAKAO_REST_API_KEY`에 설정
+3. `http://localhost:8000`을 JavaScript SDK 도메인으로 등록
+4. `http://localhost:8000/social-auth/kakao/callback`을 JavaScript 키와 REST API 키의 redirect URI로 등록
+5. 동의 항목: 닉네임, 이메일(선택)
 
 ### Naver
 

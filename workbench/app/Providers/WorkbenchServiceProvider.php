@@ -30,6 +30,7 @@ class WorkbenchServiceProvider extends ServiceProvider
         Config::set('social-auth.providers.google.client_id', 'dusk-google-client-id');
         Config::set('social-auth.providers.kakao.enabled', true);
         Config::set('social-auth.providers.kakao.client_id', 'dusk-kakao-client-id');
+        Config::set('social-auth.providers.kakao.js_client_id', 'dusk-kakao-javascript-key');
         Config::set('social-auth.providers.naver.enabled', true);
         Config::set('social-auth.providers.naver.client_id', 'dusk-naver-client-id');
         Config::set('social-auth.button_order', ['naver', 'kakao', 'google']);
