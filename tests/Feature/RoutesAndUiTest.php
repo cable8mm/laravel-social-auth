@@ -56,6 +56,15 @@ class RoutesAndUiTest extends TestCase
         $response->assertStatus(422);
     }
 
+    public function test_callback_without_provider_payload_is_rejected_as_cancelled(): void
+    {
+        foreach (['google', 'kakao', 'naver'] as $provider) {
+            $response = $this->postJson(route('social-auth.callback', $provider), []);
+
+            $response->assertUnprocessable();
+        }
+    }
+
     public function test_disconnect_requires_auth(): void
     {
         $response = $this->deleteJson(route('social-auth.disconnect', 'google'));

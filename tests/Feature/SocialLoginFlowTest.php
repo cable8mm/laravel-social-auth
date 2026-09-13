@@ -13,6 +13,7 @@ use Cable8mm\LaravelSocialAuth\Services\SocialLoginManager;
 use Cable8mm\LaravelSocialAuth\Tests\Fixtures\User;
 use Cable8mm\LaravelSocialAuth\Tests\TestCase;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Session;
 
 class SocialLoginFlowTest extends TestCase
@@ -275,6 +276,36 @@ class SocialLoginFlowTest extends TestCase
 
         $this->expectException(SocialAuthException::class);
         $manager->disconnect('google', $user);
+    }
+
+    public function test_remote_revoke_failure_still_removes_local_account(): void
+    {
+        config(['social-auth.remote_revoke' => true]);
+
+        $user = User::create([
+            'name' => 'User',
+            'email' => 'user@example.com',
+            'password' => bcrypt('secret'),
+        ]);
+
+        SocialAccount::create([
+            'user_id' => $user->id,
+            'provider' => 'kakao',
+            'provider_id' => 'k-revoke-failure',
+            'access_token' => 'kakao-access-token',
+        ]);
+
+        Http::fake([
+            'https://kapi.kakao.com/v1/user/unlink' => Http::response([], 500),
+        ]);
+
+        $manager = $this->app->make(SocialLoginManager::class);
+        $manager->disconnect('kakao', $user);
+
+        $this->assertDatabaseMissing(config('social-auth.table'), [
+            'provider' => 'kakao',
+            'provider_id' => 'k-revoke-failure',
+        ]);
     }
 
     public function test_enabled_providers_order(): void

@@ -19,6 +19,8 @@ Validation note: the local PHPUnit, Dusk, Pint, and Composer checks have been ex
 - [x] Unit tests: `GoogleCredentialVerifierTest`, `KakaoTokenVerifierTest`, `NaverTokenVerifierTest`, `DefaultNicknameGeneratorTest`, `SocialAccountRepositoryTest`, `ConfigurationValidatorTest`
 - [x] Feature tests: `GoogleLoginTest`, `KakaoLoginTest`, `NaverLoginTest`, `RegistrationConsentTest`
 - [x] Feature tests: explicit account linking (success + conflict-with-another-user)
+- [x] Feature test: account unlinking remote revoke failure handling
+- [x] Feature test: callback without provider payload (cancel case)
 - [x] Feature tests: provider button visibility and configured order
 - [x] README installation and package requirements
 - [x] Composer dependency installation with Packagist access
@@ -30,8 +32,6 @@ Validation note: the local PHPUnit, Dusk, Pint, and Composer checks have been ex
 
 ## Remaining
 
-- [ ] Feature test: account unlinking remote revoke failure handling (success and last-login protection are covered)
-- [ ] Feature test: callback "cancel" case (provider returns to callback with no code/credential at all)
 - [ ] Confirm the Kakao email-verification field against a live API response or current official docs (clears the ARCHITECTURE.md UNVERIFIED mark)
 - [ ] Register real apps in the Google / Kakao / Naver developer consoles, set redirect URIs, fill `.env`
 - [ ] E2E / live-boundary login test against each real provider (AGENTS.md TASK_EXECUTION step 8 — required because this package's core logic touches an EXTERNAL_BOUNDARY on every provider)
