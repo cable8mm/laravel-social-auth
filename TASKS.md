@@ -1,6 +1,6 @@
 # TASKS.md — cable8mm/laravel-social-auth
 
-Sandbox note: this codebase was written in an environment with no PHP/Composer runtime and no network access to Packagist, so nothing below marked "run X" has actually been executed yet. Everything else was written directly against PRODUCT_SPEC.md / ARCHITECTURE.md / FRAMEWORK.md.
+Validation note: the local PHPUnit, Dusk, Pint, and Composer checks have been executed. Live provider verification and developer-console setup remain external prerequisites.
 
 ## Done
 
@@ -18,19 +18,20 @@ Sandbox note: this codebase was written in an environment with no PHP/Composer r
 - [x] Blade partials: buttons, consent, connected-accounts
 - [x] Unit tests: `GoogleCredentialVerifierTest`, `KakaoTokenVerifierTest`, `NaverTokenVerifierTest`, `DefaultNicknameGeneratorTest`, `SocialAccountRepositoryTest`, `ConfigurationValidatorTest`
 - [x] Feature tests: `GoogleLoginTest`, `KakaoLoginTest`, `NaverLoginTest`, `RegistrationConsentTest`
+- [x] Feature tests: explicit account linking (success + conflict-with-another-user)
+- [x] Feature tests: provider button visibility and configured order
+- [x] README installation and package requirements
+- [x] Composer dependency installation with Packagist access
+- [x] `vendor/bin/pint` format check
+- [x] `vendor/bin/phpunit` full suite
 - [x] Testbench Workbench + Laravel Dusk browser harness for button order and consent completion
 - [x] Laravel 12 and 13 dependency constraints and CI coverage
+- [x] Publishable migration for nullable user email and password columns
 
 ## Remaining
 
-- [ ] Feature tests: explicit account linking (success + conflict-with-another-user)
-- [ ] Feature tests: account unlinking (success, last-login-method protection, remote revoke failure handling)
-- [ ] Feature tests: button visibility (provider disabled -> button hidden) and button order (Naver, Kakao, Google)
+- [ ] Feature test: account unlinking remote revoke failure handling (success and last-login protection are covered)
 - [ ] Feature test: callback "cancel" case (provider returns to callback with no code/credential at all)
-- [ ] `README.md`
-- [ ] `composer install` in a real environment with Packagist access (not available in this sandbox)
-- [ ] `vendor/bin/pint` — format check, not yet run
-- [ ] `vendor/bin/phpunit` — full suite, not yet run or confirmed green
 - [ ] Confirm the Kakao email-verification field against a live API response or current official docs (clears the ARCHITECTURE.md UNVERIFIED mark)
 - [ ] Register real apps in the Google / Kakao / Naver developer consoles, set redirect URIs, fill `.env`
 - [ ] E2E / live-boundary login test against each real provider (AGENTS.md TASK_EXECUTION step 8 — required because this package's core logic touches an EXTERNAL_BOUNDARY on every provider)

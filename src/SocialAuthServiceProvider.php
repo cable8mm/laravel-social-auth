@@ -89,8 +89,12 @@ class SocialAuthServiceProvider extends ServiceProvider
             ], 'social-auth-views');
 
             $this->publishes([
-                __DIR__.'/Database/Migrations' => database_path('migrations'),
+                __DIR__.'/Database/Migrations/2024_01_01_000001_create_social_accounts_table.php' => database_path('migrations/2024_01_01_000001_create_social_accounts_table.php'),
             ], 'social-auth-migrations');
+
+            $this->publishes([
+                __DIR__.'/Database/Migrations/stubs/2024_01_01_000002_make_user_credentials_nullable.php' => database_path('migrations/2024_01_01_000002_make_user_credentials_nullable.php'),
+            ], 'social-auth-user-columns');
         }
 
         Blade::componentNamespace('Cable8mm\\LaravelSocialAuth\\View\\Components', 'social-auth');
