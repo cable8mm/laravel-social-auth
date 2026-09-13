@@ -1,5 +1,12 @@
 # cable8mm/laravel-social-auth
 
+[![code-style](https://github.com/cable8mm/laravel-social-auth/actions/workflows/code-style.yml/badge.svg)](https://github.com/cable8mm/laravel-social-auth/actions/workflows/code-style.yml)
+[![run-tests](https://github.com/cable8mm/laravel-social-auth/actions/workflows/run-tests.yml/badge.svg)](https://github.com/cable8mm/laravel-social-auth/actions/workflows/run-tests.yml)
+![PHP Version](https://img.shields.io/packagist/dependency-v/cable8mm/laravel-social-auth/php)
+![Packagist Version](https://img.shields.io/packagist/v/cable8mm/laravel-social-auth)
+![Packagist Downloads](https://img.shields.io/packagist/dt/cable8mm/laravel-social-auth)
+![Packagist License](https://img.shields.io/packagist/l/cable8mm/laravel-social-auth)
+
 Laravel SNS 인증 패키지 (Google GIS · Kakao JS SDK · Naver JS SDK).  
 **Socialite를 사용하지 않습니다.** 서버에서 credential/token을 직접 검증합니다.
 
