@@ -74,7 +74,7 @@
         "serve": [
             "Composer\\Config::disableProcessTimeout",
             "@build",
-            "@php vendor/bin/testbench serve --host=localhost --port=8000 --ansi"
+            "sh -c 'set -a; . ./.env.testing; set +a; exec php vendor/bin/testbench serve --env=testing --host=localhost --port=8000 --no-reload --ansi'"
         ],
         "lint": [
             "@php vendor/bin/pint --ansi"

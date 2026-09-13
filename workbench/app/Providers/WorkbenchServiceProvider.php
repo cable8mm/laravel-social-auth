@@ -26,13 +26,20 @@ class WorkbenchServiceProvider extends ServiceProvider
         Config::set('cache.default', 'array');
         Config::set('social-auth.user_model', User::class);
         Config::set('auth.providers.users.model', User::class);
+
+        if (! app()->environment('testing')) {
+            return;
+        }
+
+        $env = static fn (string $key, string $fallback): string => (string) (getenv($key) ?: env($key, $fallback));
+
         Config::set('social-auth.providers.google.enabled', true);
-        Config::set('social-auth.providers.google.client_id', 'dusk-google-client-id');
+        Config::set('social-auth.providers.google.client_id', $env('GOOGLE_CLIENT_ID', 'dusk-google-client-id'));
         Config::set('social-auth.providers.kakao.enabled', true);
-        Config::set('social-auth.providers.kakao.client_id', 'dusk-kakao-client-id');
-        Config::set('social-auth.providers.kakao.js_client_id', 'dusk-kakao-javascript-key');
+        Config::set('social-auth.providers.kakao.client_id', $env('KAKAO_REST_API_KEY', 'dusk-kakao-client-id'));
+        Config::set('social-auth.providers.kakao.js_client_id', $env('KAKAO_JAVASCRIPT_KEY', 'dusk-kakao-javascript-key'));
         Config::set('social-auth.providers.naver.enabled', true);
-        Config::set('social-auth.providers.naver.client_id', 'dusk-naver-client-id');
+        Config::set('social-auth.providers.naver.client_id', $env('NAVER_CLIENT_ID', 'dusk-naver-client-id'));
         Config::set('social-auth.button_order', ['naver', 'kakao', 'google']);
     }
 }
