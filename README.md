@@ -12,8 +12,8 @@ Laravel SNS 인증 패키지 (Google GIS · Kakao JS SDK · Naver JS SDK).
 
 ## 요구사항
 
-- PHP 8.3+ / 8.4+
-- Laravel 12
+- PHP 8.3+
+- Laravel 12 or Laravel 13
 - `users.email` / `users.password` nullable 허용
 
 ## 설치

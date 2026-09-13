@@ -15,8 +15,9 @@ jobs:
       matrix:
         os: [ubuntu-latest]
         php: [8.3, 8.4, 8.5]
+        laravel: [12, 13]
 
-    name: Pest PHP ${{ matrix.php }}
+    name: PHPUnit Laravel ${{ matrix.laravel }} / PHP ${{ matrix.php }}
 
     steps:
       - name: Checkout code
@@ -31,8 +32,32 @@ jobs:
       - name: Validate composer.json and composer.lock
         run: composer validate
 
-      - name: Install dependencies
-        run: composer install --prefer-dist --no-progress --no-suggest
+      - name: Install Laravel ${{ matrix.laravel }} dependencies
+        env:
+          LARAVEL_VERSION: ${{ matrix.laravel }}
+        run: |
+          if [ "$LARAVEL_VERSION" = "12" ]; then
+            TESTBENCH_VERSION='^10.11'
+            TESTBENCH_DUSK_VERSION='^10.11'
+          else
+            TESTBENCH_VERSION='^11.2'
+            TESTBENCH_DUSK_VERSION='^11.4'
+          fi
+
+          LARAVEL_CONSTRAINT="^${LARAVEL_VERSION}.0"
+          composer update --prefer-dist --no-progress --no-interaction --with-all-dependencies \
+            "illuminate/support:${LARAVEL_CONSTRAINT}" \
+            "illuminate/http:${LARAVEL_CONSTRAINT}" \
+            "illuminate/database:${LARAVEL_CONSTRAINT}" \
+            "illuminate/session:${LARAVEL_CONSTRAINT}" \
+            "illuminate/encryption:${LARAVEL_CONSTRAINT}" \
+            "illuminate/events:${LARAVEL_CONSTRAINT}" \
+            "illuminate/auth:${LARAVEL_CONSTRAINT}" \
+            "illuminate/routing:${LARAVEL_CONSTRAINT}" \
+            "illuminate/validation:${LARAVEL_CONSTRAINT}" \
+            "illuminate/view:${LARAVEL_CONSTRAINT}" \
+            "orchestra/testbench:${TESTBENCH_VERSION}" \
+            "orchestra/testbench-dusk:${TESTBENCH_DUSK_VERSION}"
 
       - name: Execute tests
         run: composer test
