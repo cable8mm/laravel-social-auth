@@ -68,6 +68,15 @@ class RoutesAndUiTest extends TestCase
         $response->assertStatus(422);
     }
 
+    public function test_naver_callback_renders_fragment_handoff_page(): void
+    {
+        $response = $this->get(route('social-auth.callback', 'naver'));
+
+        $response->assertOk();
+        $response->assertSee('네이버 로그인 처리 중입니다.');
+        $response->assertSee('access_token');
+    }
+
     public function test_callback_without_provider_payload_is_rejected_as_cancelled(): void
     {
         foreach (['google', 'kakao', 'naver'] as $provider) {
@@ -109,5 +118,15 @@ class RoutesAndUiTest extends TestCase
 
         $this->assertStringContainsString('src="https://t1.kakaocdn.net/kakao_js_sdk/', $html);
         $this->assertStringNotContainsString('integrity=', $html);
+    }
+
+    public function test_naver_button_uses_the_sdk_mount_point(): void
+    {
+        $html = view('social-auth::components.button', [
+            'provider' => 'naver',
+            'context' => 'login',
+        ])->render();
+
+        $this->assertStringContainsString('id="naverIdLogin"', $html);
     }
 }

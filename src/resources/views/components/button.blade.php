@@ -33,6 +33,7 @@
 
 <div
     class="{{ $buttonClasses }}"
+    @if($provider === 'naver') id="naverIdLogin" @endif
     data-provider="{{ $provider }}"
     data-context="{{ $context }}"
     data-client-id="{{ $clientId }}"

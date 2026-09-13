@@ -79,8 +79,14 @@ window.SocialAuth = window.SocialAuth || {
                 isPopup: false,
                 loginButton: { color: 'green', type: 3, height: 48 },
             });
+
+            // Keep the SDK's OAuth state aligned with the server-side session state.
+            naverLogin.generateState = () => {
+                naverLogin.state = state;
+                return state;
+            };
+
             naverLogin.init();
-            // After redirect back, app should read access token from hash/query and POST to callback
         });
     }
 };
@@ -93,6 +99,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 clearInterval(t);
                 document.querySelectorAll('[data-provider="google"]').forEach(el => {
                     window.SocialAuth.initGoogle(el.dataset.context);
+                });
+            }
+        }, 100);
+        setTimeout(() => clearInterval(t), 5000);
+    }
+
+    if (document.querySelector('[data-provider="naver"]')) {
+        const t = setInterval(() => {
+            if (typeof naver !== 'undefined' && naver.LoginWithNaverId) {
+                clearInterval(t);
+                document.querySelectorAll('[data-provider="naver"]').forEach(el => {
+                    window.SocialAuth.initNaver(el.dataset.context);
                 });
             }
         }, 100);

@@ -10,6 +10,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
+use Illuminate\View\View;
 
 class SocialLoginController extends Controller
 {
@@ -27,8 +28,15 @@ class SocialLoginController extends Controller
         return response()->json(['state' => $this->manager->generateState()]);
     }
 
-    public function callback(Request $request, string $provider): RedirectResponse|JsonResponse
+    public function callback(Request $request, string $provider): View|RedirectResponse|JsonResponse
     {
+        if ($provider === 'naver' && $request->isMethod('GET')) {
+            return view('social-auth::naver-callback', [
+                'callbackUrl' => route('social-auth.callback', 'naver'),
+                'clientId' => config('social-auth.providers.naver.client_id'),
+            ]);
+        }
+
         try {
             $result = $this->manager->handleCallback($provider, $request->all());
 
