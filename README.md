@@ -192,13 +192,13 @@ vendor/bin/phpunit
 
 ### 패키지 개발자 로컬 환경
 
-Workbench에서 실제 Provider 로그인이나 브라우저 테스트를 실행하려면 로컬 테스트 환경 파일을 만듭니다. `.env.testing`은 secret을 포함하므로 Git에 커밋하지 않고, 예시 파일을 복사해서 사용합니다.
+Workbench에서 실제 Provider 로그인이나 브라우저 테스트를 실행하려면 로컬 환경 파일을 만듭니다. `.env`는 secret을 포함하므로 Git에 커밋하지 않고, 예시 파일을 복사해서 사용합니다.
 
 ```bash
-cp .env.testing.example .env.testing
+cp .env.example .env
 ```
 
-`.env.testing`에 Google, Kakao, Naver 개발자 콘솔에서 발급받은 값을 입력합니다. 모든 Provider는 `http://localhost:8000`을 기준으로 동작하도록 예시가 작성되어 있습니다.
+`.env`에 Google, Kakao, Naver 개발자 콘솔에서 발급받은 값을 입력합니다. 모든 Provider는 `http://localhost:8000`을 기준으로 동작하도록 예시가 작성되어 있습니다.
 
 개발자 콘솔에는 다음 주소를 등록해야 합니다.
 
