@@ -42,7 +42,8 @@ class KakaoProvider extends AbstractProvider
 
         $kakaoAccount = $profile['kakao_account'] ?? [];
         $email = $kakaoAccount['email'] ?? null;
-        $isEmailVerified = (bool) ($kakaoAccount['is_email_verified'] ?? $kakaoAccount['is_email_valid'] ?? false);
+        $isEmailVerified = (bool) ($kakaoAccount['is_email_verified'] ?? false);
+        $isEmailValid = (bool) ($kakaoAccount['is_email_valid'] ?? false);
 
         $properties = $profile['properties'] ?? [];
         $nickname = $properties['nickname'] ?? ($kakaoAccount['profile']['nickname'] ?? null);
@@ -55,7 +56,7 @@ class KakaoProvider extends AbstractProvider
             provider: $this->getName(),
             providerId: (string) $profile['id'],
             email: is_string($email) ? $email : null,
-            emailVerified: $isEmailVerified && is_string($email),
+            emailVerified: $isEmailVerified && $isEmailValid && is_string($email),
             name: null, // Kakao name is intentionally not mapped by default
             nickname: is_string($nickname) ? $nickname : null,
             avatar: is_string($avatar) ? $avatar : null,

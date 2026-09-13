@@ -129,6 +129,29 @@ class SocialLoginFlowTest extends TestCase
         $this->assertNull($user->email_verified_at);
     }
 
+    public function test_kakao_invalid_email_sets_null_verified_at(): void
+    {
+        $manager = $this->app->make(SocialLoginManager::class);
+
+        $providerUser = new ProviderUser(
+            provider: 'kakao',
+            providerId: 'k-invalid-email',
+            email: 'invalid@kakao.com',
+            emailVerified: false,
+        );
+
+        $manager->storePendingRegistration($providerUser);
+
+        $result = $manager->completeRegistration([
+            'terms_of_service' => true,
+            'privacy_policy' => true,
+        ]);
+
+        $user = $result['user'];
+        $this->assertSame('invalid@kakao.com', $user->email);
+        $this->assertNull($user->email_verified_at);
+    }
+
     public function test_no_email_from_provider_leaves_email_null(): void
     {
         $manager = $this->app->make(SocialLoginManager::class);

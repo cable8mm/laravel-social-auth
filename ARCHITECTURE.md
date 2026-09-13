@@ -61,10 +61,6 @@ Reject if `protect_last_login_method` is true and this is the user's only login 
 
 - **Google**: replay protection via a nonce minted server-side and stored in session before the GIS button renders (`ChallengeGenerator::googleNonce`), compared against the JWT's `nonce` claim. This is a distinct mechanism from OAuth `state` — Google's credential flow is not a redirect/code exchange.
 - **Kakao / Naver**: standard OAuth `state` parameter, minted the same way, compared on callback before any token exchange call is made.
-- **Email trust boundary**: Google uses the `email_verified` claim in the JWT. Kakao uses an `is_email_verified`/`is_email_valid` flag on the account object [UNVERIFIED — see below]. Naver treats email presence in the profile response as sufficient, since Naver does not return unconfirmed emails.
+- **Email trust boundary**: Google uses the `email_verified` claim in the JWT. Kakao uses the nested `kakao_account.is_email_verified` and `kakao_account.is_email_valid` flags; local email verification is granted only when both are true. Naver treats email presence in the profile response as sufficient, since Naver does not return unconfirmed emails.
 - **Token storage vs remote revoke**: `ConfigurationValidator` rejects `store_tokens=false` combined with `remote_revoke_enabled=true` at boot — remote revoke needs a stored access token, so this combination is a configuration error, not a runtime edge case.
 - Sensitive tokens are stripped from the `raw` blob before it is passed into `SocialUser` / persisted (see each Provider's `authenticate()`).
-
-## UNVERIFIED
-
-- Kakao's exact verified-email field name and shape (`is_email_verified` vs `is_email_valid`, and whether it is nested under `kakao_account` in the current API version). This was implemented from general knowledge, not from a live Kakao API response or a checked current copy of the official REST API reference. Confirm against that source before relying on it in production; do not change the implemented fallback order without checking there first.
