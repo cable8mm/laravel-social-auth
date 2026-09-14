@@ -50,7 +50,7 @@ Unique indexes: `(provider, provider_id)`, `(user_id, provider)`.
 ## Flows
 
 **Login / registration callback** (`SocialLoginController::callback`):
-provider authenticate -> `SocialUser`. If a matching `social_accounts` row exists, log its owner in (`Auth::login` + session regenerate). Otherwise store `PendingSocialRegistration` in session and redirect to the consent screen — no `User` row is created yet.
+provider authenticate -> `SocialUser`. The browser stores the current same-origin page as the intended destination before provider authentication. If a matching `social_accounts` row exists, log its owner in (`Auth::login` + session regenerate) and consume that destination. Otherwise store `PendingSocialRegistration` in session and redirect to the consent screen — no `User` row is created yet. Consent completion consumes the same destination after creating and logging in the user.
 
 **Consent completion** (`SocialRegistrationController::store`):
 Validate consent payload -> inside a DB transaction, create the `User` row (email/email_verified_at per policy, password null) and the `SocialAccount` row together -> log the new user in.
@@ -59,12 +59,12 @@ Validate consent payload -> inside a DB transaction, create the `User` row (emai
 Authenticate provider -> reject if the provider account already belongs to another user, or is already linked to this user -> create `SocialAccount` -> fire `SocialAccountLinked`.
 
 **Unlinking** (`SocialLinkController::disconnect`):
-Reject if `protect_last_login_method` is true and this is the user's only login method (no password, no email, at most one social account) -> optionally attempt remote revoke (provider-specific — only Kakao implements it in this version) -> delete local row regardless of remote revoke outcome unless `revoke_failure_deletes_local=false` -> fire `SocialAccountUnlinked`.
+Reject if `protect_last_login_method` is true and this is the user's only login method (no password, no email, at most one social account) -> attempt provider-specific remote revoke when a stored access token exists -> delete local row regardless of remote revoke outcome -> fire `SocialAccountUnlinked`.
 
 ## Security architecture
 
 - **Google**: replay protection via a nonce minted server-side and stored in session before the GIS button renders (`ChallengeGenerator::googleNonce`), compared against the JWT's `nonce` claim. This is a distinct mechanism from OAuth `state` — Google's credential flow is not a redirect/code exchange.
 - **Kakao / Naver**: standard OAuth `state` parameter, minted the same way, compared on callback before any token exchange call is made.
 - **Email trust boundary**: Google uses the `email_verified` claim in the JWT. Kakao uses the nested `kakao_account.is_email_verified` and `kakao_account.is_email_valid` flags; local email verification is granted only when both are true. Naver treats email presence in the profile response as sufficient, since Naver does not return unconfirmed emails.
-- **Token storage vs remote revoke**: `ConfigurationValidator` rejects `store_tokens=false` combined with `remote_revoke_enabled=true` at boot — remote revoke needs a stored access token, so this combination is a configuration error, not a runtime edge case.
+- **Token storage vs remote revoke**: the published config enables encrypted token storage and remote revoke by default. `ConfigurationValidator` rejects `store_tokens=false` combined with `remote_revoke_enabled=true` if an application changes those policies in its published config.
 - Sensitive tokens are stripped from the `raw` blob before it is passed into `SocialUser` / persisted (see each Provider's `authenticate()`).

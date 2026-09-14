@@ -4,16 +4,18 @@
     Object.assign(window.SocialAuth, {
         googleInitialized: false,
 
-        async fetchNonce() {
-            const element = document.querySelector('[data-provider="google"]');
-            const res = await fetch(element?.dataset.nonceUrl, { credentials: 'same-origin' });
+        async fetchNonce(element = document.querySelector('[data-provider="google"]')) {
+            const url = new URL(element?.dataset.nonceUrl, window.location.origin);
+            url.searchParams.set('redirect', element?.dataset.intendedUrl || window.location.pathname + window.location.search);
+            const res = await fetch(url, { credentials: 'same-origin' });
             const data = await res.json();
             return data.nonce;
         },
 
-        async fetchState() {
-            const element = document.querySelector('[data-provider="kakao"], [data-provider="naver"]');
-            const res = await fetch(element?.dataset.stateUrl, { credentials: 'same-origin' });
+        async fetchState(element = document.querySelector('[data-provider="kakao"], [data-provider="naver"]')) {
+            const url = new URL(element?.dataset.stateUrl, window.location.origin);
+            url.searchParams.set('redirect', element?.dataset.intendedUrl || window.location.pathname + window.location.search);
+            const res = await fetch(url, { credentials: 'same-origin' });
             const data = await res.json();
             return data.state;
         },
@@ -51,7 +53,7 @@
                 Kakao.init(element.dataset.clientId);
             }
 
-            const state = await this.fetchState();
+            const state = await this.fetchState(element);
             Kakao.Auth.authorize({
                 redirectUri: element.dataset.callbackUrl,
                 state,
@@ -65,7 +67,7 @@
             if (!element || typeof google === 'undefined' || !google.accounts?.id || this.googleInitialized) return;
 
             this.googleInitialized = true;
-            this.fetchNonce().then(nonce => {
+                this.fetchNonce(element).then(nonce => {
                 google.accounts.id.initialize({
                     client_id: element.dataset.clientId,
                     nonce,
@@ -91,7 +93,7 @@
             const element = document.querySelector(`[data-provider="naver"][data-context="${context}"]`);
             if (!element || typeof naver === 'undefined') return;
 
-            this.fetchState().then(state => {
+                this.fetchState(element).then(state => {
                 const naverLogin = new naver.LoginWithNaverId({
                     clientId: element.dataset.clientId,
                     callbackUrl: element.dataset.callbackUrl,

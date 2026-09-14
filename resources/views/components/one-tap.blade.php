@@ -10,6 +10,7 @@
         data-client-id="{{ $google['client_id'] }}"
         data-callback-url="{{ route('social-auth.callback', 'google') }}"
         data-nonce-url="{{ route('social-auth.nonce') }}"
+        data-intended-url="{{ url()->current() }}"
     ></div>
 
     <script src="{{ $google['js_sdk_url'] }}" async defer></script>

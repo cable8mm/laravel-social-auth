@@ -120,7 +120,7 @@ class SocialAuthServiceProvider extends ServiceProvider
         if (! $storeTokens && $remoteRevoke) {
             throw SocialAuthException::invalidConfiguration(
                 'remote_revoke cannot be enabled when store_tokens is disabled. '.
-                'Remote revoke requires stored access tokens. Set SOCIAL_AUTH_STORE_TOKENS=true or SOCIAL_AUTH_REMOTE_REVOKE=false.'
+                'Remote revoke requires stored access tokens. Enable both policies in config/social-auth.php.'
             );
         }
     }

@@ -124,16 +124,9 @@ NAVER_CLIENT_ID=your-naver-client-id
 NAVER_CLIENT_SECRET=your-naver-client-secret
 NAVER_REDIRECT_URI=http://localhost:8000/social-auth/naver/callback
 
-SOCIAL_AUTH_STORE_TOKENS=true
-SOCIAL_AUTH_REMOTE_REVOKE=false
-SOCIAL_AUTH_PROTECT_LAST_LOGIN=true
-SOCIAL_AUTH_EMAIL_POLICY=provider_email_verified
-SOCIAL_AUTH_LOGIN_REDIRECT=/
-SOCIAL_AUTH_CONSENT_REDIRECT=/social-auth/consent
 ```
 
-> **설정 검증**: `store_tokens=false` 이고 `remote_revoke=true` 이면 애플리케이션 부팅 시  
-> `SocialAuthException` 이 발생하여 즉시 실패합니다.
+토큰 저장, provider 원격 revoke, 마지막 로그인 수단 보호, provider 이메일 검증 정책은 패키지의 보안 정책으로 항상 활성화됩니다. 별도의 `SOCIAL_AUTH_*` 환경 변수를 추가할 필요가 없습니다.
 
 ## Provider 콘솔 설정
 
@@ -269,7 +262,7 @@ SocialAuth::generateNonce();
 | email_verified_at       | provider 검증 플래그 따름       |
 | Kakao name              | users.name 자동 매핑 안 함      |
 | 마지막 로그인 수단 해제 | 기본 거부                       |
-| remote revoke           | 기본 비활성 (store_tokens 필요) |
+| remote revoke           | 기본 활성화 (provider별 지원 범위 내에서 시도) |
 
 ## 보안
 
@@ -277,7 +270,7 @@ SocialAuth::generateNonce();
 - Kakao/Naver: CSRF state + 서버 token/profile 검증
 - 토큰 로그 금지, raw 민감 필드 제거
 - session regenerate, rate limit
-- store_tokens=false + remote_revoke=true → 부팅 차단
+- 토큰은 암호화되어 저장되며, 연결 해제 시 provider 원격 revoke를 시도한 뒤 로컬 연결을 삭제
 
 ## 테스트
 

@@ -35,11 +35,8 @@ Validation note: the local PHPUnit, Dusk, Pint, Composer checks, and manual live
 - [x] `social-auth:install` command for config and nullable user-columns migration publishing
 - [x] Optional global Google One Tap component for guest users
 - [x] Move browser integration to a publishable JS asset imported by the host Vite app entry
+- [x] Provider remote revoke adapters for Kakao and Naver
 
 ## Remaining
 
 - None
-
-## Explicitly not started
-
-- Naver remote revoke implementation (adapter boundary exists, `revoke()` currently returns `false`)
