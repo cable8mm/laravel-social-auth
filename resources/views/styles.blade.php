@@ -3,6 +3,7 @@
         display: flex;
         flex-direction: column;
         gap: 0.75rem;
+        margin-inline: auto;
         width: min(100%, 17.5rem);
     }
 
@@ -22,7 +23,8 @@
 
     .social-btn-naver {
         align-items: center;
-        background: #fff;
+        background: #00c73c;
+        border-radius: 0.75rem;
         display: flex;
         justify-content: center;
         overflow: hidden;
@@ -30,11 +32,12 @@
 
     .social-btn-naver #naverIdLogin_loginButton {
         align-items: center;
+        background: #00c73c !important;
         display: flex !important;
         height: 3rem !important;
         justify-content: center;
         max-width: 100%;
-        width: auto !important;
+        width: 100% !important;
     }
 
     .social-btn-naver #naverIdLogin_loginButton img {
