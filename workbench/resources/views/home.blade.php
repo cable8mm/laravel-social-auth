@@ -21,7 +21,7 @@
             <div class="workbench-card__intro">
                 <p class="workbench-kicker">Authentication preview</p>
                 <h2>로그인 방법을 선택하세요</h2>
-                <p>Google, Kakao, Naver 소셜 로그인 흐름을 Workbench에서 확인할 수 있습니다.</p>
+                <p>Google, Kakao, Naver, Apple 소셜 로그인 흐름을 Workbench에서 확인할 수 있습니다.</p>
             </div>
 
             <section aria-label="SNS 로그인 버튼">

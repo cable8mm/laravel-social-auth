@@ -67,6 +67,23 @@ return [
             'name_mapping' => 'name',
             'nickname_mapping' => 'nickname',
         ],
+
+        'apple' => [
+            'enabled' => (bool) env('APPLE_CLIENT_ID')
+                && (bool) env('APPLE_TEAM_ID')
+                && (bool) env('APPLE_KEY_ID')
+                && (bool) env('APPLE_PRIVATE_KEY')
+                && (bool) env('APPLE_REDIRECT_URI'),
+            'client_id' => env('APPLE_CLIENT_ID'),
+            'team_id' => env('APPLE_TEAM_ID'),
+            'key_id' => env('APPLE_KEY_ID'),
+            'private_key' => env('APPLE_PRIVATE_KEY'),
+            'redirect' => env('APPLE_REDIRECT_URI'),
+            'js_sdk_url' => 'https://appleid.cdn-apple.com/appleauth/static/jsapi/appleid/1/en_US/appleid.auth.js',
+            'scopes' => ['name', 'email'],
+            'name_mapping' => 'name',
+            'nickname_mapping' => null,
+        ],
     ],
 
     /*
@@ -74,7 +91,7 @@ return [
     | Button Order
     |--------------------------------------------------------------------------
     */
-    'button_order' => ['naver', 'kakao', 'google'],
+    'button_order' => ['naver', 'kakao', 'google', 'apple'],
 
     /*
     |--------------------------------------------------------------------------

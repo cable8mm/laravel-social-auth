@@ -14,6 +14,7 @@ use Cable8mm\LaravelSocialAuth\Events\SocialUserLoggedIn;
 use Cable8mm\LaravelSocialAuth\Events\SocialUserRegistered;
 use Cable8mm\LaravelSocialAuth\Exceptions\SocialAuthException;
 use Cable8mm\LaravelSocialAuth\Models\SocialAccount;
+use Cable8mm\LaravelSocialAuth\Providers\AppleProvider;
 use Cable8mm\LaravelSocialAuth\Providers\GoogleProvider;
 use Cable8mm\LaravelSocialAuth\Providers\KakaoProvider;
 use Cable8mm\LaravelSocialAuth\Providers\NaverProvider;
@@ -43,6 +44,7 @@ class SocialLoginManager
             'google' => GoogleProvider::class,
             'kakao' => KakaoProvider::class,
             'naver' => NaverProvider::class,
+            'apple' => AppleProvider::class,
         ];
 
         foreach ($map as $name => $class) {

@@ -16,7 +16,8 @@
 
     .social-btn-google,
     .social-btn-kakao,
-    .social-btn-naver {
+    .social-btn-naver,
+    .social-btn-apple {
         min-height: 3rem;
         width: 100%;
     }
@@ -92,5 +93,24 @@
 
     .social-btn-kakao .btn-kakao:active {
         transform: translateY(0);
+    }
+
+    .social-btn-apple .btn-apple {
+        align-items: center;
+        background: #000;
+        border: 0;
+        border-radius: 0.75rem;
+        box-sizing: border-box;
+        color: #fff;
+        cursor: pointer;
+        display: inline-flex;
+        font-family: inherit;
+        font-size: 0.9375rem;
+        font-weight: 700;
+        justify-content: center;
+        line-height: 1.25;
+        min-height: 3rem;
+        padding: 0.75rem 1rem;
+        width: 100%;
     }
 </style>

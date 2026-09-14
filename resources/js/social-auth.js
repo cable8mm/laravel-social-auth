@@ -61,6 +61,32 @@
             });
         },
 
+        async loginApple(context) {
+            if (typeof AppleID === 'undefined' || !AppleID.auth) {
+                console.error('Apple JS SDK not loaded');
+                return;
+            }
+
+            const element = document.querySelector(`[data-provider="apple"][data-context="${context}"]`);
+            if (!element) return;
+
+            const [state, nonce] = await Promise.all([
+                this.fetchState(element),
+                this.fetchNonce(element),
+            ]);
+
+            AppleID.auth.init({
+                clientId: element.dataset.clientId,
+                scope: 'name email',
+                redirectURI: element.dataset.redirectUrl || element.dataset.callbackUrl,
+                state,
+                nonce,
+                usePopup: false,
+            });
+
+            AppleID.auth.signIn();
+        },
+
         initGoogle() {
             const elements = document.querySelectorAll('[data-provider="google"]');
             const element = elements[0];
@@ -132,6 +158,15 @@
                 }
             }, 100);
             setTimeout(() => clearInterval(naverTimer), 5000);
+        }
+
+        if (document.querySelector('[data-provider="apple"]')) {
+            const appleTimer = setInterval(() => {
+                if (typeof AppleID !== 'undefined' && AppleID.auth) {
+                    clearInterval(appleTimer);
+                }
+            }, 100);
+            setTimeout(() => clearInterval(appleTimer), 5000);
         }
     }
 

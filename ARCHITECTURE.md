@@ -11,6 +11,8 @@
 - Kakao JS SDK — browser runtime, app-switch vs web fallback behavior
 - Naver profile API (https://openapi.naver.com/v1/nid/me)
 - Naver JS SDK — browser runtime, app-switch vs web fallback behavior
+- Apple authorization/token/revoke endpoints (https://appleid.apple.com)
+- Sign in with Apple JS SDK — browser runtime and Apple Account authentication
 ```
 
 Any code calling these directly requires a live observation before a corresponding mock may be written (see FRAMEWORK.md MOCK_RULES). Browser-side SDK behavior (app-switch detection, popup vs redirect) is implemented in Blade/JS and cannot be unit tested — it is out of scope for PHPUnit and would need manual/E2E browser verification instead.
@@ -22,10 +24,11 @@ Any code calling these directly requires a live observation before a correspondi
 - `resources/js/social-auth.js` — browser-side provider SDK orchestration, imported by the host application's existing Vite entry.
 - `SocialLoginManager` — orchestration: resolves providers, drives registration/link/unlink flows, owns the "last login method" rule.
 - `ProviderContract` — `key()`, `isEnabled()`, `jsSdkUrl()`, `authenticate(Request): SocialUser`, `revoke(SocialAccount): bool`.
-- `GoogleProvider` / `KakaoProvider` / `NaverProvider` — implement `ProviderContract`, each delegates credential/token verification to its Verifier.
+- `GoogleProvider` / `KakaoProvider` / `NaverProvider` / `AppleProvider` — implement `ProviderContract`, each delegates credential/token verification to its Verifier.
 - `GoogleCredentialVerifier` — JWT signature (via JWKS), issuer, audience, expiry, nonce.
 - `KakaoTokenVerifier` — authorization code -> token exchange, profile fetch.
 - `NaverTokenVerifier` — access token -> profile fetch, resultcode check.
+- `AppleTokenVerifier` — authorization code exchange, client-secret JWT generation, identity-token verification, and revoke.
 - `SocialUser` — normalized, already-sanitized DTO returned by every provider.
 - `PendingSocialRegistration` — session-serializable snapshot of a `SocialUser`, held between callback and consent completion. No `User` row exists until consent succeeds.
 - `SocialAccount` (model) — `social_accounts` table; `access_token` and `refresh_token` use Laravel's `encrypted` cast.
@@ -65,6 +68,7 @@ Reject if `protect_last_login_method` is true and this is the user's only login 
 
 - **Google**: replay protection via a nonce minted server-side and stored in session before the GIS button renders (`ChallengeGenerator::googleNonce`), compared against the JWT's `nonce` claim. This is a distinct mechanism from OAuth `state` — Google's credential flow is not a redirect/code exchange.
 - **Kakao / Naver**: standard OAuth `state` parameter, minted the same way, compared on callback before any token exchange call is made.
+- **Apple**: standard OAuth `state` plus an ID-token `nonce`, both compared on callback before accepting the identity.
 - **Email trust boundary**: Google uses the `email_verified` claim in the JWT. Kakao uses the nested `kakao_account.is_email_verified` and `kakao_account.is_email_valid` flags; local email verification is granted only when both are true. Naver treats email presence in the profile response as sufficient, since Naver does not return unconfirmed emails.
 - **Token storage vs remote revoke**: the published config enables encrypted token storage and remote revoke by default. `ConfigurationValidator` rejects `store_tokens=false` combined with `remote_revoke_enabled=true` if an application changes those policies in its published config.
 - Sensitive tokens are stripped from the `raw` blob before it is passed into `SocialUser` / persisted (see each Provider's `authenticate()`).

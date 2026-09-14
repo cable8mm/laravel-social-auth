@@ -37,6 +37,10 @@ Validation note: the local PHPUnit, Dusk, Pint, Composer checks, and manual live
 - [x] Move browser integration to a publishable JS asset imported by the host Vite app entry
 - [x] Provider remote revoke adapters for Kakao and Naver
 
+## Apple Login
+
+- [ ] Apple Developer Service ID, private key, redirect URI, and live login verification
+
 ## Remaining
 
 - None
