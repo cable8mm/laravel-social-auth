@@ -1,5 +1,14 @@
 # Release Notes
 
+## v0.4.0 - 2026-09-14
+
+### What's Changed
+
+* feat: enhance social authentication flow with intended URL handling and configuration updates by [@cable8mm](https://github.com/cable8mm) in https://github.com/cable8mm/laravel-social-auth/pull/14
+* feat: add Sign in with Apple support by [@cable8mm](https://github.com/cable8mm) in https://github.com/cable8mm/laravel-social-auth/pull/15
+
+**Full Changelog**: https://github.com/cable8mm/laravel-social-auth/compare/v0.3.0...v0.4.0
+
 ## v0.3.0 - 2026-09-14
 
 ### What's Changed
