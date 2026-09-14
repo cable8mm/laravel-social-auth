@@ -3,6 +3,8 @@
 
     Object.assign(window.SocialAuth, {
         googleInitialized: false,
+        appleInitialized: false,
+        appleInitializing: false,
 
         async fetchNonce(element = document.querySelector('[data-provider="google"]')) {
             const url = new URL(element?.dataset.nonceUrl, window.location.origin);
@@ -61,30 +63,59 @@
             });
         },
 
-        async loginApple(context) {
+        async loginNaver(context) {
+            const element = document.querySelector(`[data-provider="naver"][data-context="${context}"]`);
+            if (!element || typeof naver === 'undefined' || !naver.LoginWithNaverId) return;
+
+            const state = await this.fetchState(element);
+            const naverLogin = new naver.LoginWithNaverId({
+                clientId: element.dataset.clientId,
+                callbackUrl: element.dataset.callbackUrl,
+                isPopup: false,
+                loginButton: null,
+            });
+
+            naverLogin.generateState = () => {
+                naverLogin.state = state;
+                return state;
+            };
+
+            naverLogin.init();
+            naverLogin.authorize();
+        },
+
+        async initApple(context) {
             if (typeof AppleID === 'undefined' || !AppleID.auth) {
                 console.error('Apple JS SDK not loaded');
                 return;
             }
 
+            if (this.appleInitialized || this.appleInitializing) return;
+
             const element = document.querySelector(`[data-provider="apple"][data-context="${context}"]`);
             if (!element) return;
 
-            const [state, nonce] = await Promise.all([
-                this.fetchState(element),
-                this.fetchNonce(element),
-            ]);
+            this.appleInitializing = true;
 
-            AppleID.auth.init({
-                clientId: element.dataset.clientId,
-                scope: 'name email',
-                redirectURI: element.dataset.redirectUrl || element.dataset.callbackUrl,
-                state,
-                nonce,
-                usePopup: false,
-            });
+            try {
+                const [state, nonce] = await Promise.all([
+                    this.fetchState(element),
+                    this.fetchNonce(element),
+                ]);
 
-            AppleID.auth.signIn();
+                AppleID.auth.init({
+                    clientId: element.dataset.clientId,
+                    scope: 'name email',
+                    redirectURI: element.dataset.redirectUrl || element.dataset.callbackUrl,
+                    state,
+                    nonce,
+                    usePopup: false,
+                });
+
+                this.appleInitialized = true;
+            } finally {
+                this.appleInitializing = false;
+            }
         },
 
         initGoogle() {
@@ -105,7 +136,18 @@
                 elements.forEach(item => {
                     const target = item.querySelector('.google-gis-button');
                     if (target) {
-                        google.accounts.id.renderButton(target, { theme: 'outline', size: 'large', width: 280 });
+                        const text = item.dataset.context === 'register'
+                            ? 'signup_with'
+                            : item.dataset.context === 'connect'
+                                ? 'continue_with'
+                                : 'signin_with';
+
+                        google.accounts.id.renderButton(target, {
+                            theme: 'outline',
+                            size: 'large',
+                            text,
+                            width: 280,
+                        });
                     }
                 });
 
@@ -115,26 +157,6 @@
             });
         },
 
-        initNaver(context) {
-            const element = document.querySelector(`[data-provider="naver"][data-context="${context}"]`);
-            if (!element || typeof naver === 'undefined') return;
-
-                this.fetchState(element).then(state => {
-                const naverLogin = new naver.LoginWithNaverId({
-                    clientId: element.dataset.clientId,
-                    callbackUrl: element.dataset.callbackUrl,
-                    isPopup: false,
-                    loginButton: { color: 'green', type: 3, height: 48 },
-                });
-
-                naverLogin.generateState = () => {
-                    naverLogin.state = state;
-                    return state;
-                };
-
-                naverLogin.init();
-            });
-        },
     });
 
     function bootSocialAuth() {
@@ -148,22 +170,12 @@
             setTimeout(() => clearInterval(googleTimer), 5000);
         }
 
-        if (document.querySelector('[data-provider="naver"]')) {
-            const naverTimer = setInterval(() => {
-                if (typeof naver !== 'undefined' && naver.LoginWithNaverId) {
-                    clearInterval(naverTimer);
-                    document.querySelectorAll('[data-provider="naver"]').forEach(element => {
-                        window.SocialAuth.initNaver(element.dataset.context);
-                    });
-                }
-            }, 100);
-            setTimeout(() => clearInterval(naverTimer), 5000);
-        }
-
         if (document.querySelector('[data-provider="apple"]')) {
             const appleTimer = setInterval(() => {
                 if (typeof AppleID !== 'undefined' && AppleID.auth) {
                     clearInterval(appleTimer);
+                    const element = document.querySelector('[data-provider="apple"]');
+                    window.SocialAuth.initApple(element.dataset.context);
                 }
             }, 100);
             setTimeout(() => clearInterval(appleTimer), 5000);

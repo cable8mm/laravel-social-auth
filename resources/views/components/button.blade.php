@@ -39,7 +39,6 @@
 
 <div
     class="{{ $buttonClasses }}"
-    @if($provider === 'naver') id="naverIdLogin" @endif
     data-provider="{{ $provider }}"
     data-context="{{ $context }}"
     data-client-id="{{ $clientId }}"
@@ -58,16 +57,37 @@
         @endonce
     @elseif($provider === 'kakao')
         <button type="button" class="btn-kakao" onclick="window.SocialAuth && window.SocialAuth.loginKakao('{{ $context }}')">
-            {{ $label }}로 {{ $context === 'connect' ? '연결' : '로그인' }}
+            <svg class="kakao-symbol" aria-hidden="true" viewBox="0 0 24 24" focusable="false">
+                <path d="M12 3C6.477 3 2 6.582 2 11c0 2.835 1.87 5.32 4.69 6.72L5.5 21l4.04-2.05c.79.16 1.61.25 2.46.25 5.523 0 10-3.582 10-8.2S17.523 3 12 3Z" />
+            </svg>
+            {{ match ($context) {
+                'register' => '카카오로 시작하기',
+                'connect' => '카카오 계정 연결',
+                default => '카카오 로그인',
+            } }}
         </button>
         <script src="{{ $jsSdkUrl }}"></script>
     @elseif($provider === 'naver')
-        <div id="naver-btn-{{ $context }}" class="naver-login-button"></div>
+        <button type="button" class="btn-naver" onclick="window.SocialAuth && window.SocialAuth.loginNaver('{{ $context }}')">
+            <svg class="naver-symbol" aria-hidden="true" viewBox="0 0 24 24" focusable="false">
+                <path d="M4 4h5.5l5 7.1V4H20v16h-5.5l-5-7.1V20H4V4Z" />
+            </svg>
+            <span>{{ match ($context) {
+                'register' => '네이버로 시작하기',
+                'connect' => '네이버 계정 연결',
+                default => '네이버 아이디로 로그인',
+            } }}</span>
+        </button>
         <script src="{{ $jsSdkUrl }}"></script>
     @elseif($provider === 'apple')
-        <button type="button" class="btn-apple" onclick="window.SocialAuth && window.SocialAuth.loginApple('{{ $context }}')">
-            {{ $label }}로 {{ $context === 'connect' ? '연결' : '로그인' }}
-        </button>
+        <div
+            id="appleid-signin"
+            data-color="black"
+            data-border="true"
+            data-type="{{ $context === 'register' ? 'sign-up' : 'sign-in' }}"
+            data-width="100%"
+            data-height="48"
+        ></div>
         <script src="{{ $jsSdkUrl }}"></script>
     @endif
 </div>

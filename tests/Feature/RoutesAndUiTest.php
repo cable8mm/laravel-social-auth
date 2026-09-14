@@ -151,7 +151,9 @@ class RoutesAndUiTest extends TestCase
         ])->render();
 
         $this->assertStringContainsString('data-provider="apple"', $html);
-        $this->assertStringContainsString('window.SocialAuth.loginApple', $html);
+        $this->assertStringContainsString('id="appleid-signin"', $html);
+        $this->assertStringContainsString('data-color="black"', $html);
+        $this->assertStringContainsString('data-type="sign-in"', $html);
         $this->assertStringContainsString('appleid.cdn-apple.com/appleauth', $html);
     }
 
@@ -166,14 +168,44 @@ class RoutesAndUiTest extends TestCase
         $this->assertStringNotContainsString('integrity=', $html);
     }
 
-    public function test_naver_button_uses_the_sdk_mount_point(): void
+    public function test_naver_button_uses_the_package_button_markup(): void
     {
         $html = view('social-auth::components.button', [
             'provider' => 'naver',
             'context' => 'login',
         ])->render();
 
-        $this->assertStringContainsString('id="naverIdLogin"', $html);
+        $this->assertStringContainsString('class="btn-naver"', $html);
+        $this->assertStringContainsString('class="naver-symbol"', $html);
+        $this->assertStringContainsString('<path d="M4 4h5.5l5 7.1V4H20v16h-5.5l-5-7.1V20H4V4Z"', $html);
+        $this->assertStringContainsString('네이버 아이디로 로그인', $html);
+        $this->assertStringNotContainsString('naverIdLogin_loginButton', $html);
+    }
+
+    public function test_register_buttons_use_registration_labels(): void
+    {
+        config([
+            'social-auth.providers.apple.enabled' => true,
+            'social-auth.providers.apple.client_id' => 'com.example.web',
+            'social-auth.providers.apple.js_sdk_url' => 'https://appleid.cdn-apple.com/appleauth/static/jsapi/appleid.auth.js',
+        ]);
+
+        $naver = view('social-auth::components.button', [
+            'provider' => 'naver',
+            'context' => 'register',
+        ])->render();
+        $kakao = view('social-auth::components.button', [
+            'provider' => 'kakao',
+            'context' => 'register',
+        ])->render();
+        $apple = view('social-auth::components.button', [
+            'provider' => 'apple',
+            'context' => 'register',
+        ])->render();
+
+        $this->assertStringContainsString('네이버로 시작하기', $naver);
+        $this->assertStringContainsString('카카오로 시작하기', $kakao);
+        $this->assertStringContainsString('data-type="sign-up"', $apple);
     }
 
     public function test_kakao_button_includes_package_default_styling(): void
@@ -186,6 +218,8 @@ class RoutesAndUiTest extends TestCase
         $this->assertStringContainsString('class="btn-kakao"', $html);
         $this->assertStringContainsString('background: #fee500', $html);
         $this->assertStringContainsString('border-radius: 0.75rem', $html);
+        $this->assertStringContainsString('카카오 로그인', $html);
+        $this->assertStringContainsString('class="kakao-symbol"', $html);
     }
 
     public function test_social_buttons_share_default_dimensions(): void
@@ -194,10 +228,10 @@ class RoutesAndUiTest extends TestCase
 
         $this->assertStringContainsString('max-width: 17.5rem', $html);
         $this->assertStringContainsString('margin-inline: auto', $html);
-        $this->assertStringContainsString('height: 3rem !important', $html);
-        $this->assertStringContainsString('background: #00c73c', $html);
-        $this->assertStringContainsString('object-fit: contain', $html);
-        $this->assertStringContainsString('width: auto !important', $html);
+        $this->assertStringContainsString('min-height: 3rem', $html);
+        $this->assertStringContainsString('background: #03a94d', $html);
+        $this->assertStringContainsString('class="btn-naver"', $html);
+        $this->assertStringContainsString('width: 100%', $html);
     }
 
     public function test_google_one_tap_is_opt_in_for_guests(): void
