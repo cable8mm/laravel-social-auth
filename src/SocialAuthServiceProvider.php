@@ -19,7 +19,7 @@ class SocialAuthServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
-        $this->mergeConfigFrom(__DIR__.'/config/social-auth.php', 'social-auth');
+        $this->mergeConfigFrom(dirname(__DIR__).'/config/social-auth.php', 'social-auth');
 
         $this->app->singleton(SocialAccountService::class);
         $this->app->singleton(RegistrationConsentContract::class, RegistrationConsentService::class);
@@ -75,32 +75,32 @@ class SocialAuthServiceProvider extends ServiceProvider
     {
         $this->validateConfiguration();
 
-        $this->loadRoutesFrom(__DIR__.'/routes/web.php');
-        $this->loadViewsFrom(__DIR__.'/resources/views', 'social-auth');
-        $this->loadMigrationsFrom(__DIR__.'/Database/Migrations');
+        $this->loadRoutesFrom(dirname(__DIR__).'/routes/web.php');
+        $this->loadViewsFrom(dirname(__DIR__).'/resources/views', 'social-auth');
+        $this->loadMigrationsFrom(dirname(__DIR__).'/database/migrations');
 
         if ($this->app->runningInConsole()) {
             $this->publishes([
-                __DIR__.'/config/social-auth.php' => config_path('social-auth.php'),
+                dirname(__DIR__).'/config/social-auth.php' => config_path('social-auth.php'),
             ], 'social-auth-config');
 
             $this->publishes([
-                __DIR__.'/resources/views' => resource_path('views/vendor/social-auth'),
+                dirname(__DIR__).'/resources/views' => resource_path('views/vendor/social-auth'),
             ], 'social-auth-views');
 
             $this->publishes([
-                __DIR__.'/Database/Migrations/2024_01_01_000001_create_social_accounts_table.php' => database_path('migrations/2024_01_01_000001_create_social_accounts_table.php'),
+                dirname(__DIR__).'/database/migrations/2024_01_01_000001_create_social_accounts_table.php' => database_path('migrations/2024_01_01_000001_create_social_accounts_table.php'),
             ], 'social-auth-migrations');
 
             $this->publishes([
-                __DIR__.'/Database/Migrations/stubs/2024_01_01_000002_make_user_credentials_nullable.php' => database_path('migrations/2024_01_01_000002_make_user_credentials_nullable.php'),
+                dirname(__DIR__).'/database/migrations/stubs/2024_01_01_000002_make_user_credentials_nullable.php' => database_path('migrations/2024_01_01_000002_make_user_credentials_nullable.php'),
             ], 'social-auth-user-columns');
         }
 
         Blade::componentNamespace('Cable8mm\\LaravelSocialAuth\\View\\Components', 'social-auth');
 
         // Register anonymous Blade components from package views
-        Blade::anonymousComponentPath(__DIR__.'/resources/views/components', 'social-auth');
+        Blade::anonymousComponentPath(dirname(__DIR__).'/resources/views/components', 'social-auth');
     }
 
     private function validateConfiguration(): void

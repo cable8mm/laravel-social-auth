@@ -31,6 +31,7 @@ class SocialAuthBrowserTest extends DuskTestCase
                 ->check('terms_of_service')
                 ->check('privacy_policy')
                 ->press('동의하고 가입 완료')
+                ->waitForLocation('/')
                 ->assertPathIs('/')
                 ->assertSee('로그인됨: dusk@example.com');
         });
