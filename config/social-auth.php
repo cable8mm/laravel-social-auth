@@ -109,6 +109,7 @@ return [
     |--------------------------------------------------------------------------
     */
     'consent' => [
+        'layout' => 'layouts.app',
         'required_terms' => [
             'terms_of_service' => [
                 'label' => '이용약관',

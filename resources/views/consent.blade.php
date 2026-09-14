@@ -1,25 +1,14 @@
-<!DOCTYPE html>
-<html lang="ko">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>약관 동의</title>
+@extends(config('social-auth.consent.layout', 'layouts.app'))
+
+@section('content')
     <style>
-        :root {
-            color-scheme: light dark;
-            font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-            line-height: 1.5;
-            background: #f5f6f8;
-            color: #17191c;
-        }
-
-        * { box-sizing: border-box; }
-
-        body {
+        .social-auth-consent-page {
             align-items: center;
+            background: #f5f6f8;
             display: flex;
+            font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
             justify-content: center;
-            margin: 0;
+            line-height: 1.5;
             min-height: 100vh;
             padding: 1.5rem 1rem;
         }
@@ -140,7 +129,7 @@
         }
 
         @media (prefers-color-scheme: dark) {
-            :root { background: #111315; color: #f3f4f6; }
+            .social-auth-consent-page { background: #111315; color: #f3f4f6; }
             .social-auth-consent { background: #1b1e22; border-color: #30343a; box-shadow: 0 1rem 3rem rgb(0 0 0 / 22%); }
             .social-auth-consent__eyebrow, .social-auth-consent__intro, .social-auth-consent__badge { color: #a5acb7; }
             .social-auth-consent__error { background: #351b22; border-color: #71303d; color: #fda4af; }
@@ -152,9 +141,8 @@
         @media (max-width: 30rem) {
             .social-auth-consent { border-radius: .75rem; padding: 1.5rem; }
         }
-    </style>
-</head>
-<body>
+</style>
+<div class="social-auth-consent-page">
     <main class="social-auth-consent">
         @php
             $providerLabels = [
@@ -203,5 +191,5 @@
             <button class="social-auth-consent__submit" type="submit">동의하고 가입 완료</button>
         </form>
     </main>
-</body>
-</html>
+</div>
+@endsection

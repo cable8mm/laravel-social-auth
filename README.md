@@ -168,6 +168,8 @@ One Tap은 로그인된 사용자에게는 렌더링되지 않습니다. Google 
 신규 SNS 사용자는 pending 세션 저장 후 `/social-auth/consent` 로 이동합니다.  
 필수 약관 URL은 `config/social-auth.php` 의 `consent` 섹션에서 설정합니다.
 
+기본 동의 화면은 애플리케이션의 `layouts.app` 레이아웃을 사용합니다. 다른 레이아웃을 사용하는 경우 `config/social-auth.php`의 `consent.layout` 값을 변경하세요. 패키지 화면을 직접 수정하려면 `social-auth-views` 태그로 views를 publish할 수 있습니다.
+
 ### 프로필 연결/해제
 
 ```blade

@@ -46,6 +46,8 @@ class RoutesAndUiTest extends TestCase
         $response->assertSee('social-auth-consent');
         $response->assertSee('social-auth-consent__submit');
         $response->assertSee('social-auth-term-terms_of_service');
+        $response->assertSee('<!DOCTYPE html>', false);
+        $response->assertSee('Laravel Social Auth', false);
     }
 
     public function test_callback_invalid_state(): void
