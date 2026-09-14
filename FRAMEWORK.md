@@ -62,6 +62,7 @@ PSR-4 root: `Cable8mm\SocialAuth\` -> `src/`. Test namespace: `Cable8mm\SocialAu
 - Google credential verification is tested by generating a throwaway RSA keypair with `openssl_pkey_new()` at test time (`tests/Support/GeneratesGoogleTokens.php`), signing a real JWT with `firebase/php-jwt`, and serving a matching JWKS via `Http::fake()`. This avoids contacting Google while still exercising the real signature-verification code path.
 - Every EXTERNAL_BOUNDARY-touching class (`GoogleCredentialVerifier`, `KakaoTokenVerifier`, `NaverTokenVerifier`, and the Providers that wrap them) has unit/feature coverage today, but none of it is a substitute for the E2E-against-a-live-boundary step AGENTS.md requires — see TASKS.md.
 - `KakaoAccountStatusWebhookVerifier` has documented-schema coverage today, but live signed SET delivery still requires a public HTTPS endpoint and Kakao's webhook test tool — see TASKS.md.
+- `GoogleRiscWebhookVerifier` has documented-schema coverage today, but live signed SET delivery still requires Google Cloud RISC stream registration and a public HTTPS endpoint — see TASKS.md.
 - Run the suite with `vendor/bin/phpunit` (suites are split `Unit` / `Feature` in `phpunit.xml.dist`).
 
 ## Configuration validation

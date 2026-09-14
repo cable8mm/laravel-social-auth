@@ -4,6 +4,7 @@
 
 ```text
 - Google JWKS endpoint (https://www.googleapis.com/oauth2/v3/certs) — public key fetch for credential JWT verification
+- Google RISC endpoint and SET delivery — Cross-Account Protection security event notifications
 - Google Identity Services JS SDK — browser runtime, issues the credential JWT
 - Kakao OAuth token endpoint (https://kauth.kakao.com/oauth/token)
 - Kakao user profile API (https://kapi.kakao.com/v2/user/me)
@@ -45,6 +46,7 @@ Any code calling these directly requires a live observation before a correspondi
 - `SocialRegistrationController` — consent screen and registration completion; thin, delegates to `SocialLoginManager`.
 - `SocialLinkController` — authenticated connect/disconnect endpoints; thin, delegates to `SocialLoginManager`.
 - `SocialWebhookController` — verifies Kakao account-status SET payloads and applies safe default token/connection cleanup.
+- `GoogleRiscWebhookVerifier` — verifies Google RISC SET signatures, issuer, audience, and event structure.
 - `NaverDisconnectCallbackVerifier` — verifies the client ID, HMAC signature, and decrypts Naver's AES-128-CBC user identifier.
 
 ## Data model
@@ -71,6 +73,7 @@ Reject if `protect_last_login_method` is true and this is the user's only login 
 ## Security architecture
 
 - **Google**: replay protection via a nonce minted server-side and stored in session before the GIS button renders (`ChallengeGenerator::googleNonce`), compared against the JWT's `nonce` claim. This is a distinct mechanism from OAuth `state` — Google's credential flow is not a redirect/code exchange.
+- **Google RISC**: verifies signed historical security event tokens with Google's JWKS, issuer, and the configured Google client ID as audience. The package dispatches events; application listeners own session termination and account protection.
 - **Kakao / Naver**: standard OAuth `state` parameter, minted the same way, compared on callback before any token exchange call is made.
 - **Kakao account status webhook**: verifies SET RS256 signature with Kakao JWKS, issuer, audience, and event structure before dispatching or mutating a local social account.
 - **Naver disconnect callback**: verifies the client ID and HMAC-SHA256 signature before decrypting the AES-128-CBC user identifier and removing its local social account.

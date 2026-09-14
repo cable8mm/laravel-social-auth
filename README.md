@@ -168,6 +168,16 @@ APPLE_REDIRECT_URI=http://localhost:8000/social-auth/apple/callback
 2. 승인된 JavaScript 원본에 앱 도메인 추가
 3. GIS 버튼 렌더링 전 `/social-auth/nonce` 에서 nonce를 받아 세션 저장 후 JWT `nonce` claim 비교 (replay 방지)
 
+#### Google RISC 이벤트 수신
+
+Google Cloud에서 RISC API와 Cross-Account Protection을 설정한 뒤 다음 endpoint를 이벤트 수신 URL로 등록합니다.
+
+```text
+https://your-domain.com/social-auth/google/events
+```
+
+패키지는 Google이 전송한 RISC SET JWT의 서명, issuer, audience, 이벤트 구조를 검증하고 `SocialAccountStatusChanged` 이벤트를 dispatch합니다. `sessions-revoked`, `tokens-revoked`, `account-disabled` 등의 실제 세션 종료나 계정 보호 정책은 애플리케이션 listener에서 처리하세요. 이 endpoint 등록에는 Service Account가 필요하지만, Service Account private key를 애플리케이션 사용자에게 공개하거나 저장소에 커밋하면 안 됩니다. [Google Cross-Account Protection](https://developers.google.com/identity/protocols/risc)
+
 ### Kakao
 
 1. Kakao Developers 앱 등록, Web 도메인 / Redirect URI 등록

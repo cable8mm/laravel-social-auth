@@ -7,6 +7,7 @@ namespace Cable8mm\LaravelSocialAuth\Http\Controllers\SocialAuth;
 use Cable8mm\LaravelSocialAuth\Events\SocialAccountStatusChanged;
 use Cable8mm\LaravelSocialAuth\Exceptions\SocialAuthException;
 use Cable8mm\LaravelSocialAuth\Services\SocialAccountService;
+use Cable8mm\LaravelSocialAuth\Verifiers\GoogleRiscWebhookVerifier;
 use Cable8mm\LaravelSocialAuth\Verifiers\KakaoAccountStatusWebhookVerifier;
 use Cable8mm\LaravelSocialAuth\Verifiers\NaverDisconnectCallbackVerifier;
 use Illuminate\Http\JsonResponse;
@@ -68,6 +69,36 @@ class SocialWebhookController extends Controller
             return response()->json([
                 'err' => 'invalid_request',
                 'description' => 'The webhook payload could not be verified.',
+            ], 400);
+        }
+    }
+
+    public function googleRisc(Request $request): JsonResponse
+    {
+        try {
+            $claims = (new GoogleRiscWebhookVerifier(
+                (string) config('social-auth.providers.google.client_id'),
+            ))->verify($request->getContent());
+
+            foreach ($claims['events'] as $eventType => $event) {
+                if (! is_array($event)) {
+                    continue;
+                }
+
+                $providerId = $this->providerId($event);
+                event(new SocialAccountStatusChanged(
+                    provider: 'google',
+                    providerId: $providerId,
+                    eventType: (string) $eventType,
+                    eventPayload: $this->eventPayload($event),
+                ));
+            }
+
+            return response()->json(null, 202);
+        } catch (SocialAuthException) {
+            return response()->json([
+                'err' => 'invalid_request',
+                'description' => 'The RISC payload could not be verified.',
             ], 400);
         }
     }
