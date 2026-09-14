@@ -16,6 +16,8 @@ abstract class TestCase extends Orchestra
     {
         parent::setUp();
 
+        $this->app['view']->addLocation(__DIR__.'/Fixtures/views');
+
         $this->setUpDatabase();
     }
 
