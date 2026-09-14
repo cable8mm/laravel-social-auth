@@ -1,5 +1,13 @@
 # Release Notes
 
+## v0.3.0 - 2026-09-14
+
+### What's Changed
+
+* feat(workbench): integrate Vite for asset management by [@cable8mm](https://github.com/cable8mm) in https://github.com/cable8mm/laravel-social-auth/pull/13
+
+**Full Changelog**: https://github.com/cable8mm/laravel-social-auth/compare/v0.2.1...v0.3.0
+
 ## v0.2.1 - 2026-09-14
 
 ### What's Changed
