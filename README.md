@@ -97,6 +97,7 @@ $table->string('nickname')->nullable(); // 선택
 
 ```env
 GOOGLE_CLIENT_ID=your-google-client-id.apps.googleusercontent.com
+GOOGLE_ONE_TAP=false
 
 KAKAO_JAVASCRIPT_KEY=your-kakao-javascript-key
 KAKAO_REST_API_KEY=your-kakao-rest-api-key
@@ -147,6 +148,20 @@ SOCIAL_AUTH_CONSENT_REDIRECT=/social-auth/consent
 <x-social-auth::buttons context="login" />
 @include('social-auth::scripts')
 ```
+
+### Google One Tap
+
+Google One Tap을 로그인하지 않은 사용자의 모든 화면에서 시도하려면 `.env`에서 활성화하고 공통 layout에 컴포넌트를 한 번 추가합니다.
+
+```env
+GOOGLE_ONE_TAP=true
+```
+
+```blade
+<x-social-auth::one-tap />
+```
+
+One Tap은 로그인된 사용자에게는 렌더링되지 않습니다. Google 계정 세션, 브라우저 설정, 이전에 닫은 기록, 도메인 보안 조건에 따라 Google이 프롬프트를 표시하지 않을 수 있습니다. 기존 Google 로그인 버튼은 계속 fallback으로 사용할 수 있습니다.
 
 ### 약관 동의
 

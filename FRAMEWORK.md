@@ -41,7 +41,7 @@ config/social-auth.php
 routes/web.php
 database/migrations/            (social_accounts — auto-loaded)
 database/migrations/stubs/      (users nullable-columns stub — publish-only, never auto-run)
-resources/views/                (buttons, consent, connected-accounts blade partials)
+resources/views/                (buttons, one-tap, consent, connected-accounts blade partials)
 tests/Unit/, tests/Feature/
 ```
 

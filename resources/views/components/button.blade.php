@@ -49,7 +49,9 @@
     @if($provider === 'google')
         {{-- Google GIS button is rendered by JS --}}
         <div id="google-btn-{{ $context }}" class="google-gis-button"></div>
-        <script src="{{ $jsSdkUrl }}" async defer></script>
+        @once
+            <script src="{{ $jsSdkUrl }}" async defer></script>
+        @endonce
     @elseif($provider === 'kakao')
         <button type="button" class="btn-kakao" onclick="window.SocialAuth && window.SocialAuth.loginKakao('{{ $context }}')">
             {{ $label }}로 {{ $context === 'connect' ? '연결' : '로그인' }}

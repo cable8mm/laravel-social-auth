@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Cable8mm\LaravelSocialAuth\Tests\Feature;
 
+use Cable8mm\LaravelSocialAuth\Tests\Fixtures\User;
 use Cable8mm\LaravelSocialAuth\Tests\TestCase;
 use Illuminate\Support\Facades\Session;
 
@@ -152,5 +153,34 @@ class RoutesAndUiTest extends TestCase
         $this->assertStringContainsString('background: #00c73c', $html);
         $this->assertStringContainsString('object-fit: contain', $html);
         $this->assertStringContainsString('width: auto !important', $html);
+    }
+
+    public function test_google_one_tap_is_opt_in_for_guests(): void
+    {
+        config(['social-auth.providers.google.one_tap' => true]);
+
+        $html = view('social-auth::components.one-tap')->render();
+
+        $this->assertStringContainsString('data-google-one-tap', $html);
+        $this->assertStringContainsString('google.accounts.id.prompt()', $html);
+    }
+
+    public function test_google_one_tap_is_hidden_when_disabled_or_authenticated(): void
+    {
+        $this->assertStringNotContainsString(
+            'data-google-one-tap',
+            view('social-auth::components.one-tap')->render()
+        );
+
+        config(['social-auth.providers.google.one_tap' => true]);
+        $this->actingAs(new User([
+            'id' => 1,
+            'email' => 'signed-in@example.com',
+        ]));
+
+        $this->assertStringNotContainsString(
+            'data-google-one-tap',
+            view('social-auth::components.one-tap')->render()
+        );
     }
 }
