@@ -1,5 +1,14 @@
 # Release Notes
 
+## v0.2.1 - 2026-09-14
+
+### What's Changed
+
+* style: enhance consent page ui by [@cable8mm](https://github.com/cable8mm) in https://github.com/cable8mm/laravel-social-auth/pull/11
+* feat: add MIT License to the project by [@cable8mm](https://github.com/cable8mm) in https://github.com/cable8mm/laravel-social-auth/pull/12
+
+**Full Changelog**: https://github.com/cable8mm/laravel-social-auth/compare/v0.2.0...v0.2.1
+
 ## v0.2.0 - 2026-09-14
 
 ### What's Changed
