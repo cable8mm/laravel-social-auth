@@ -198,6 +198,13 @@ https://your-domain.com/social-auth/kakao/events
 
 1. Naver Developers 애플리케이션 등록
 2. Callback URL 등록, Client ID / Secret 설정
+3. `API 설정 > 연결끊기 Callback URL`에 다음 주소 등록
+
+```text
+https://your-domain.com/social-auth/naver/deauthorize
+```
+
+Naver가 사용자의 서비스 동의 철회 또는 Naver 회원 탈퇴를 알리면 패키지가 HMAC 서명과 암호화된 이용자 고유 ID를 검증한 뒤 해당 Naver SNS 연결만 제거하고 `204 No Content`를 반환합니다. 로컬 `users` 삭제는 자동으로 수행하지 않습니다.
 
 ### Apple
 

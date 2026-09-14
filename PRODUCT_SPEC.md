@@ -25,6 +25,7 @@ Google, Kakao, Naver 로그인을 하나의 Laravel 패키지에서 통합 관�
 - Naver JavaScript SDK 사용, 가능한 모바일 환경에서 네이버 앱 인증 시도, 그 외 웹 로그인 fallback
 - 이메일이 응답에 있으면 로컬 email 인증 완료로 처리, 없으면 로컬 email은 null
 - 이름과 닉네임 매핑은 설정 가능해야 함
+- Naver 연결 끊기 Callback을 검증하고 외부 연결 해제 시 로컬 Naver SNS 연결만 제거함. 로컬 사용자 삭제는 애플리케이션 정책으로 남김
 
 ### Apple
 

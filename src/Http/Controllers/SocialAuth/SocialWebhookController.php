@@ -8,9 +8,11 @@ use Cable8mm\LaravelSocialAuth\Events\SocialAccountStatusChanged;
 use Cable8mm\LaravelSocialAuth\Exceptions\SocialAuthException;
 use Cable8mm\LaravelSocialAuth\Services\SocialAccountService;
 use Cable8mm\LaravelSocialAuth\Verifiers\KakaoAccountStatusWebhookVerifier;
+use Cable8mm\LaravelSocialAuth\Verifiers\NaverDisconnectCallbackVerifier;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
+use Symfony\Component\HttpFoundation\Response;
 
 class SocialWebhookController extends Controller
 {
@@ -67,6 +69,36 @@ class SocialWebhookController extends Controller
                 'err' => 'invalid_request',
                 'description' => 'The webhook payload could not be verified.',
             ], 400);
+        }
+    }
+
+    public function naverDisconnect(Request $request): Response
+    {
+        try {
+            $providerId = (new NaverDisconnectCallbackVerifier(
+                (string) config('social-auth.providers.naver.client_id'),
+                (string) config('social-auth.providers.naver.client_secret'),
+            ))->verify(
+                $request->input('clientId'),
+                $request->input('encryptUniqueId'),
+                $request->input('timestamp'),
+                $request->input('signature'),
+            );
+
+            $account = $this->accountService->findByProvider('naver', $providerId);
+            if ($account !== null) {
+                event(new SocialAccountStatusChanged(
+                    provider: 'naver',
+                    providerId: $providerId,
+                    eventType: 'connection-revoked',
+                    eventPayload: [],
+                ));
+                $this->accountService->delete($account);
+            }
+
+            return response()->noContent();
+        } catch (SocialAuthException) {
+            return response()->json(['error' => 'invalid_request'], 400);
         }
     }
 

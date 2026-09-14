@@ -39,4 +39,6 @@ Route::prefix($prefix)
     ->group(function () {
         Route::post('kakao/events', [SocialWebhookController::class, 'kakaoAccountStatus'])
             ->name('social-auth.webhooks.kakao');
+        Route::post('naver/deauthorize', [SocialWebhookController::class, 'naverDisconnect'])
+            ->name('social-auth.webhooks.naver');
     });

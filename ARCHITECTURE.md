@@ -11,6 +11,7 @@
 - Kakao account status webhook and JWKS (https://kauth.kakao.com/.well-known/jwks.json)
 - Kakao JS SDK — browser runtime, app-switch vs web fallback behavior
 - Naver profile API (https://openapi.naver.com/v1/nid/me)
+- Naver disconnect callback (encrypted user ID + HMAC-SHA256)
 - Naver JS SDK — browser runtime, app-switch vs web fallback behavior
 - Apple authorization/token/revoke endpoints (https://appleid.apple.com)
 - Sign in with Apple JS SDK — browser runtime and Apple Account authentication
@@ -44,6 +45,7 @@ Any code calling these directly requires a live observation before a correspondi
 - `SocialRegistrationController` — consent screen and registration completion; thin, delegates to `SocialLoginManager`.
 - `SocialLinkController` — authenticated connect/disconnect endpoints; thin, delegates to `SocialLoginManager`.
 - `SocialWebhookController` — verifies Kakao account-status SET payloads and applies safe default token/connection cleanup.
+- `NaverDisconnectCallbackVerifier` — verifies the client ID, HMAC signature, and decrypts Naver's AES-128-CBC user identifier.
 
 ## Data model
 
@@ -71,6 +73,7 @@ Reject if `protect_last_login_method` is true and this is the user's only login 
 - **Google**: replay protection via a nonce minted server-side and stored in session before the GIS button renders (`ChallengeGenerator::googleNonce`), compared against the JWT's `nonce` claim. This is a distinct mechanism from OAuth `state` — Google's credential flow is not a redirect/code exchange.
 - **Kakao / Naver**: standard OAuth `state` parameter, minted the same way, compared on callback before any token exchange call is made.
 - **Kakao account status webhook**: verifies SET RS256 signature with Kakao JWKS, issuer, audience, and event structure before dispatching or mutating a local social account.
+- **Naver disconnect callback**: verifies the client ID and HMAC-SHA256 signature before decrypting the AES-128-CBC user identifier and removing its local social account.
 - **Apple**: standard OAuth `state` plus an ID-token `nonce`, both compared on callback before accepting the identity.
 - **Email trust boundary**: Google uses the `email_verified` claim in the JWT. Kakao uses the nested `kakao_account.is_email_verified` and `kakao_account.is_email_valid` flags; local email verification is granted only when both are true. Naver treats email presence in the profile response as sufficient, since Naver does not return unconfirmed emails.
 - **Token storage vs remote revoke**: the published config enables encrypted token storage and remote revoke by default. `ConfigurationValidator` rejects `store_tokens=false` combined with `remote_revoke_enabled=true` if an application changes those policies in its published config.

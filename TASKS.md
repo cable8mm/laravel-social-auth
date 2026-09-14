@@ -37,6 +37,7 @@ Validation note: the local PHPUnit, Dusk, Pint, Composer checks, and manual live
 - [x] Move browser integration to a publishable JS asset imported by the host Vite app entry
 - [x] Provider remote revoke adapters for Kakao and Naver
 - [x] Kakao account status webhook implementation: SET verification, token/connection cleanup, Laravel event, and README guidance
+- [x] Naver disconnect callback: HMAC/AES verification, local connection cleanup, and README guidance
 
 ## Apple Login
 
@@ -45,3 +46,4 @@ Validation note: the local PHPUnit, Dusk, Pint, Composer checks, and manual live
 ## Remaining
 
 - [ ] Verify the Kakao account status webhook against the live Kakao webhook test tool using a public HTTPS endpoint
+- [ ] Verify the Naver disconnect callback against Naver's live callback delivery using a public HTTPS endpoint
