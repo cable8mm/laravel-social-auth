@@ -18,13 +18,17 @@ class SocialLoginController extends Controller
         private readonly SocialLoginManager $manager,
     ) {}
 
-    public function nonce(): JsonResponse
+    public function nonce(Request $request): JsonResponse
     {
+        $this->manager->rememberIntendedUrl($request->query('redirect'));
+
         return response()->json(['nonce' => $this->manager->generateNonce()]);
     }
 
-    public function state(): JsonResponse
+    public function state(Request $request): JsonResponse
     {
+        $this->manager->rememberIntendedUrl($request->query('redirect'));
+
         return response()->json(['state' => $this->manager->generateState()]);
     }
 

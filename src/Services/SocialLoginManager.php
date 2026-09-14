@@ -115,7 +115,7 @@ class SocialLoginManager
             return [
                 'status' => 'logged_in',
                 'user' => $user,
-                'redirect' => config('social-auth.redirects.login_success', '/'),
+                'redirect' => $this->consumeIntendedUrl(),
             ];
         }
 
@@ -166,8 +166,56 @@ class SocialLoginManager
             'status' => 'registered',
             'user' => $user,
             'social_account' => $account,
-            'redirect' => config('social-auth.redirects.login_success', '/'),
+            'redirect' => $this->consumeIntendedUrl(),
         ];
+    }
+
+    /**
+     * Remember the page from which social authentication was started.
+     */
+    public function rememberIntendedUrl(?string $url): void
+    {
+        $middlewareUrl = Session::get('url.intended');
+        if (is_string($middlewareUrl) && $middlewareUrl !== '') {
+            $url = $middlewareUrl;
+        }
+
+        if (! is_string($url) || $url === '') {
+            return;
+        }
+
+        $parsed = parse_url($url);
+        if (isset($parsed['host'])) {
+            if ($parsed['host'] !== request()->getHost()) {
+                return;
+            }
+
+            $url = ($parsed['path'] ?? '/')
+                .(isset($parsed['query']) ? '?'.$parsed['query'] : '')
+                .(isset($parsed['fragment']) ? '#'.$parsed['fragment'] : '');
+        }
+
+        if (! str_starts_with($url, '/') || str_starts_with($url, '//')) {
+            return;
+        }
+
+        Session::put(
+            config('social-auth.session.intended', 'social_auth.intended'),
+            $url,
+        );
+    }
+
+    /**
+     * Consume the intended URL after successful login or registration.
+     */
+    public function consumeIntendedUrl(): string
+    {
+        $url = Session::pull(config('social-auth.session.intended', 'social_auth.intended'))
+            ?? Session::pull('url.intended');
+
+        return is_string($url) && $url !== ''
+            ? $url
+            : config('social-auth.redirects.login_success', '/');
     }
 
     /**

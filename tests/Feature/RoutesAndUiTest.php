@@ -25,6 +25,28 @@ class RoutesAndUiTest extends TestCase
         $response->assertJsonStructure(['state']);
     }
 
+    public function test_nonce_endpoint_remembers_the_login_origin(): void
+    {
+        $response = $this->getJson(route('social-auth.nonce', [
+            'redirect' => '/settings?tab=security',
+        ]));
+
+        $response->assertOk();
+        $this->assertSame(
+            '/settings?tab=security',
+            session(config('social-auth.session.intended')),
+        );
+    }
+
+    public function test_nonce_endpoint_rejects_external_login_origin(): void
+    {
+        $this->getJson(route('social-auth.nonce', [
+            'redirect' => 'https://attacker.test/account',
+        ]))->assertOk();
+
+        $this->assertNull(session(config('social-auth.session.intended')));
+    }
+
     public function test_consent_page_requires_pending(): void
     {
         $response = $this->get(route('social-auth.consent'));

@@ -69,6 +69,7 @@ class SocialLoginFlowTest extends TestCase
     public function test_consent_then_create_user(): void
     {
         Event::fake();
+        Session::put(config('social-auth.session.intended'), '/dashboard');
 
         $manager = $this->app->make(SocialLoginManager::class);
 
@@ -91,6 +92,7 @@ class SocialLoginFlowTest extends TestCase
         ]);
 
         $this->assertSame('registered', $result['status']);
+        $this->assertSame('/dashboard', $result['redirect']);
         $user = $result['user'];
         $this->assertInstanceOf(User::class, $user);
         $this->assertSame('verified@kakao.com', $user->email);

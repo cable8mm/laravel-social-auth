@@ -45,6 +45,7 @@
     data-connect-url="{{ $context === 'connect' ? route('social-auth.connect', $provider) : '' }}"
     data-nonce-url="{{ route('social-auth.nonce') }}"
     data-state-url="{{ route('social-auth.state') }}"
+    data-intended-url="{{ url()->current() }}"
 >
     @if($provider === 'google')
         {{-- Google GIS button is rendered by JS --}}

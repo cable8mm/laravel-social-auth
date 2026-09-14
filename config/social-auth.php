@@ -96,8 +96,8 @@ return [
     |--------------------------------------------------------------------------
     */
     'redirects' => [
-        'login_success' => env('SOCIAL_AUTH_LOGIN_REDIRECT', '/'),
-        'registration_consent' => env('SOCIAL_AUTH_CONSENT_REDIRECT', '/social-auth/consent'),
+        'login_success' => '/',
+        'registration_consent' => '/social-auth/consent',
         'connect_success' => env('SOCIAL_AUTH_CONNECT_REDIRECT', '/profile'),
         'disconnect_success' => env('SOCIAL_AUTH_DISCONNECT_REDIRECT', '/profile'),
         'failure' => env('SOCIAL_AUTH_FAILURE_REDIRECT', '/login'),
@@ -141,7 +141,7 @@ return [
     | never_verified: always leave email_verified_at null
     |
     */
-    'email_verification_policy' => env('SOCIAL_AUTH_EMAIL_POLICY', 'provider_email_verified'),
+    'email_verification_policy' => 'provider_email_verified',
 
     /*
     |--------------------------------------------------------------------------
@@ -162,7 +162,7 @@ return [
     | Token Storage
     |--------------------------------------------------------------------------
     */
-    'store_tokens' => env('SOCIAL_AUTH_STORE_TOKENS', true),
+    'store_tokens' => true,
 
     /*
     |--------------------------------------------------------------------------
@@ -173,14 +173,14 @@ return [
     | Requires store_tokens = true. Invalid combination is blocked at boot.
     |
     */
-    'remote_revoke' => env('SOCIAL_AUTH_REMOTE_REVOKE', false),
+    'remote_revoke' => true,
 
     /*
     |--------------------------------------------------------------------------
     | Protect Last Login Method
     |--------------------------------------------------------------------------
     */
-    'protect_last_login_method' => env('SOCIAL_AUTH_PROTECT_LAST_LOGIN', true),
+    'protect_last_login_method' => true,
 
     /*
     |--------------------------------------------------------------------------

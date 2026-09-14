@@ -50,7 +50,7 @@ abstract class TestCase extends Orchestra
         $app['config']->set('social-auth.providers.naver.client_id', 'test-naver-client-id');
         $app['config']->set('social-auth.providers.naver.client_secret', 'test-naver-secret');
         $app['config']->set('social-auth.store_tokens', true);
-        $app['config']->set('social-auth.remote_revoke', false);
+        $app['config']->set('social-auth.remote_revoke', true);
         $app['config']->set('social-auth.protect_last_login_method', true);
         $app['config']->set('social-auth.button_order', ['naver', 'kakao', 'google']);
     }
