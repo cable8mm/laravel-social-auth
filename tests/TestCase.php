@@ -67,7 +67,7 @@ abstract class TestCase extends Orchestra
         });
 
         // Run package migration
-        $migration = require __DIR__.'/../src/Database/Migrations/2024_01_01_000001_create_social_accounts_table.php';
+        $migration = require __DIR__.'/../database/migrations/2024_01_01_000001_create_social_accounts_table.php';
         $migration->up();
     }
 }

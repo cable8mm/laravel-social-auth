@@ -17,7 +17,7 @@ class UserColumnsMigrationTest extends TestCase
             $table->string('password')->nullable(false)->change();
         });
 
-        $migration = require __DIR__.'/../../src/Database/Migrations/stubs/2024_01_01_000002_make_user_credentials_nullable.php';
+        $migration = require __DIR__.'/../../database/migrations/stubs/2024_01_01_000002_make_user_credentials_nullable.php';
         $migration->up();
 
         $columns = collect(Schema::getColumns('users'))->keyBy('name');
