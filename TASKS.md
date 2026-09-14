@@ -32,6 +32,7 @@ Validation note: the local PHPUnit, Dusk, Pint, Composer checks, and manual live
 - [x] Publishable migration for nullable user email and password columns
 - [x] Register real apps in the Google / Kakao / Naver developer consoles, set redirect URIs, fill `.env`
 - [x] Manual live-boundary login verification for Google, Kakao, and Naver
+- [x] `social-auth:install` command for config and nullable user-columns migration publishing
 
 ## Remaining
 

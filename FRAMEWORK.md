@@ -22,6 +22,7 @@
 ```text
 src/
   SocialAuthServiceProvider.php
+  Console/InstallCommand.php
   SocialLoginManager.php
   Contracts/        ProviderContract, RegistrationConsentContract, NicknameGeneratorContract
   Support/           SocialUser, PendingSocialRegistration, ChallengeGenerator,

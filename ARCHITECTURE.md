@@ -17,7 +17,8 @@ Any code calling these directly requires a live observation before a correspondi
 
 ## Components
 
-- `SocialAuthServiceProvider` — registers bindings, validates config at boot (`ConfigurationValidator`), publishes config/views/migrations, loads routes.
+- `SocialAuthServiceProvider` — registers bindings and `social-auth:install`, validates config at boot (`ConfigurationValidator`), publishes config/views/migrations, loads routes.
+- `InstallCommand` — publishes the package config and a timestamped nullable user-columns migration; it does not run application migrations.
 - `SocialLoginManager` — orchestration: resolves providers, drives registration/link/unlink flows, owns the "last login method" rule.
 - `ProviderContract` — `key()`, `isEnabled()`, `jsSdkUrl()`, `authenticate(Request): SocialUser`, `revoke(SocialAccount): bool`.
 - `GoogleProvider` / `KakaoProvider` / `NaverProvider` — implement `ProviderContract`, each delegates credential/token verification to its Verifier.
