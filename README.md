@@ -176,6 +176,24 @@ APPLE_REDIRECT_URI=http://localhost:8000/social-auth/apple/callback
 4. `http://localhost:8000/social-auth/kakao/callback`을 JavaScript 키와 REST API 키의 redirect URI로 등록
 5. 동의 항목: 닉네임, 이메일(선택)
 
+#### Kakao 계정 상태 변경 웹훅
+
+Kakao Developers의 `카카오 로그인 > 웹훅 > 계정 상태 변경 웹훅`에 다음 URL을 등록합니다.
+
+```text
+https://your-domain.com/social-auth/kakao/events
+```
+
+패키지는 Kakao가 전송한 SET(Security Event Token)을 Kakao JWKS로 검증합니다. 검증에 성공하면 `202 Accepted`를 반환하고, 다음 기본 동작을 수행합니다.
+
+- `tokens-revoked`, `sessions-revoked`: 해당 `social_accounts`의 access/refresh token 제거
+- `account-purged`: 해당 Kakao SNS 연결만 제거
+- 모든 유효 이벤트: `SocialAccountStatusChanged` 이벤트 dispatch
+
+로컬 `users` 삭제나 모든 로그인 세션 종료는 애플리케이션별 정책이 필요하므로 자동으로 수행하지 않습니다. 필요한 경우 이벤트 listener에서 처리하세요. Kakao 계정 상태 변경 웹훅은 `application/secevent+jwt` 요청을 사용하며, 패키지의 웹훅 경로에는 CSRF middleware를 적용하지 않습니다.
+
+개발 중에는 `localhost`를 Kakao가 호출할 수 없으므로 터널 또는 배포된 공개 HTTPS 주소를 사용하고, Kakao Developers의 웹훅 테스트 도구에서 `계정 상태 변경` 이벤트를 전송해 확인하세요.
+
 ### Naver
 
 1. Naver Developers 애플리케이션 등록

@@ -18,6 +18,7 @@ Google, Kakao, Naver 로그인을 하나의 Laravel 패키지에서 통합 관�
 - 이메일이 제공되지 않으면 로컬 email은 null
 - 이메일이 제공되고 Kakao의 `kakao_account.is_email_verified`와 `kakao_account.is_email_valid`가 모두 true인 경우에만 로컬 이메일 인증 완료로 처리
 - Kakao 닉네임을 자동으로 users.name에 넣지 않음. 로컬 nickname은 패키지 설정의 nickname generator 사용
+- Kakao 계정 상태 변경 웹훅을 검증하고, 토큰 철회 이벤트에서는 로컬 토큰을 제거하며, 계정 탈퇴 이벤트에서는 SNS 연결만 제거함. 로컬 사용자 삭제와 전체 세션 종료는 애플리케이션 정책으로 남김
 
 ### Naver
 

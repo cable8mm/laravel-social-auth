@@ -101,10 +101,17 @@ return [
     'routes' => [
         'prefix' => 'social-auth',
         'middleware' => ['web'],
+        'webhook_middleware' => [],
         'callback' => '{provider}/callback',
         'consent' => 'consent',
         'connect' => '{provider}/connect',
         'disconnect' => '{provider}/disconnect',
+    ],
+
+    'webhooks' => [
+        'kakao' => [
+            'jwks_url' => 'https://kauth.kakao.com/.well-known/jwks.json',
+        ],
     ],
 
     /*
