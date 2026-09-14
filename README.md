@@ -10,6 +10,8 @@
 Laravel SNS 인증 패키지 (Google GIS · Kakao JS SDK · Naver JS SDK).  
 **Socialite를 사용하지 않습니다.** 서버에서 credential/token을 직접 검증합니다.
 
+![workbench](docs/assets/workbench.png)
+
 ## 요구사항
 
 - PHP 8.3+
