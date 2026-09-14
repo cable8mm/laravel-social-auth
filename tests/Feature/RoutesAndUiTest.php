@@ -167,7 +167,8 @@ class RoutesAndUiTest extends TestCase
         $html = view('social-auth::components.one-tap')->render();
 
         $this->assertStringContainsString('data-google-one-tap', $html);
-        $this->assertStringContainsString('google.accounts.id.prompt()', $html);
+        $this->assertStringContainsString('https://accounts.google.com/gsi/client', $html);
+        $this->assertStringNotContainsString('social-auth::scripts', $html);
     }
 
     public function test_google_one_tap_is_hidden_when_disabled_or_authenticated(): void
