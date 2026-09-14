@@ -147,7 +147,9 @@ class RoutesAndUiTest extends TestCase
         $html = view('social-auth::components.buttons', ['context' => 'login'])->render();
 
         $this->assertStringContainsString('max-width: 17.5rem', $html);
+        $this->assertStringContainsString('margin-inline: auto', $html);
         $this->assertStringContainsString('height: 3rem !important', $html);
+        $this->assertStringContainsString('background: #00c73c', $html);
         $this->assertStringContainsString('object-fit: contain', $html);
         $this->assertStringContainsString('width: auto !important', $html);
     }
