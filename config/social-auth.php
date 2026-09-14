@@ -115,6 +115,9 @@ return [
         'kakao' => [
             'jwks_url' => 'https://kauth.kakao.com/.well-known/jwks.json',
         ],
+        'apple' => [
+            'jwks_url' => 'https://appleid.apple.com/auth/keys',
+        ],
     ],
 
     /*

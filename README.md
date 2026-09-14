@@ -223,6 +223,21 @@ Naver가 사용자의 서비스 동의 철회 또는 Naver 회원 탈퇴를 알�
 3. `.env`에 Apple 설정을 추가합니다. private key는 줄바꿈을 `\\n`으로 표현할 수 있습니다.
 4. Apple 버튼은 Sign in with Apple JS가 공식 wrapper를 렌더링하고 인증을 시작하며, Laravel 서버가 authorization code와 identity token을 검증합니다.
 
+#### Apple Server-to-Server 알림
+
+Apple Developer에서 Sign in with Apple이 활성화된 primary App ID의 서버 간 알림 endpoint로 다음 URL을 등록합니다.
+
+```text
+https://your-domain.com/social-auth/apple/events
+```
+
+Apple이 전달하는 `signedPayload` JWS의 서명, issuer, audience와 이벤트 구조를 검증합니다. 유효한 알림은 `SocialAccountStatusChanged` 이벤트로 전달됩니다.
+
+- `consent-revoked`, `account-deleted`: 해당 Apple SNS 연결만 제거
+- `email-enabled`, `email-disabled`: 이벤트만 전달
+
+로컬 사용자 삭제와 전체 세션 종료는 애플리케이션 listener에서 처리하세요. Apple Developer에서 등록하는 endpoint는 공개 HTTPS 주소여야 하며 TLS 1.2 이상을 지원해야 합니다. 개발 중에는 localhost 대신 터널 또는 배포된 주소를 사용해야 합니다. [Apple 공식 문서](https://developer.apple.com/documentation/signinwithapple/processing-changes-for-sign-in-with-apple-accounts)
+
 ## 사용법
 
 ### 공통 layout 설정

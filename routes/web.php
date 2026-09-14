@@ -39,6 +39,8 @@ Route::prefix($prefix)
     ->group(function () {
         Route::post('google/events', [SocialWebhookController::class, 'googleRisc'])
             ->name('social-auth.webhooks.google');
+        Route::post('apple/events', [SocialWebhookController::class, 'apple'])
+            ->name('social-auth.webhooks.apple');
         Route::post('kakao/events', [SocialWebhookController::class, 'kakaoAccountStatus'])
             ->name('social-auth.webhooks.kakao');
         Route::post('naver/deauthorize', [SocialWebhookController::class, 'naverDisconnect'])

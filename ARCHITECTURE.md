@@ -15,6 +15,8 @@
 - Naver disconnect callback (encrypted user ID + HMAC-SHA256)
 - Naver JS SDK — browser runtime, app-switch vs web fallback behavior
 - Apple authorization/token/revoke endpoints (https://appleid.apple.com)
+- Apple Sign in with Apple Server-to-Server Notification endpoint and JWS delivery
+- Apple JWKS endpoint (https://appleid.apple.com/auth/keys)
 - Sign in with Apple JS SDK — browser runtime and Apple Account authentication
 ```
 
@@ -48,6 +50,7 @@ Any code calling these directly requires a live observation before a correspondi
 - `SocialWebhookController` — verifies Kakao account-status SET payloads and applies safe default token/connection cleanup.
 - `GoogleRiscWebhookVerifier` — verifies Google RISC SET signatures, issuer, audience, and event structure.
 - `NaverDisconnectCallbackVerifier` — verifies the client ID, HMAC signature, and decrypts Naver's AES-128-CBC user identifier.
+- `AppleServerNotificationVerifier` — verifies Apple signed notification JWS signatures with Apple's JWKS, issuer, audience, and event structure.
 
 ## Data model
 
@@ -78,6 +81,7 @@ Reject if `protect_last_login_method` is true and this is the user's only login 
 - **Kakao account status webhook**: verifies SET RS256 signature with Kakao JWKS, issuer, audience, and event structure before dispatching or mutating a local social account.
 - **Naver disconnect callback**: verifies the client ID and HMAC-SHA256 signature before decrypting the AES-128-CBC user identifier and removing its local social account.
 - **Apple**: standard OAuth `state` plus an ID-token `nonce`, both compared on callback before accepting the identity.
+- **Apple Server-to-Server Notifications**: verifies the signed `signedPayload` JWS with Apple's JWKS, issuer, audience, and event type. The package dispatches status events and removes only the local Apple connection for `consent-revoked` and `account-deleted`.
 - **Email trust boundary**: Google uses the `email_verified` claim in the JWT. Kakao uses the nested `kakao_account.is_email_verified` and `kakao_account.is_email_valid` flags; local email verification is granted only when both are true. Naver treats email presence in the profile response as sufficient, since Naver does not return unconfirmed emails.
 - **Token storage vs remote revoke**: the published config enables encrypted token storage and remote revoke by default. `ConfigurationValidator` rejects `store_tokens=false` combined with `remote_revoke_enabled=true` if an application changes those policies in its published config.
 - Sensitive tokens are stripped from the `raw` blob before it is passed into `SocialUser` / persisted (see each Provider's `authenticate()`).

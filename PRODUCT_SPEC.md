@@ -35,6 +35,8 @@ Google, Kakao, Naver 로그인을 하나의 Laravel 패키지에서 통합 관�
 - Apple의 `sub`를 provider ID로 사용하며, private relay 이메일을 그대로 지원
 - 최초 인증에서만 전달될 수 있는 이름 정보는 가입 시 저장
 - state와 nonce를 검증하고, 연결 해제 시 저장된 access token으로 Apple revoke를 시도
+- Apple Server-to-Server Notification을 검증하고 `SocialAccountStatusChanged` 이벤트로 전달함
+- `consent-revoked`와 `account-deleted` 이벤트에서는 로컬 Apple SNS 연결만 제거하고, 로컬 사용자 삭제와 전체 세션 종료는 애플리케이션 정책으로 남김
 
 ## 핵심 계정 정책
 

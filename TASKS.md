@@ -39,6 +39,7 @@ Validation note: the local PHPUnit, Dusk, Pint, Composer checks, and manual live
 - [x] Kakao account status webhook implementation: SET verification, token/connection cleanup, Laravel event, and README guidance
 - [x] Naver disconnect callback: HMAC/AES verification, local connection cleanup, and README guidance
 - [x] Google RISC receiver: SET verification, Laravel event dispatch, and README guidance
+- [x] Apple Server-to-Server Notification receiver: JWS verification, local connection cleanup, Laravel event dispatch, and README guidance
 
 ## Apple Login
 
@@ -49,3 +50,4 @@ Validation note: the local PHPUnit, Dusk, Pint, Composer checks, and manual live
 - [ ] Verify the Kakao account status webhook against the live Kakao webhook test tool using a public HTTPS endpoint
 - [ ] Verify the Naver disconnect callback against Naver's live callback delivery using a public HTTPS endpoint
 - [ ] Register and verify Google RISC delivery against a public HTTPS endpoint using the Google RISC verification stream
+- [ ] Register and verify Apple Server-to-Server Notification delivery against a public HTTPS endpoint

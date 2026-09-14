@@ -7,6 +7,7 @@ namespace Cable8mm\LaravelSocialAuth\Http\Controllers\SocialAuth;
 use Cable8mm\LaravelSocialAuth\Events\SocialAccountStatusChanged;
 use Cable8mm\LaravelSocialAuth\Exceptions\SocialAuthException;
 use Cable8mm\LaravelSocialAuth\Services\SocialAccountService;
+use Cable8mm\LaravelSocialAuth\Verifiers\AppleServerNotificationVerifier;
 use Cable8mm\LaravelSocialAuth\Verifiers\GoogleRiscWebhookVerifier;
 use Cable8mm\LaravelSocialAuth\Verifiers\KakaoAccountStatusWebhookVerifier;
 use Cable8mm\LaravelSocialAuth\Verifiers\NaverDisconnectCallbackVerifier;
@@ -99,6 +100,39 @@ class SocialWebhookController extends Controller
             return response()->json([
                 'err' => 'invalid_request',
                 'description' => 'The RISC payload could not be verified.',
+            ], 400);
+        }
+    }
+
+    public function apple(Request $request): JsonResponse
+    {
+        try {
+            $notification = (new AppleServerNotificationVerifier(
+                (string) config('social-auth.providers.apple.client_id'),
+            ))->verify($request->getContent());
+            $event = $notification['event'];
+            $providerId = (string) $event['sub'];
+            $eventType = (string) $event['type'];
+
+            event(new SocialAccountStatusChanged(
+                provider: 'apple',
+                providerId: $providerId,
+                eventType: $eventType,
+                eventPayload: $event,
+            ));
+
+            if (in_array($eventType, ['consent-revoked', 'account-deleted'], true)) {
+                $account = $this->accountService->findByProvider('apple', $providerId);
+                if ($account !== null) {
+                    $this->accountService->delete($account);
+                }
+            }
+
+            return response()->json(null, 200);
+        } catch (SocialAuthException) {
+            return response()->json([
+                'error' => 'invalid_request',
+                'description' => 'The Apple notification could not be verified.',
             ], 400);
         }
     }
