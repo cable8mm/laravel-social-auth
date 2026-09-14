@@ -38,6 +38,7 @@ return [
             'enabled' => (bool) env('GOOGLE_CLIENT_ID'),
             'client_id' => env('GOOGLE_CLIENT_ID'),
             'client_secret' => env('GOOGLE_CLIENT_SECRET'), // optional for GIS JWT flow
+            'one_tap' => (bool) env('GOOGLE_ONE_TAP', false),
             'js_sdk_url' => 'https://accounts.google.com/gsi/client',
             'scopes' => ['openid', 'email', 'profile'],
             'name_mapping' => 'name', // maps provider name field → users.name

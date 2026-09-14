@@ -1,4 +1,5 @@
 {{-- Include this once in your layout after provider buttons --}}
+@once
 <script>
 window.SocialAuth = window.SocialAuth || {
     async fetchNonce() {
@@ -50,9 +51,12 @@ window.SocialAuth = window.SocialAuth || {
         });
         // Note: for SPA-style, prefer Kakao.Auth.login and then post code to server
     },
-    initGoogle(context) {
-        const el = document.querySelector(`[data-provider="google"][data-context="${context}"]`);
-        if (!el || typeof google === 'undefined') return;
+    initGoogle() {
+        const elements = document.querySelectorAll('[data-provider="google"]');
+        const el = elements[0];
+        if (!el || typeof google === 'undefined' || !google.accounts?.id || this.googleInitialized) return;
+
+        this.googleInitialized = true;
         const clientId = el.dataset.clientId;
         this.fetchNonce().then(nonce => {
             google.accounts.id.initialize({
@@ -62,9 +66,15 @@ window.SocialAuth = window.SocialAuth || {
                     this.postCallback('google', { credential: response.credential });
                 },
             });
-            const target = document.getElementById(`google-btn-${context}`);
-            if (target) {
-                google.accounts.id.renderButton(target, { theme: 'outline', size: 'large', width: 280 });
+            elements.forEach(element => {
+                const target = element.querySelector('.google-gis-button');
+                if (target) {
+                    google.accounts.id.renderButton(target, { theme: 'outline', size: 'large', width: 280 });
+                }
+            });
+
+            if (document.querySelector('[data-google-one-tap]')) {
+                google.accounts.id.prompt();
             }
         });
     },
@@ -91,15 +101,13 @@ window.SocialAuth = window.SocialAuth || {
     }
 };
 
-document.addEventListener('DOMContentLoaded', () => {
+function bootSocialAuth() {
     if (document.querySelector('[data-provider="google"]')) {
         // Google GIS loads async; poll briefly
         const t = setInterval(() => {
             if (typeof google !== 'undefined' && google.accounts) {
                 clearInterval(t);
-                document.querySelectorAll('[data-provider="google"]').forEach(el => {
-                    window.SocialAuth.initGoogle(el.dataset.context);
-                });
+                window.SocialAuth.initGoogle();
             }
         }, 100);
         setTimeout(() => clearInterval(t), 5000);
@@ -116,5 +124,12 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 100);
         setTimeout(() => clearInterval(t), 5000);
     }
-});
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', bootSocialAuth);
+} else {
+    bootSocialAuth();
+}
 </script>
+@endonce

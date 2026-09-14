@@ -9,6 +9,7 @@ Google, Kakao, Naver 로그인을 하나의 Laravel 패키지에서 통합 관�
 ### Google
 
 - Google Identity Services JS 버튼 사용
+- 선택적으로 Google One Tap을 공통 layout에서 시도할 수 있음. 비로그인 사용자에게만 표시하고, 성공 시 기존 Google credential 로그인 흐름을 사용
 - Google의 verified email이 있으면 로컬 이메일 인증 완료로 처리
 
 ### Kakao
