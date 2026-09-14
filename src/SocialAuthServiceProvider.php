@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Cable8mm\LaravelSocialAuth;
 
+use Cable8mm\LaravelSocialAuth\Console\InstallCommand;
 use Cable8mm\LaravelSocialAuth\Contracts\NicknameGeneratorContract;
 use Cable8mm\LaravelSocialAuth\Contracts\RegistrationConsentContract;
 use Cable8mm\LaravelSocialAuth\Data\ProviderUser;
@@ -80,6 +81,10 @@ class SocialAuthServiceProvider extends ServiceProvider
         $this->loadMigrationsFrom(dirname(__DIR__).'/database/migrations');
 
         if ($this->app->runningInConsole()) {
+            $this->commands([
+                InstallCommand::class,
+            ]);
+
             $this->publishes([
                 dirname(__DIR__).'/config/social-auth.php' => config_path('social-auth.php'),
             ], 'social-auth-config');
@@ -88,11 +93,11 @@ class SocialAuthServiceProvider extends ServiceProvider
                 dirname(__DIR__).'/resources/views' => resource_path('views/vendor/social-auth'),
             ], 'social-auth-views');
 
-            $this->publishes([
+            $this->publishesMigrations([
                 dirname(__DIR__).'/database/migrations/2024_01_01_000001_create_social_accounts_table.php' => database_path('migrations/2024_01_01_000001_create_social_accounts_table.php'),
             ], 'social-auth-migrations');
 
-            $this->publishes([
+            $this->publishesMigrations([
                 dirname(__DIR__).'/database/migrations/stubs/2024_01_01_000002_make_user_credentials_nullable.php' => database_path('migrations/2024_01_01_000002_make_user_credentials_nullable.php'),
             ], 'social-auth-user-columns');
         }

@@ -34,26 +34,40 @@ Laravel 패키지 자동 발견이 활성화되어 있으면 Service Provider가
 
 ### 설치 순서
 
-#### 1. 설정 파일 publish
+#### 1. 설치 명령 실행
+
+설정 파일과 SNS 가입에 필요한 `users.email` / `users.password` nullable 마이그레이션을 한 번에 publish합니다.
+
+```bash
+php artisan social-auth:install
+```
+
+이 명령은 마이그레이션을 실행하지 않습니다. provider 키를 `.env`에 설정한 뒤 다음 단계에서 직접 실행합니다.
+
+#### 2. provider 키 설정
+
+Google, Kakao, Naver 개발자 콘솔에서 발급받은 키를 `.env`에 설정합니다. 자세한 항목은 [`.env 예시`](#env-예시)를 참고하세요.
+
+#### 3. 마이그레이션 실행
+
+```bash
+php artisan migrate
+```
+
+패키지의 `social_accounts` 마이그레이션은 Service Provider가 자동으로 로드합니다. 따라서 별도로 `social-auth-migrations`를 publish하지 않아도 됩니다.
+
+#### 설정 파일만 수동으로 publish하는 경우
 
 ```bash
 php artisan vendor:publish --tag=social-auth-config
 ```
 
-#### 2. users 컬럼 마이그레이션 publish
+#### users 컬럼 마이그레이션만 수동으로 publish하는 경우
 
 SNS 가입은 provider가 이메일을 제공하지 않거나 비밀번호를 사용하지 않는 경우를 지원하므로 `users.email`과 `users.password`가 nullable이어야 합니다. 이 단계는 필수입니다.
 
 ```bash
 php artisan vendor:publish --tag=social-auth-user-columns
-```
-
-#### 3. 마이그레이션 실행
-
-패키지의 `social_accounts` 마이그레이션은 Service Provider가 자동으로 로드합니다. 따라서 별도로 `social-auth-migrations`를 publish하지 않아도 됩니다.
-
-```bash
-php artisan migrate
 ```
 
 #### 4. 기본 뷰를 수정할 경우에만 views publish
