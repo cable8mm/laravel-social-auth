@@ -23,30 +23,52 @@
     }
 
     .social-btn-naver {
-        align-items: center;
-        background: #00c73c;
+        background: #03a94d;
         border-radius: 0.75rem;
-        display: flex;
-        justify-content: center;
         overflow: hidden;
     }
 
-    .social-btn-naver #naverIdLogin_loginButton {
+    .social-btn-naver .btn-naver {
         align-items: center;
-        background: #00c73c !important;
-        display: flex !important;
-        height: 3rem !important;
+        background: #03a94d;
+        border: 0;
+        border-radius: inherit;
+        box-sizing: border-box;
+        color: #fff;
+        cursor: pointer;
+        display: inline-flex;
+        font-family: inherit;
+        font-size: 0.9375rem;
+        font-weight: 700;
         justify-content: center;
-        max-width: 100%;
-        width: 100% !important;
+        line-height: 1.25;
+        min-height: 3rem;
+        padding: 0.75rem 1rem;
+        transition: background-color 150ms ease, box-shadow 150ms ease, transform 150ms ease;
+        width: 100%;
     }
 
-    .social-btn-naver #naverIdLogin_loginButton img {
-        display: block;
-        height: 3rem !important;
-        max-width: 100% !important;
-        object-fit: contain;
-        width: auto !important;
+    .social-btn-naver .naver-symbol {
+        fill: currentColor;
+        color: #fff;
+        height: 1.5rem;
+        margin-right: 0.625rem;
+        width: 1.5rem;
+    }
+
+    .social-btn-naver .btn-naver:hover {
+        background: #029344;
+        box-shadow: 0 0.25rem 0.75rem rgb(0 0 0 / 12%);
+        transform: translateY(-1px);
+    }
+
+    .social-btn-naver .btn-naver:focus-visible {
+        outline: 0.1875rem solid rgb(3 169 77 / 35%);
+        outline-offset: 0.125rem;
+    }
+
+    .social-btn-naver .btn-naver:active {
+        transform: translateY(0);
     }
 
     .social-btn-kakao .btn-kakao {
@@ -55,7 +77,7 @@
         border: 0;
         border-radius: 0.75rem;
         box-sizing: border-box;
-        color: #191919;
+        color: rgb(0 0 0 / 85%);
         cursor: pointer;
         display: inline-flex;
         font-family: inherit;
@@ -70,13 +92,10 @@
         width: 100%;
     }
 
-    .social-btn-kakao .btn-kakao::before {
-        background: #191919;
-        border-radius: 50%;
-        content: "";
+    .social-btn-kakao .kakao-symbol {
+        fill: currentColor;
         height: 1.125rem;
         margin-right: 0.625rem;
-        mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='white' d='M12 3C6.477 3 2 6.582 2 11c0 2.835 1.87 5.32 4.69 6.72L5.5 21l4.04-2.05c.79.16 1.61.25 2.46.25 5.523 0 10-3.582 10-8.2S17.523 3 12 3Z'/%3E%3C/svg%3E") center / contain no-repeat;
         width: 1.125rem;
     }
 
@@ -95,22 +114,8 @@
         transform: translateY(0);
     }
 
-    .social-btn-apple .btn-apple {
-        align-items: center;
-        background: #000;
-        border: 0;
-        border-radius: 0.75rem;
-        box-sizing: border-box;
-        color: #fff;
-        cursor: pointer;
-        display: inline-flex;
-        font-family: inherit;
-        font-size: 0.9375rem;
-        font-weight: 700;
-        justify-content: center;
-        line-height: 1.25;
+    .social-btn-apple #appleid-signin {
         min-height: 3rem;
-        padding: 0.75rem 1rem;
         width: 100%;
     }
 </style>

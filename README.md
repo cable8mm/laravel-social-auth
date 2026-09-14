@@ -101,7 +101,7 @@ php artisan vendor:publish --tag=social-auth-assets
 그 다음 기존 `resources/js/app.js`에 한 줄을 추가합니다.
 
 ```js
-import './vendor/social-auth';
+import "./vendor/social-auth";
 ```
 
 #### users 컬럼 마이그레이션만 수동으로 publish하는 경우
@@ -186,7 +186,7 @@ APPLE_REDIRECT_URI=http://localhost:8000/social-auth/apple/callback
 1. Apple Developer에서 Sign in with Apple을 활성화한 App ID와 웹용 Services ID를 등록합니다.
 2. Services ID에 `APPLE_REDIRECT_URI`를 등록하고 Team ID, Key ID, private key를 준비합니다.
 3. `.env`에 Apple 설정을 추가합니다. private key는 줄바꿈을 `\\n`으로 표현할 수 있습니다.
-4. Apple 버튼은 Sign in with Apple JS로 인증을 시작하고, Laravel 서버가 authorization code와 identity token을 검증합니다.
+4. Apple 버튼은 Sign in with Apple JS가 공식 wrapper를 렌더링하고 인증을 시작하며, Laravel 서버가 authorization code와 identity token을 검증합니다.
 
 ## 사용법
 
@@ -195,7 +195,7 @@ APPLE_REDIRECT_URI=http://localhost:8000/social-auth/apple/callback
 Provider SDK와 One Tap 초기화 코드는 애플리케이션의 Vite entry에 한 번만 import합니다. `php artisan social-auth:install` 실행 후 `resources/js/app.js`에 다음 한 줄을 추가하세요.
 
 ```js
-import './vendor/social-auth';
+import "./vendor/social-auth";
 ```
 
 기존 layout의 `@vite(['resources/css/app.css', 'resources/js/app.js'])`는 그대로 사용합니다. 별도의 `@vite` entry를 추가할 필요가 없습니다.
@@ -226,6 +226,8 @@ One Tap 컴포넌트는 공통 layout에 한 번 추가합니다. 일반적인 L
 <x-social-auth::buttons context="register" />
 ```
 
+네이버 버튼은 패키지가 공식 색상과 문구를 기준으로 직접 렌더링하며, 네이버 JavaScript SDK는 클릭 후 인증 흐름을 시작하는 데 사용합니다. 따라서 SDK가 생성하는 고정 비율 이미지 때문에 다른 SNS 버튼과 크기가 어긋나는 문제가 발생하지 않습니다.
+
 #### Laravel 기본 로그인 화면에 추가하는 예시
 
 Laravel이 생성한 `resources/views/pages/auth/login.blade.php` 또는 프로젝트의 로그인 view에서 Passkey 영역과 이메일 로그인 폼 사이에 다음 코드를 넣으면 됩니다.
@@ -243,6 +245,16 @@ Laravel이 생성한 `resources/views/pages/auth/login.blade.php` 또는 프로�
 ```
 
 이 코드는 소셜 로그인 버튼과 기존 이메일 로그인 폼을 시각적으로 구분합니다. `x-passkey-verify`를 사용하는 애플리케이션이라면 주석을 제거하고, 사용하지 않는다면 그대로 두거나 삭제하면 됩니다.
+
+#### Laravel 기본 회원가입 화면에 추가하는 예시
+
+`resources/views/auth/register.blade.php`에서 회원가입 폼과 함께 `context="register"`를 사용합니다. Provider별로 회원가입에 맞는 문구가 표시됩니다.
+
+```blade
+<x-social-auth::buttons context="register" />
+```
+
+로그인 화면에서는 `context="login"`, 회원가입 화면에서는 `context="register"`를 사용하며, 두 화면 모두 같은 callback과 계정 생성 흐름을 공유합니다. Google은 GIS가 `Sign up with Google`, Naver는 `네이버로 시작하기`, Kakao는 `카카오로 시작하기` 문구를 사용합니다.
 
 ### Google One Tap
 
@@ -293,14 +305,14 @@ SocialAuth::generateNonce();
 
 ## 계정 정책 요약
 
-| 정책                    | 기본 동작                       |
-| ----------------------- | ------------------------------- |
-| 자동 이메일 병합        | 금지                            |
-| SNS 가입                | pending → 약관 동의 후 생성     |
-| password                | 항상 null                       |
-| email_verified_at       | provider 검증 플래그 따름       |
-| Kakao name              | users.name 자동 매핑 안 함      |
-| 마지막 로그인 수단 해제 | 기본 거부                       |
+| 정책                    | 기본 동작                                      |
+| ----------------------- | ---------------------------------------------- |
+| 자동 이메일 병합        | 금지                                           |
+| SNS 가입                | pending → 약관 동의 후 생성                    |
+| password                | 항상 null                                      |
+| email_verified_at       | provider 검증 플래그 따름                      |
+| Kakao name              | users.name 자동 매핑 안 함                     |
+| 마지막 로그인 수단 해제 | 기본 거부                                      |
 | remote revoke           | 기본 활성화 (provider별 지원 범위 내에서 시도) |
 
 ## 보안
