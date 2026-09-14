@@ -8,7 +8,7 @@
 @endphp
 
 @if(count($providers) > 0)
-<div {{ $attributes->merge(['class' => 'social-auth-buttons']) }}>
+<div {{ $attributes->merge(['class' => 'social-auth-buttons mx-auto flex w-full max-w-[17.5rem] flex-col gap-3']) }}>
     @foreach($providers as $provider)
         <x-social-auth::button
             :provider="$provider"

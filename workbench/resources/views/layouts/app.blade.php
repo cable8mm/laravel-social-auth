@@ -67,8 +67,6 @@
 
         .workbench-card__intro { margin-bottom: 1.75rem; }
         .workbench-card__intro > p:last-child { color: #71717a; margin: .75rem 0 0; }
-        .social-auth-buttons { margin-inline: 0; }
-
         .workbench-divider { align-items: center; color: #a1a1aa; display: flex; gap: .75rem; margin: 2rem 0 1rem; }
         .workbench-divider::before, .workbench-divider::after { background: #e4e4e7; content: ""; height: 1px; flex: 1; }
         .workbench-divider span { font-size: .75rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }

@@ -104,6 +104,24 @@ php artisan vendor:publish --tag=social-auth-assets
 import "./vendor/social-auth";
 ```
 
+### Tailwind CSS 설정
+
+기본 버튼 UI는 Tailwind CSS 유틸리티 클래스로 구성되어 있습니다. 호스트 애플리케이션의 Tailwind CSS가 패키지 Blade 뷰를 스캔하도록 `resources/css/app.css`에 패키지 경로를 추가하세요.
+
+```css
+@import 'tailwindcss';
+
+@source '../../vendor/cable8mm/laravel-social-auth/resources/views';
+```
+
+뷰를 publish해서 `resources/views/vendor/social-auth`에 두는 경우에는 다음 source도 사용할 수 있습니다.
+
+```css
+@source '../views/vendor/social-auth';
+```
+
+패키지는 `@apply`나 별도의 `<style>` Blade 파일을 사용하지 않습니다. 따라서 Tailwind source 등록과 기존 Vite CSS entry만 필요합니다.
+
 #### users 컬럼 마이그레이션만 수동으로 publish하는 경우
 
 SNS 가입은 provider가 이메일을 제공하지 않거나 비밀번호를 사용하지 않는 경우를 지원하므로 `users.email`과 `users.password`가 nullable이어야 합니다. 이 단계는 필수입니다.

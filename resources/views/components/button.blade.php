@@ -3,10 +3,6 @@
     'context' => 'login',
 ])
 
-@once
-    @include('social-auth::styles')
-@endonce
-
 @php
     $manager = app(\Cable8mm\LaravelSocialAuth\Services\SocialLoginManager::class);
     try {
@@ -29,11 +25,11 @@
     $label = $labels[$provider] ?? ucfirst($provider);
 
     $buttonClasses = match($provider) {
-        'google' => 'social-btn social-btn-google',
-        'kakao' => 'social-btn social-btn-kakao',
-        'naver' => 'social-btn social-btn-naver',
-        'apple' => 'social-btn social-btn-apple',
-        default => 'social-btn',
+        'google' => 'social-btn social-btn-google block min-h-12 w-full max-w-[17.5rem]',
+        'kakao' => 'social-btn social-btn-kakao block min-h-12 w-full max-w-[17.5rem]',
+        'naver' => 'social-btn social-btn-naver block min-h-12 w-full max-w-[17.5rem] overflow-hidden rounded-xl bg-[#03A94D]',
+        'apple' => 'social-btn social-btn-apple block min-h-12 w-full max-w-[17.5rem]',
+        default => 'social-btn block min-h-12 w-full max-w-[17.5rem]',
     };
 @endphp
 
@@ -51,13 +47,13 @@
 >
     @if($provider === 'google')
         {{-- Google GIS button is rendered by JS --}}
-        <div id="google-btn-{{ $context }}" class="google-gis-button"></div>
+        <div id="google-btn-{{ $context }}" class="google-gis-button min-h-12 w-full"></div>
         @once
             <script src="{{ $jsSdkUrl }}" async defer></script>
         @endonce
     @elseif($provider === 'kakao')
-        <button type="button" class="btn-kakao" onclick="window.SocialAuth && window.SocialAuth.loginKakao('{{ $context }}')">
-            <svg class="kakao-symbol" aria-hidden="true" viewBox="0 0 24 24" focusable="false">
+        <button type="button" class="btn-kakao inline-flex min-h-12 w-full items-center justify-center rounded-xl border-0 bg-[#FEE500] px-4 py-3 text-[0.9375rem] font-bold leading-tight text-black/85 transition duration-150 hover:-translate-y-px hover:bg-[#F5DC00] hover:shadow-lg focus-visible:outline-3 focus-visible:outline-[#191919]/35 focus-visible:outline-offset-2 active:translate-y-0" onclick="window.SocialAuth && window.SocialAuth.loginKakao('{{ $context }}')">
+            <svg class="kakao-symbol mr-2.5 h-[1.125rem] w-[1.125rem] fill-current" aria-hidden="true" viewBox="0 0 24 24" focusable="false">
                 <path d="M12 3C6.477 3 2 6.582 2 11c0 2.835 1.87 5.32 4.69 6.72L5.5 21l4.04-2.05c.79.16 1.61.25 2.46.25 5.523 0 10-3.582 10-8.2S17.523 3 12 3Z" />
             </svg>
             {{ match ($context) {
@@ -68,8 +64,8 @@
         </button>
         <script src="{{ $jsSdkUrl }}"></script>
     @elseif($provider === 'naver')
-        <button type="button" class="btn-naver" onclick="window.SocialAuth && window.SocialAuth.loginNaver('{{ $context }}')">
-            <svg class="naver-symbol" aria-hidden="true" viewBox="0 0 24 24" focusable="false">
+        <button type="button" class="btn-naver inline-flex min-h-12 w-full items-center justify-center rounded-xl border-0 bg-[#03A94D] px-4 py-3 text-[0.9375rem] font-bold leading-tight text-white transition duration-150 hover:-translate-y-px hover:bg-[#029344] hover:shadow-lg focus-visible:outline-3 focus-visible:outline-[#03A94D]/35 focus-visible:outline-offset-2 active:translate-y-0" onclick="window.SocialAuth && window.SocialAuth.loginNaver('{{ $context }}')">
+            <svg class="naver-symbol mr-2.5 h-6 w-6 fill-current" aria-hidden="true" viewBox="0 0 24 24" focusable="false">
                 <path d="M4 4h5.5l5 7.1V4H20v16h-5.5l-5-7.1V20H4V4Z" />
             </svg>
             <span>{{ match ($context) {

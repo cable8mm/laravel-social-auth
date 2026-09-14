@@ -175,8 +175,8 @@ class RoutesAndUiTest extends TestCase
             'context' => 'login',
         ])->render();
 
-        $this->assertStringContainsString('class="btn-naver"', $html);
-        $this->assertStringContainsString('class="naver-symbol"', $html);
+        $this->assertStringContainsString('class="btn-naver ', $html);
+        $this->assertStringContainsString('class="naver-symbol ', $html);
         $this->assertStringContainsString('<path d="M4 4h5.5l5 7.1V4H20v16h-5.5l-5-7.1V20H4V4Z"', $html);
         $this->assertStringContainsString('네이버 아이디로 로그인', $html);
         $this->assertStringNotContainsString('naverIdLogin_loginButton', $html);
@@ -208,30 +208,30 @@ class RoutesAndUiTest extends TestCase
         $this->assertStringContainsString('data-type="sign-up"', $apple);
     }
 
-    public function test_kakao_button_includes_package_default_styling(): void
+    public function test_kakao_button_includes_tailwind_styling(): void
     {
         $html = view('social-auth::components.button', [
             'provider' => 'kakao',
             'context' => 'login',
         ])->render();
 
-        $this->assertStringContainsString('class="btn-kakao"', $html);
-        $this->assertStringContainsString('background: #fee500', $html);
-        $this->assertStringContainsString('border-radius: 0.75rem', $html);
+        $this->assertStringContainsString('class="btn-kakao ', $html);
+        $this->assertStringContainsString('bg-[#FEE500]', $html);
+        $this->assertStringContainsString('rounded-xl', $html);
         $this->assertStringContainsString('카카오 로그인', $html);
-        $this->assertStringContainsString('class="kakao-symbol"', $html);
+        $this->assertStringContainsString('class="kakao-symbol ', $html);
     }
 
     public function test_social_buttons_share_default_dimensions(): void
     {
         $html = view('social-auth::components.buttons', ['context' => 'login'])->render();
 
-        $this->assertStringContainsString('max-width: 17.5rem', $html);
-        $this->assertStringContainsString('margin-inline: auto', $html);
-        $this->assertStringContainsString('min-height: 3rem', $html);
-        $this->assertStringContainsString('background: #03a94d', $html);
-        $this->assertStringContainsString('class="btn-naver"', $html);
-        $this->assertStringContainsString('width: 100%', $html);
+        $this->assertStringContainsString('max-w-[17.5rem]', $html);
+        $this->assertStringContainsString('mx-auto', $html);
+        $this->assertStringContainsString('min-h-12', $html);
+        $this->assertStringContainsString('bg-[#03A94D]', $html);
+        $this->assertStringContainsString('class="btn-naver ', $html);
+        $this->assertStringContainsString('w-full', $html);
     }
 
     public function test_google_one_tap_is_opt_in_for_guests(): void
