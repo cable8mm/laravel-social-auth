@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Cable8mm\LaravelSocialAuth\Http\Controllers\SocialAuth\SocialLinkController;
 use Cable8mm\LaravelSocialAuth\Http\Controllers\SocialAuth\SocialLoginController;
 use Cable8mm\LaravelSocialAuth\Http\Controllers\SocialAuth\SocialRegistrationController;
+use Cable8mm\LaravelSocialAuth\Http\Controllers\SocialAuth\SocialWebhookController;
 use Illuminate\Support\Facades\Route;
 
 $prefix = config('social-auth.routes.prefix', 'social-auth');
@@ -31,4 +32,17 @@ Route::prefix($prefix)
             Route::delete('{provider}/disconnect', [SocialLinkController::class, 'disconnect'])
                 ->name('social-auth.disconnect');
         });
+    });
+
+Route::prefix($prefix)
+    ->middleware(config('social-auth.routes.webhook_middleware', []))
+    ->group(function () {
+        Route::post('google/events', [SocialWebhookController::class, 'googleRisc'])
+            ->name('social-auth.webhooks.google');
+        Route::post('apple/events', [SocialWebhookController::class, 'apple'])
+            ->name('social-auth.webhooks.apple');
+        Route::post('kakao/events', [SocialWebhookController::class, 'kakaoAccountStatus'])
+            ->name('social-auth.webhooks.kakao');
+        Route::post('naver/deauthorize', [SocialWebhookController::class, 'naverDisconnect'])
+            ->name('social-auth.webhooks.naver');
     });

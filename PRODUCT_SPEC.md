@@ -11,6 +11,7 @@ Google, Kakao, Naver 로그인을 하나의 Laravel 패키지에서 통합 관�
 - Google Identity Services JS 버튼 사용
 - 선택적으로 Google One Tap을 공통 layout에서 시도할 수 있음. 비로그인 사용자에게만 표시하고, 성공 시 기존 Google credential 로그인 흐름을 사용
 - Google의 verified email이 있으면 로컬 이메일 인증 완료로 처리
+- Google RISC 이벤트를 검증하고 `SocialAccountStatusChanged` 이벤트로 전달함. 세션 종료와 계정 보호 조치는 애플리케이션 정책으로 남김
 
 ### Kakao
 
@@ -18,12 +19,14 @@ Google, Kakao, Naver 로그인을 하나의 Laravel 패키지에서 통합 관�
 - 이메일이 제공되지 않으면 로컬 email은 null
 - 이메일이 제공되고 Kakao의 `kakao_account.is_email_verified`와 `kakao_account.is_email_valid`가 모두 true인 경우에만 로컬 이메일 인증 완료로 처리
 - Kakao 닉네임을 자동으로 users.name에 넣지 않음. 로컬 nickname은 패키지 설정의 nickname generator 사용
+- Kakao 계정 상태 변경 웹훅을 검증하고, 토큰 철회 이벤트에서는 로컬 토큰을 제거하며, 계정 탈퇴 이벤트에서는 SNS 연결만 제거함. 로컬 사용자 삭제와 전체 세션 종료는 애플리케이션 정책으로 남김
 
 ### Naver
 
 - Naver JavaScript SDK 사용, 가능한 모바일 환경에서 네이버 앱 인증 시도, 그 외 웹 로그인 fallback
 - 이메일이 응답에 있으면 로컬 email 인증 완료로 처리, 없으면 로컬 email은 null
 - 이름과 닉네임 매핑은 설정 가능해야 함
+- Naver 연결 끊기 Callback을 검증하고 외부 연결 해제 시 로컬 Naver SNS 연결만 제거함. 로컬 사용자 삭제는 애플리케이션 정책으로 남김
 
 ### Apple
 
@@ -32,6 +35,8 @@ Google, Kakao, Naver 로그인을 하나의 Laravel 패키지에서 통합 관�
 - Apple의 `sub`를 provider ID로 사용하며, private relay 이메일을 그대로 지원
 - 최초 인증에서만 전달될 수 있는 이름 정보는 가입 시 저장
 - state와 nonce를 검증하고, 연결 해제 시 저장된 access token으로 Apple revoke를 시도
+- Apple Server-to-Server Notification을 검증하고 `SocialAccountStatusChanged` 이벤트로 전달함
+- `consent-revoked`와 `account-deleted` 이벤트에서는 로컬 Apple SNS 연결만 제거하고, 로컬 사용자 삭제와 전체 세션 종료는 애플리케이션 정책으로 남김
 
 ## 핵심 계정 정책
 

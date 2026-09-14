@@ -101,10 +101,23 @@ return [
     'routes' => [
         'prefix' => 'social-auth',
         'middleware' => ['web'],
+        'webhook_middleware' => [],
         'callback' => '{provider}/callback',
         'consent' => 'consent',
         'connect' => '{provider}/connect',
         'disconnect' => '{provider}/disconnect',
+    ],
+
+    'webhooks' => [
+        'google' => [
+            'jwks_url' => 'https://www.googleapis.com/oauth2/v3/certs',
+        ],
+        'kakao' => [
+            'jwks_url' => 'https://kauth.kakao.com/.well-known/jwks.json',
+        ],
+        'apple' => [
+            'jwks_url' => 'https://appleid.apple.com/auth/keys',
+        ],
     ],
 
     /*

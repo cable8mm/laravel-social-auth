@@ -168,6 +168,16 @@ APPLE_REDIRECT_URI=http://localhost:8000/social-auth/apple/callback
 2. 승인된 JavaScript 원본에 앱 도메인 추가
 3. GIS 버튼 렌더링 전 `/social-auth/nonce` 에서 nonce를 받아 세션 저장 후 JWT `nonce` claim 비교 (replay 방지)
 
+#### Google RISC 이벤트 수신
+
+Google Cloud에서 RISC API와 Cross-Account Protection을 설정한 뒤 다음 endpoint를 이벤트 수신 URL로 등록합니다.
+
+```text
+https://your-domain.com/social-auth/google/events
+```
+
+패키지는 Google이 전송한 RISC SET JWT의 서명, issuer, audience, 이벤트 구조를 검증하고 `SocialAccountStatusChanged` 이벤트를 dispatch합니다. `sessions-revoked`, `tokens-revoked`, `account-disabled` 등의 실제 세션 종료나 계정 보호 정책은 애플리케이션 listener에서 처리하세요. 이 endpoint 등록에는 Service Account가 필요하지만, Service Account private key를 애플리케이션 사용자에게 공개하거나 저장소에 커밋하면 안 됩니다. [Google Cross-Account Protection](https://developers.google.com/identity/protocols/risc)
+
 ### Kakao
 
 1. Kakao Developers 앱 등록, Web 도메인 / Redirect URI 등록
@@ -176,10 +186,35 @@ APPLE_REDIRECT_URI=http://localhost:8000/social-auth/apple/callback
 4. `http://localhost:8000/social-auth/kakao/callback`을 JavaScript 키와 REST API 키의 redirect URI로 등록
 5. 동의 항목: 닉네임, 이메일(선택)
 
+#### Kakao 계정 상태 변경 웹훅
+
+Kakao Developers의 `카카오 로그인 > 웹훅 > 계정 상태 변경 웹훅`에 다음 URL을 등록합니다.
+
+```text
+https://your-domain.com/social-auth/kakao/events
+```
+
+패키지는 Kakao가 전송한 SET(Security Event Token)을 Kakao JWKS로 검증합니다. 검증에 성공하면 `202 Accepted`를 반환하고, 다음 기본 동작을 수행합니다.
+
+- `tokens-revoked`, `sessions-revoked`: 해당 `social_accounts`의 access/refresh token 제거
+- `account-purged`: 해당 Kakao SNS 연결만 제거
+- 모든 유효 이벤트: `SocialAccountStatusChanged` 이벤트 dispatch
+
+로컬 `users` 삭제나 모든 로그인 세션 종료는 애플리케이션별 정책이 필요하므로 자동으로 수행하지 않습니다. 필요한 경우 이벤트 listener에서 처리하세요. Kakao 계정 상태 변경 웹훅은 `application/secevent+jwt` 요청을 사용하며, 패키지의 웹훅 경로에는 CSRF middleware를 적용하지 않습니다.
+
+개발 중에는 `localhost`를 Kakao가 호출할 수 없으므로 터널 또는 배포된 공개 HTTPS 주소를 사용하고, Kakao Developers의 웹훅 테스트 도구에서 `계정 상태 변경` 이벤트를 전송해 확인하세요.
+
 ### Naver
 
 1. Naver Developers 애플리케이션 등록
 2. Callback URL 등록, Client ID / Secret 설정
+3. `API 설정 > 연결끊기 Callback URL`에 다음 주소 등록
+
+```text
+https://your-domain.com/social-auth/naver/deauthorize
+```
+
+Naver가 사용자의 서비스 동의 철회 또는 Naver 회원 탈퇴를 알리면 패키지가 HMAC 서명과 암호화된 이용자 고유 ID를 검증한 뒤 해당 Naver SNS 연결만 제거하고 `204 No Content`를 반환합니다. 로컬 `users` 삭제는 자동으로 수행하지 않습니다.
 
 ### Apple
 
@@ -187,6 +222,21 @@ APPLE_REDIRECT_URI=http://localhost:8000/social-auth/apple/callback
 2. Services ID에 `APPLE_REDIRECT_URI`를 등록하고 Team ID, Key ID, private key를 준비합니다.
 3. `.env`에 Apple 설정을 추가합니다. private key는 줄바꿈을 `\\n`으로 표현할 수 있습니다.
 4. Apple 버튼은 Sign in with Apple JS가 공식 wrapper를 렌더링하고 인증을 시작하며, Laravel 서버가 authorization code와 identity token을 검증합니다.
+
+#### Apple Server-to-Server 알림
+
+Apple Developer에서 Sign in with Apple이 활성화된 primary App ID의 서버 간 알림 endpoint로 다음 URL을 등록합니다.
+
+```text
+https://your-domain.com/social-auth/apple/events
+```
+
+Apple이 전달하는 `signedPayload` JWS의 서명, issuer, audience와 이벤트 구조를 검증합니다. 유효한 알림은 `SocialAccountStatusChanged` 이벤트로 전달됩니다.
+
+- `consent-revoked`, `account-deleted`: 해당 Apple SNS 연결만 제거
+- `email-enabled`, `email-disabled`: 이벤트만 전달
+
+로컬 사용자 삭제와 전체 세션 종료는 애플리케이션 listener에서 처리하세요. Apple Developer에서 등록하는 endpoint는 공개 HTTPS 주소여야 하며 TLS 1.2 이상을 지원해야 합니다. 개발 중에는 localhost 대신 터널 또는 배포된 주소를 사용해야 합니다. [Apple 공식 문서](https://developer.apple.com/documentation/signinwithapple/processing-changes-for-sign-in-with-apple-accounts)
 
 ## 사용법
 

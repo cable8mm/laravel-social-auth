@@ -84,6 +84,15 @@ class SocialAccountService
         ]);
     }
 
+    public function clearTokens(SocialAccount $account): void
+    {
+        $account->update([
+            'access_token' => null,
+            'refresh_token' => null,
+            'token_expires_at' => null,
+        ]);
+    }
+
     public function delete(SocialAccount $account): void
     {
         $account->delete();
