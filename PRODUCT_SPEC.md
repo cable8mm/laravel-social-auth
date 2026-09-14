@@ -25,6 +25,14 @@ Google, Kakao, Naver 로그인을 하나의 Laravel 패키지에서 통합 관�
 - 이메일이 응답에 있으면 로컬 email 인증 완료로 처리, 없으면 로컬 email은 null
 - 이름과 닉네임 매핑은 설정 가능해야 함
 
+### Apple
+
+- Sign in with Apple JS를 사용해 웹에서 Apple Account 인증을 시작
+- 서버에서 authorization code를 Apple REST API로 교환하고 identity token을 검증
+- Apple의 `sub`를 provider ID로 사용하며, private relay 이메일을 그대로 지원
+- 최초 인증에서만 전달될 수 있는 이름 정보는 가입 시 저장
+- state와 nonce를 검증하고, 연결 해제 시 저장된 access token으로 Apple revoke를 시도
+
 ## 핵심 계정 정책
 
 ### SNS 회원가입
@@ -48,7 +56,7 @@ Google, Kakao, Naver 로그인을 하나의 Laravel 패키지에서 통합 관�
 
 ### SNS 계정 연결 (프로필)
 
-- 인증된 사용자가 프로필에서 Google/Kakao/Naver 계정을 연결할 수 있어야 함
+- 인증된 사용자가 프로필에서 Google/Kakao/Naver/Apple 계정을 연결할 수 있어야 함
 - 이미 다른 사용자에 연결된 provider/provider_id는 연결 거부
 - 같은 사용자에게 같은 provider 중복 연결 금지
 - 연결 성공/실패 각각 사용자에게 안전하게 피드백
@@ -70,7 +78,7 @@ Google, Kakao, Naver 로그인을 하나의 Laravel 패키지에서 통합 관�
 - SNS 약관 동의 화면
 - 프로필의 연결된 SNS 계정 목록 + 연결/연결해제 버튼
 - provider가 설정되지 않은 경우 해당 버튼 숨김
-- 버튼 순서 설정 가능, 기본 순서: Naver -> Kakao -> Google
+- 버튼 순서 설정 가능, 기본 순서: Naver -> Kakao -> Google -> Apple
 - Blade 기본 UI 제공, 애플리케이션에서 view publish 또는 override 가능해야 함
 
 ## Out of scope (이번 버전)

@@ -137,6 +137,24 @@ class RoutesAndUiTest extends TestCase
         $this->assertStringContainsString('data-provider="kakao"', $html);
     }
 
+    public function test_apple_button_uses_the_apple_js_sdk(): void
+    {
+        config([
+            'social-auth.providers.apple.enabled' => true,
+            'social-auth.providers.apple.client_id' => 'com.example.web',
+            'social-auth.providers.apple.js_sdk_url' => 'https://appleid.cdn-apple.com/appleauth/static/jsapi/appleid.auth.js',
+        ]);
+
+        $html = view('social-auth::components.button', [
+            'provider' => 'apple',
+            'context' => 'login',
+        ])->render();
+
+        $this->assertStringContainsString('data-provider="apple"', $html);
+        $this->assertStringContainsString('window.SocialAuth.loginApple', $html);
+        $this->assertStringContainsString('appleid.cdn-apple.com/appleauth', $html);
+    }
+
     public function test_kakao_button_does_not_use_an_invalid_integrity_hash(): void
     {
         $html = view('social-auth::components.button', [

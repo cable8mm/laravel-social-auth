@@ -124,6 +124,12 @@ NAVER_CLIENT_ID=your-naver-client-id
 NAVER_CLIENT_SECRET=your-naver-client-secret
 NAVER_REDIRECT_URI=http://localhost:8000/social-auth/naver/callback
 
+APPLE_CLIENT_ID=your-apple-services-id
+APPLE_TEAM_ID=your-apple-team-id
+APPLE_KEY_ID=your-apple-key-id
+APPLE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\\nyour-key\\n-----END PRIVATE KEY-----"
+APPLE_REDIRECT_URI=http://localhost:8000/social-auth/apple/callback
+
 ```
 
 토큰 저장, provider 원격 revoke, 마지막 로그인 수단 보호, provider 이메일 검증 정책은 패키지의 보안 정책으로 항상 활성화됩니다. 별도의 `SOCIAL_AUTH_*` 환경 변수를 추가할 필요가 없습니다.
@@ -148,6 +154,13 @@ NAVER_REDIRECT_URI=http://localhost:8000/social-auth/naver/callback
 
 1. Naver Developers 애플리케이션 등록
 2. Callback URL 등록, Client ID / Secret 설정
+
+### Apple
+
+1. Apple Developer에서 Sign in with Apple을 활성화한 App ID와 웹용 Services ID를 등록합니다.
+2. Services ID에 `APPLE_REDIRECT_URI`를 등록하고 Team ID, Key ID, private key를 준비합니다.
+3. `.env`에 Apple 설정을 추가합니다. private key는 줄바꿈을 `\\n`으로 표현할 수 있습니다.
+4. Apple 버튼은 Sign in with Apple JS로 인증을 시작하고, Laravel 서버가 authorization code와 identity token을 검증합니다.
 
 ## 사용법
 
@@ -322,15 +335,15 @@ composer test:browser
 
 브라우저 테스트는 다음을 검증합니다.
 
-- 실제 Workbench HTTP 서버에서 SNS 버튼이 Naver → Kakao → Google 순서로 렌더링되는지
+- 실제 Workbench HTTP 서버에서 SNS 버튼이 Naver → Kakao → Google → Apple 순서로 렌더링되는지
 - 세션에 저장된 pending social registration이 약관 동의 화면을 거쳐 가입 완료되는지
 - 가입 완료 후 세션 인증과 redirect가 유지되는지
 
-실제 Google/Kakao/Naver 계정 인증은 외부 provider 경계에 의존하므로 이 테스트에 포함하지 않습니다. 실제 provider 검증은 별도의 opt-in live E2E 환경에서 수행해야 합니다.
+실제 provider 계정 인증은 외부 provider 경계에 의존하므로 이 테스트에 포함하지 않습니다. 실제 provider 검증은 별도의 opt-in live E2E 환경에서 수행해야 합니다.
 
 ## 실제 Provider 로그인
 
-개발 환경에서 **실제 Google/Kakao/Naver 계정 E2E 로그인은 수행하지 않았습니다.**  
+개발 환경에서 **실제 Google/Kakao/Naver/Apple 계정 E2E 로그인은 수행하지 않았습니다.**
 단위·기능 테스트는 HTTP fake 및 JWT 자체 서명으로 검증합니다.  
 배포 전 콘솔 키로 실제 연동 확인을 권장합니다.
 

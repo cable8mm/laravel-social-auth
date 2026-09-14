@@ -24,6 +24,7 @@
         'google' => 'Google',
         'kakao' => '카카오',
         'naver' => '네이버',
+        'apple' => 'Apple',
     ];
     $label = $labels[$provider] ?? ucfirst($provider);
 
@@ -31,6 +32,7 @@
         'google' => 'social-btn social-btn-google',
         'kakao' => 'social-btn social-btn-kakao',
         'naver' => 'social-btn social-btn-naver',
+        'apple' => 'social-btn social-btn-apple',
         default => 'social-btn',
     };
 @endphp
@@ -46,6 +48,7 @@
     data-nonce-url="{{ route('social-auth.nonce') }}"
     data-state-url="{{ route('social-auth.state') }}"
     data-intended-url="{{ url()->current() }}"
+    data-redirect-url="{{ $provider === 'apple' ? ($p->getConfig()['redirect'] ?? '') : '' }}"
 >
     @if($provider === 'google')
         {{-- Google GIS button is rendered by JS --}}
@@ -60,6 +63,11 @@
         <script src="{{ $jsSdkUrl }}"></script>
     @elseif($provider === 'naver')
         <div id="naver-btn-{{ $context }}" class="naver-login-button"></div>
+        <script src="{{ $jsSdkUrl }}"></script>
+    @elseif($provider === 'apple')
+        <button type="button" class="btn-apple" onclick="window.SocialAuth && window.SocialAuth.loginApple('{{ $context }}')">
+            {{ $label }}로 {{ $context === 'connect' ? '연결' : '로그인' }}
+        </button>
         <script src="{{ $jsSdkUrl }}"></script>
     @endif
 </div>
