@@ -1,5 +1,14 @@
 # Release Notes
 
+## v0.2.0 - 2026-09-14
+
+### What's Changed
+
+* style: update social button styles for Naver and add margin to layout by [@cable8mm](https://github.com/cable8mm) in https://github.com/cable8mm/laravel-social-auth/pull/9
+* feat: add Google One Tap support for guest users and update related documentation by [@cable8mm](https://github.com/cable8mm) in https://github.com/cable8mm/laravel-social-auth/pull/10
+
+**Full Changelog**: https://github.com/cable8mm/laravel-social-auth/compare/v0.1.2...v0.2.0
+
 ## v0.1.2 - 2026-09-14
 
 ### What's Changed
