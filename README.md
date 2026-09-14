@@ -7,10 +7,36 @@
 ![Packagist Downloads](https://img.shields.io/packagist/dt/cable8mm/laravel-social-auth)
 ![Packagist License](https://img.shields.io/packagist/l/cable8mm/laravel-social-auth)
 
-Laravel SNS 인증 패키지 (Google GIS · Kakao JS SDK · Naver JS SDK).  
+Laravel SNS 인증 패키지 (Google GIS · Kakao JS SDK · Naver JS SDK · Sign in with Apple).  
 **Socialite를 사용하지 않습니다.** 서버에서 credential/token을 직접 검증합니다.
 
 ![workbench](docs/assets/workbench.png)
+
+## 왜 이 패키지를 사용하는가
+
+Laravel에서 SNS 로그인을 구현할 때 보통 `laravel/socialite`를 사용합니다. Socialite는 서버 중심의 OAuth redirect 흐름을 일관된 방식으로 제공하지만, provider가 제공하는 모바일·브라우저 전용 로그인 UX를 그대로 활용하기에는 한계가 있습니다.
+
+예를 들어 카카오나 네이버의 공식 JavaScript SDK를 사용하면 모바일에서 다음과 같은 흐름을 사용할 수 있습니다.
+
+- 카카오톡이나 네이버 앱이 설치되어 있으면 앱 인증으로 전환
+- 앱이 없거나 전환할 수 없으면 웹 로그인으로 fallback
+- 사용자가 카카오 계정의 아이디나 비밀번호를 직접 입력하지 않아도 인증 가능
+
+서버 redirect 중심의 로그인에서는 이런 앱 전환이 provider의 공식 JS SDK만큼 자연스럽게 동작하지 않을 수 있습니다. 특히 모바일 사용자는 카카오 계정의 로그인 아이디 자체를 모르는 경우도 많습니다.
+
+Google도 마찬가지로 일반 OAuth redirect 대신 Google Identity Services(GIS)의 버튼과 One Tap을 사용할 수 있습니다. Google 계정 선택 UI를 현재 화면에 표시하고, 로그인 상태에 따라 One Tap을 시도하려면 브라우저에서 GIS를 직접 실행해야 합니다.
+
+이 패키지는 다음 구조를 사용합니다.
+
+```text
+브라우저 공식 JS SDK
+        ↓ credential / authorization code
+Laravel 서버 검증 및 provider REST API 교환
+        ↓
+Laravel session 로그인
+```
+
+즉, 사용성은 provider의 공식 JS SDK에 맡기고, 인증 결과 검증과 사용자·SNS 계정 연결은 Laravel 서버에서 처리합니다. 그 대신 provider마다 SDK와 응답 형식이 다르므로 Socialite보다 설정과 구현이 provider별로 구체적이라는 trade-off가 있습니다.
 
 ## 요구사항
 
@@ -127,7 +153,7 @@ NAVER_REDIRECT_URI=http://localhost:8000/social-auth/naver/callback
 APPLE_CLIENT_ID=your-apple-services-id
 APPLE_TEAM_ID=your-apple-team-id
 APPLE_KEY_ID=your-apple-key-id
-APPLE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\\nyour-key\\n-----END PRIVATE KEY-----"
+APPLE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\nyour-key\n-----END PRIVATE KEY-----"
 APPLE_REDIRECT_URI=http://localhost:8000/social-auth/apple/callback
 
 ```
