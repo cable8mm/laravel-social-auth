@@ -1,5 +1,15 @@
 # Release Notes
 
+## v0.5.0 - 2026-09-14
+
+### What's Changed
+
+* feat: update README to explain why not using the socialite package by [@cable8mm](https://github.com/cable8mm) in https://github.com/cable8mm/laravel-social-auth/pull/16
+* feat: add Naver login support and update button styles for social authentication by [@cable8mm](https://github.com/cable8mm) in https://github.com/cable8mm/laravel-social-auth/pull/17
+* feat: implement sns account status callback by [@cable8mm](https://github.com/cable8mm) in https://github.com/cable8mm/laravel-social-auth/pull/18
+
+**Full Changelog**: https://github.com/cable8mm/laravel-social-auth/compare/v0.4.0...v0.5.0
+
 ## v0.4.0 - 2026-09-14
 
 ### What's Changed
