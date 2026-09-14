@@ -1,11 +1,13 @@
 import { defineConfig } from 'vite';
 import laravel from 'laravel-vite-plugin';
+import tailwindcss from '@tailwindcss/vite';
 
 export default defineConfig({
     build: {
         emptyOutDir: true,
     },
     plugins: [
+        tailwindcss(),
         laravel({
             input: ['resources/js/app.js'],
             // Testbench-Dusk boots the Workbench from its Laravel skeleton.

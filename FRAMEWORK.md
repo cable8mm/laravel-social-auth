@@ -4,7 +4,8 @@
 
 - PHP 8.3+, `declare(strict_types=1)` in every file.
 - Laravel 12 and 13 (`illuminate/support`, `illuminate/database`, `illuminate/http`).
-- Blade for the default (overridable) UI.
+- Blade for the default (overridable) UI, styled with Tailwind CSS utility classes.
+- The package does not use `@apply` or inject a `<style>` block from a Blade view. The host application's Tailwind CSS entry must scan the package views.
 - Laravel session auth (`Auth::login`, session regenerate on login) — no API/token guard in this package.
 - PHPUnit (project owner's explicit choice; not Pest, despite Pest being the usual default elsewhere).
 - Laravel Socialite is forbidden — do not add it, and do not add a Socialite-shaped abstraction "just in case."
