@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ $title ?? 'Social Auth Workbench' }}</title>
+    @vite('resources/js/app.js')
     <style>
         :root {
             color-scheme: light dark;
@@ -92,7 +93,6 @@
 <body>
     @yield('content')
 
-    @include('social-auth::scripts')
     <x-social-auth::one-tap />
 </body>
 </html>

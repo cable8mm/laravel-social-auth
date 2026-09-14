@@ -16,3 +16,5 @@ composer.lock
 /workbench/bootstrap/cache/
 /workbench/.env
 workbench/database/database.sqlite
+/workbench/node_modules
+/workbench/public/build/

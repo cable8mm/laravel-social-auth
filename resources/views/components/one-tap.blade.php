@@ -13,5 +13,4 @@
     ></div>
 
     <script src="{{ $google['js_sdk_url'] }}" async defer></script>
-    @include('social-auth::scripts')
 @endif

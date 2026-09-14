@@ -38,7 +38,7 @@ Laravel 패키지 자동 발견이 활성화되어 있으면 Service Provider가
 
 #### 1. 설치 명령 실행
 
-설정 파일과 SNS 가입에 필요한 `users.email` / `users.password` nullable 마이그레이션을 한 번에 publish합니다.
+설정 파일, 브라우저용 JS asset, SNS 가입에 필요한 `users.email` / `users.password` nullable 마이그레이션을 한 번에 publish합니다.
 
 ```bash
 php artisan social-auth:install
@@ -62,6 +62,20 @@ php artisan migrate
 
 ```bash
 php artisan vendor:publish --tag=social-auth-config
+```
+
+#### 브라우저 JS asset만 수동으로 publish하는 경우
+
+`social-auth:install`을 사용하지 않는다면 다음 명령으로 JS asset을 애플리케이션의 `resources/js/vendor/social-auth.js`에 publish합니다.
+
+```bash
+php artisan vendor:publish --tag=social-auth-assets
+```
+
+그 다음 기존 `resources/js/app.js`에 한 줄을 추가합니다.
+
+```js
+import './vendor/social-auth';
 ```
 
 #### users 컬럼 마이그레이션만 수동으로 publish하는 경우
@@ -146,22 +160,29 @@ SOCIAL_AUTH_CONSENT_REDIRECT=/social-auth/consent
 
 ### 공통 layout 설정
 
-Provider SDK와 One Tap 초기화 스크립트는 화면마다 넣지 말고 애플리케이션의 공통 layout에 한 번만 추가합니다. 일반적인 Laravel 앱의 `resources/views/layouts/app.blade.php`라면 `</body>` 직전에 다음처럼 배치합니다.
+Provider SDK와 One Tap 초기화 코드는 애플리케이션의 Vite entry에 한 번만 import합니다. `php artisan social-auth:install` 실행 후 `resources/js/app.js`에 다음 한 줄을 추가하세요.
+
+```js
+import './vendor/social-auth';
+```
+
+기존 layout의 `@vite(['resources/css/app.css', 'resources/js/app.js'])`는 그대로 사용합니다. 별도의 `@vite` entry를 추가할 필요가 없습니다.
+
+One Tap 컴포넌트는 공통 layout에 한 번 추가합니다. 일반적인 Laravel 앱의 `resources/views/layouts/app.blade.php`라면 content 영역 아래에 다음처럼 배치합니다.
 
 ```blade
 <body>
     @yield('content')
 
-    @include('social-auth::scripts')
     <x-social-auth::one-tap />
 </body>
 ```
 
-`@yield('content')` 대신 `{{ $slot }}`을 사용하는 컴포넌트 layout이라면 `$slot` 아래에 두 컴포넌트를 추가하세요. `scripts`와 `one-tap`은 layout에 각각 한 번만 넣으면 됩니다.
+`@yield('content')` 대신 `{{ $slot }}`을 사용하는 컴포넌트 layout이라면 `$slot` 아래에 One Tap 컴포넌트를 추가하세요.
 
 ### 로그인 / 회원가입 버튼
 
-로그인 또는 회원가입 화면에서 버튼이 필요한 위치에만 버튼 컴포넌트를 추가합니다. SDK 스크립트는 위의 공통 layout에서 이미 로드되므로 화면마다 `scripts`를 다시 include하지 않습니다.
+로그인 또는 회원가입 화면에서 버튼이 필요한 위치에만 버튼 컴포넌트를 추가합니다. JS asset은 `app.js`에서 이미 import했으므로 화면마다 별도의 script를 추가하지 않습니다.
 
 ```blade
 <x-social-auth::buttons context="login" />
@@ -267,7 +288,7 @@ vendor/bin/phpunit
 
 ### 패키지 개발자 로컬 환경
 
-Workbench에서 실제 Provider 로그인이나 브라우저 테스트를 실행하려면 로컬 환경 파일을 만듭니다. `.env`는 secret을 포함하므로 Git에 커밋하지 않고, 예시 파일을 복사해서 사용합니다.
+Workbench에서 실제 Provider 로그인이나 브라우저 테스트를 실행하려면 로컬 환경 파일을 만듭니다. `.env`는 secret을 포함하므로 Git에 커밋하지 않고, 예시 파일을 복사해서 사용합니다. Workbench도 Laravel 앱과 같은 Vite asset 흐름을 사용합니다.
 
 ```bash
 cp .env.example .env
