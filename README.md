@@ -142,12 +142,52 @@ SOCIAL_AUTH_CONSENT_REDIRECT=/social-auth/consent
 
 ## 사용법
 
+### 공통 layout 설정
+
+Provider SDK와 One Tap 초기화 스크립트는 화면마다 넣지 말고 애플리케이션의 공통 layout에 한 번만 추가합니다. 일반적인 Laravel 앱의 `resources/views/layouts/app.blade.php`라면 `</body>` 직전에 다음처럼 배치합니다.
+
+```blade
+<body>
+    @yield('content')
+
+    @include('social-auth::scripts')
+    <x-social-auth::one-tap />
+</body>
+```
+
+`@yield('content')` 대신 `{{ $slot }}`을 사용하는 컴포넌트 layout이라면 `$slot` 아래에 두 컴포넌트를 추가하세요. `scripts`와 `one-tap`은 layout에 각각 한 번만 넣으면 됩니다.
+
 ### 로그인 / 회원가입 버튼
+
+로그인 또는 회원가입 화면에서 버튼이 필요한 위치에만 버튼 컴포넌트를 추가합니다. SDK 스크립트는 위의 공통 layout에서 이미 로드되므로 화면마다 `scripts`를 다시 include하지 않습니다.
 
 ```blade
 <x-social-auth::buttons context="login" />
-@include('social-auth::scripts')
 ```
+
+회원가입 화면에서는 context만 변경합니다.
+
+```blade
+<x-social-auth::buttons context="register" />
+```
+
+#### Laravel 기본 로그인 화면에 추가하는 예시
+
+Laravel이 생성한 `resources/views/pages/auth/login.blade.php` 또는 프로젝트의 로그인 view에서 Passkey 영역과 이메일 로그인 폼 사이에 다음 코드를 넣으면 됩니다.
+
+```blade
+<x-social-auth::buttons context="login" />
+
+{{-- <x-passkey-verify /> --}}
+
+<div class="flex items-center gap-4 text-xs font-bold uppercase tracking-widest text-zinc-400">
+    <span class="h-px flex-1 bg-zinc-200 dark:bg-zinc-800"></span>
+    <span>{{ __('이메일로 로그인') }}</span>
+    <span class="h-px flex-1 bg-zinc-200 dark:bg-zinc-800"></span>
+</div>
+```
+
+이 코드는 소셜 로그인 버튼과 기존 이메일 로그인 폼을 시각적으로 구분합니다. `x-passkey-verify`를 사용하는 애플리케이션이라면 주석을 제거하고, 사용하지 않는다면 그대로 두거나 삭제하면 됩니다.
 
 ### Google One Tap
 
@@ -160,6 +200,8 @@ GOOGLE_ONE_TAP=true
 ```blade
 <x-social-auth::one-tap />
 ```
+
+위 컴포넌트는 공통 layout에 한 번만 추가합니다. 로그인하지 않은 사용자이고 `GOOGLE_ONE_TAP=true`일 때만 One Tap 표시를 시도합니다.
 
 One Tap은 로그인된 사용자에게는 렌더링되지 않습니다. Google 계정 세션, 브라우저 설정, 이전에 닫은 기록, 도메인 보안 조건에 따라 Google이 프롬프트를 표시하지 않을 수 있습니다. 기존 Google 로그인 버튼은 계속 fallback으로 사용할 수 있습니다.
 
