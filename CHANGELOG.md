@@ -1,5 +1,14 @@
 # Release Notes
 
+## v0.5.4 - 2026-09-15
+
+### What's Changed
+
+* feat: implement login, registration, and profile management features by [@cable8mm](https://github.com/cable8mm) in https://github.com/cable8mm/laravel-social-auth/pull/22
+* feat: add consent tracking for terms and policies in user registration by [@cable8mm](https://github.com/cable8mm) in https://github.com/cable8mm/laravel-social-auth/pull/24
+
+**Full Changelog**: https://github.com/cable8mm/laravel-social-auth/compare/v0.5.3...v0.5.4
+
 ## v0.5.3 - 2026-09-15
 
 ### What's Changed
