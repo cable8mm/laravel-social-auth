@@ -64,7 +64,7 @@ Laravel 패키지 자동 발견이 활성화되어 있으면 Service Provider가
 
 #### 1. 설치 명령 실행
 
-설정 파일, 브라우저용 JS asset, SNS 가입에 필요한 `users.email` / `users.password` nullable 마이그레이션을 한 번에 publish합니다.
+설정 파일과 SNS 가입에 필요한 `users.email` / `users.password` nullable 마이그레이션을 한 번에 publish합니다. 브라우저용 JS는 publish하지 않고 Composer가 설치한 vendor 파일을 Vite에서 직접 import합니다.
 
 ```bash
 php artisan social-auth:install
@@ -90,19 +90,15 @@ php artisan migrate
 php artisan vendor:publish --tag=social-auth-config
 ```
 
-#### 브라우저 JS asset만 수동으로 publish하는 경우
+#### Vite entry에 패키지 JS import
 
-`social-auth:install`을 사용하지 않는다면 다음 명령으로 JS asset을 애플리케이션의 `resources/js/vendor/social-auth.js`에 publish합니다.
-
-```bash
-php artisan vendor:publish --tag=social-auth-assets
-```
-
-그 다음 기존 `resources/js/app.js`에 한 줄을 추가합니다.
+기존 `resources/js/app.js`에서 Composer가 설치한 vendor 파일을 직접 import합니다.
 
 ```js
-import "./vendor/social-auth";
+import '../../vendor/cable8mm/laravel-social-auth/resources/js/social-auth.js';
 ```
+
+패키지 업데이트 후에는 Vite build만 다시 실행하면 최신 JS가 반영됩니다.
 
 ### Tailwind CSS 설정
 
@@ -260,10 +256,10 @@ Apple이 전달하는 `signedPayload` JWS의 서명, issuer, audience와 이벤�
 
 ### 공통 layout 설정
 
-Provider SDK와 One Tap 초기화 코드는 애플리케이션의 Vite entry에 한 번만 import합니다. `php artisan social-auth:install` 실행 후 `resources/js/app.js`에 다음 한 줄을 추가하세요.
+Provider SDK와 One Tap 초기화 코드는 애플리케이션의 Vite entry에 한 번만 import합니다. `resources/js/app.js`에 다음 한 줄을 추가하세요.
 
 ```js
-import "./vendor/social-auth";
+import '../../vendor/cable8mm/laravel-social-auth/resources/js/social-auth.js';
 ```
 
 기존 layout의 `@vite(['resources/css/app.css', 'resources/js/app.js'])`는 그대로 사용합니다. 별도의 `@vite` entry를 추가할 필요가 없습니다.
