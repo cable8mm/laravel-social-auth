@@ -1,5 +1,13 @@
 # Release Notes
 
+## v0.5.3 - 2026-09-15
+
+### What's Changed
+
+* feat: implement account connection for authenticated users and update related configurations by [@cable8mm](https://github.com/cable8mm) in https://github.com/cable8mm/laravel-social-auth/pull/21
+
+**Full Changelog**: https://github.com/cable8mm/laravel-social-auth/compare/v0.5.2...v0.5.3
+
 ## v0.5.2 - 2026-09-15
 
 ### What's Changed
