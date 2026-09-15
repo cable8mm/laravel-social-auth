@@ -106,7 +106,8 @@ class RoutesAndUiTest extends TestCase
         $response = $this->get(route('social-auth.callback', 'naver'));
 
         $response->assertOk();
-        $response->assertSee('네이버 로그인 처리 중입니다.');
+        $response->assertSee('로그인 정보를 확인하고 있습니다.');
+        $response->assertSee('social-auth-callback__card');
         $response->assertSee('access_token');
         $response->assertSee("form.method = 'POST'", false);
         $response->assertSee('form.submit()');
