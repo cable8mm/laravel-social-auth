@@ -9,6 +9,8 @@
         async fetchNonce(element = document.querySelector('[data-provider="google"]')) {
             const url = new URL(element?.dataset.nonceUrl, window.location.origin);
             url.searchParams.set('redirect', element?.dataset.intendedUrl || window.location.pathname + window.location.search);
+            url.searchParams.set('context', element?.dataset.context || 'login');
+            url.searchParams.set('provider', element?.dataset.provider || 'google');
             const res = await fetch(url, { credentials: 'same-origin' });
             const data = await res.json();
             return data.nonce;
@@ -17,13 +19,16 @@
         async fetchState(element = document.querySelector('[data-provider="kakao"], [data-provider="naver"]')) {
             const url = new URL(element?.dataset.stateUrl, window.location.origin);
             url.searchParams.set('redirect', element?.dataset.intendedUrl || window.location.pathname + window.location.search);
+            url.searchParams.set('context', element?.dataset.context || 'login');
+            url.searchParams.set('provider', element?.dataset.provider || '');
             const res = await fetch(url, { credentials: 'same-origin' });
             const data = await res.json();
             return data.state;
         },
 
-        async postCallback(provider, payload) {
-            const element = document.querySelector(`[data-provider="${provider}"]`);
+        async postCallback(provider, payload, context = 'login') {
+            const element = document.querySelector(`[data-provider="${provider}"][data-context="${context}"]`)
+                || document.querySelector(`[data-provider="${provider}"]`);
             const res = await fetch(element?.dataset.callbackUrl, {
                 method: 'POST',
                 credentials: 'same-origin',
@@ -129,7 +134,7 @@
                     client_id: element.dataset.clientId,
                     nonce,
                     callback: response => {
-                        this.postCallback('google', { credential: response.credential });
+                        this.postCallback('google', { credential: response.credential }, element.dataset.context);
                     },
                 });
 

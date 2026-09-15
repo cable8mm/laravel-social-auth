@@ -236,6 +236,59 @@ class SocialLoginFlowTest extends TestCase
         $this->assertSame($user->id, $account->user_id);
     }
 
+    public function test_authenticated_callback_connects_account_instead_of_registering(): void
+    {
+        $user = User::create([
+            'name' => 'User',
+            'email' => 'user@example.com',
+            'password' => bcrypt('secret'),
+        ]);
+
+        Http::fake([
+            'https://kauth.kakao.com/oauth/token' => Http::response([
+                'access_token' => 'kakao-access-token',
+                'refresh_token' => 'kakao-refresh-token',
+                'expires_in' => 21_600,
+                'token_type' => 'bearer',
+            ]),
+            'https://kapi.kakao.com/v2/user/me' => Http::response([
+                'id' => 12_345,
+                'properties' => ['nickname' => 'Kakao User'],
+                'kakao_account' => [
+                    'email' => 'kakao@example.com',
+                    'is_email_verified' => true,
+                    'is_email_valid' => true,
+                ],
+            ]),
+        ]);
+
+        $this->actingAs($user);
+        $state = $this->getJson(route('social-auth.state', [
+            'context' => 'connect',
+            'provider' => 'kakao',
+            'redirect' => '/profile',
+        ]))->json('state');
+
+        $response = $this->postJson(route('social-auth.callback', 'kakao'), [
+            'code' => 'kakao-code',
+            'state' => $state,
+        ]);
+
+        $response->assertOk()
+            ->assertJson([
+                'status' => 'connected',
+                'provider' => 'kakao',
+            ]);
+        $this->assertAuthenticatedAs($user);
+        $this->assertDatabaseHas(config('social-auth.table'), [
+            'user_id' => $user->id,
+            'provider' => 'kakao',
+            'provider_id' => '12345',
+        ]);
+        $this->assertDatabaseCount('users', 1);
+        $this->assertFalse(Session::has(config('social-auth.session.connecting_provider')));
+    }
+
     public function test_connect_rejects_already_linked_to_other_user(): void
     {
         $user1 = User::create(['name' => 'U1', 'email' => 'u1@example.com', 'password' => bcrypt('x')]);

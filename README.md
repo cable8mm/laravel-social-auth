@@ -349,10 +349,29 @@ One Tap은 로그인된 사용자에게는 렌더링되지 않습니다. Google 
 
 ### 프로필 연결/해제
 
+로그인한 사용자가 기존 계정에 SNS 계정을 추가하거나 해제하려면, 인증된 화면에 다음 컴포넌트를 추가합니다. 일반적으로 `resources/views/profile.blade.php` 또는 프로필 설정 화면에 배치합니다.
+
 ```blade
 @auth
     <x-social-auth::connected-accounts />
 @endauth
+```
+
+연결 버튼을 클릭하면 회원가입 약관 화면으로 이동하지 않고 현재 로그인한 사용자에게 해당 SNS 계정을 연결합니다. 연결이 완료되거나 오류가 발생한 뒤 이동할 기본 경로는 `/profile`입니다.
+
+프로필 화면의 경로가 다르면 `config/social-auth.php`에서 변경할 수 있습니다.
+
+```php
+'redirects' => [
+    'connect_success' => '/settings/accounts',
+    'disconnect_success' => '/settings/accounts',
+],
+```
+
+`connect_success`와 `disconnect_success`에는 애플리케이션의 실제 계정 설정 또는 프로필 경로를 지정하세요. `SOCIAL_AUTH_CONNECT_REDIRECT` 또는 `SOCIAL_AUTH_DISCONNECT_REDIRECT` 환경 변수가 설정되어 있으면 해당 값이 우선합니다. 설정을 변경한 뒤 설정 캐시를 사용하는 환경에서는 다음 명령을 실행합니다.
+
+```bash
+php artisan config:clear
 ```
 
 ### 이벤트
