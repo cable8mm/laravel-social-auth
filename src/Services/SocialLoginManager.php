@@ -350,10 +350,16 @@ class SocialLoginManager
         $user = $userModel::query()->create([
             'name' => $mapped['name'] ?? $nickname,
             'email' => $providerUser->email,
-            'email_verified_at' => $emailVerifiedAt,
             'password' => null,
             'nickname' => $nickname,
         ]);
+
+        // email_verified_at is security-sensitive and is commonly guarded by
+        // Laravel application's User model. Persist the package's explicit
+        // provider verification decision without relying on $fillable.
+        $user->forceFill([
+            'email_verified_at' => $emailVerifiedAt,
+        ])->save();
 
         return $user;
     }
