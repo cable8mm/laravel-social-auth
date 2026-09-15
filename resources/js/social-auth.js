@@ -141,6 +141,7 @@
                 elements.forEach(item => {
                     const target = item.querySelector('.google-gis-button');
                     if (target) {
+                        target.replaceChildren();
                         const text = item.dataset.context === 'register'
                             ? 'signup_with'
                             : item.dataset.context === 'connect'

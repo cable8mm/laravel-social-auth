@@ -75,6 +75,8 @@ Route::middleware('auth')->group(function () {
 });
 
 Route::get('/test/social-auth/prepare-consent', function () {
+    Session::forget('url.intended');
+    Session::put(config('social-auth.session.intended'), '/');
     Session::put(config('social-auth.session.pending_registration'), [
         'provider' => 'google',
         'provider_id' => 'dusk-google-user',

@@ -47,7 +47,19 @@
 >
     @if($provider === 'google')
         {{-- Google GIS button is rendered by JS --}}
-        <div id="google-btn-{{ $context }}" class="google-gis-button min-h-12 w-full"></div>
+        <div id="google-btn-{{ $context }}" class="google-gis-button min-h-12 w-full">
+            <button
+                type="button"
+                class="google-gis-fallback inline-flex min-h-12 w-full items-center justify-center rounded-xl border border-zinc-300 bg-white px-4 py-3 text-[0.9375rem] font-semibold text-zinc-700 shadow-sm transition hover:bg-zinc-50 focus-visible:outline-3 focus-visible:outline-zinc-500/35 focus-visible:outline-offset-2 dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-100 dark:hover:bg-zinc-800"
+                onclick="window.SocialAuth && window.SocialAuth.initGoogle()"
+            >
+                {{ match ($context) {
+                    'register' => 'Google로 시작하기',
+                    'connect' => 'Google 계정 연결',
+                    default => 'Google로 로그인',
+                } }}
+            </button>
+        </div>
         @once
             <script src="{{ $jsSdkUrl }}" async defer></script>
         @endonce

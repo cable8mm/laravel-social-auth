@@ -183,6 +183,18 @@ class RoutesAndUiTest extends TestCase
         $this->assertStringContainsString('appleid.cdn-apple.com/appleauth', $html);
     }
 
+    public function test_google_button_has_a_server_rendered_fallback(): void
+    {
+        $html = view('social-auth::components.button', [
+            'provider' => 'google',
+            'context' => 'connect',
+        ])->render();
+
+        $this->assertStringContainsString('google-gis-fallback', $html);
+        $this->assertStringContainsString('Google 계정 연결', $html);
+        $this->assertStringContainsString('window.SocialAuth && window.SocialAuth.initGoogle()', $html);
+    }
+
     public function test_kakao_button_does_not_use_an_invalid_integrity_hash(): void
     {
         $html = view('social-auth::components.button', [
