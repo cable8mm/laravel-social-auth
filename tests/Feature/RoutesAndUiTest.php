@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Cable8mm\LaravelSocialAuth\Tests\Feature;
 
+use Cable8mm\LaravelSocialAuth\Models\SocialAccount;
 use Cable8mm\LaravelSocialAuth\Tests\Fixtures\User;
 use Cable8mm\LaravelSocialAuth\Tests\TestCase;
 use Illuminate\Support\Facades\Session;
@@ -138,6 +139,28 @@ class RoutesAndUiTest extends TestCase
         $this->assertStringNotContainsString('data-provider="google"', $html);
         $this->assertStringContainsString('data-provider="naver"', $html);
         $this->assertStringContainsString('data-provider="kakao"', $html);
+    }
+
+    public function test_connected_accounts_puts_disconnect_action_on_the_right(): void
+    {
+        $user = User::create([
+            'name' => 'User',
+            'email' => 'user@example.com',
+            'password' => bcrypt('secret'),
+        ]);
+
+        SocialAccount::create([
+            'user_id' => $user->id,
+            'provider' => 'naver',
+            'provider_id' => 'naver-user',
+        ]);
+
+        $this->actingAs($user);
+        $html = view('social-auth::components.connected-accounts')->render();
+
+        $this->assertStringContainsString('class="shrink-0"', $html);
+        $this->assertStringContainsString('cursor-pointer', $html);
+        $this->assertStringContainsString('연결 해제', $html);
     }
 
     public function test_apple_button_uses_the_apple_js_sdk(): void
