@@ -193,6 +193,11 @@ class RoutesAndUiTest extends TestCase
         $this->assertStringContainsString('google-gis-fallback', $html);
         $this->assertStringContainsString('Google 계정 연결', $html);
         $this->assertStringContainsString('window.SocialAuth && window.SocialAuth.initGoogle()', $html);
+        $this->assertStringContainsString('data-google-sdk-url=', $html);
+
+        config(['social-auth.providers.google.one_tap' => true]);
+        $oneTap = view('social-auth::components.one-tap')->render();
+        $this->assertStringContainsString('data-google-sdk-url=', $oneTap);
     }
 
     public function test_kakao_button_does_not_use_an_invalid_integrity_hash(): void

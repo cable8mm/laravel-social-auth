@@ -43,6 +43,7 @@
     data-nonce-url="{{ route('social-auth.nonce') }}"
     data-state-url="{{ route('social-auth.state') }}"
     data-intended-url="{{ url()->current() }}"
+    data-google-sdk-url="{{ $provider === 'google' ? $jsSdkUrl : '' }}"
     data-redirect-url="{{ $provider === 'apple' ? ($p->getConfig()['redirect'] ?? '') : '' }}"
 >
     @if($provider === 'google')
