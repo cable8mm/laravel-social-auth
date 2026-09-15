@@ -199,6 +199,16 @@ class RoutesAndUiTest extends TestCase
         $this->assertStringContainsString('Google 계정 연결', $html);
         $this->assertStringContainsString('window.SocialAuth && window.SocialAuth.initGoogle()', $html);
         $this->assertStringContainsString('data-google-sdk-url=', $html);
+        $this->assertStringContainsString('max-w-[12.5rem]', $html);
+        $this->assertStringContainsString('data-google-button-width="200"', $html);
+        $this->assertStringContainsString('data-google-button-type="standard"', $html);
+
+        $loginHtml = view('social-auth::components.button', [
+            'provider' => 'google',
+            'context' => 'login',
+        ])->render();
+        $this->assertStringContainsString('max-w-[17.5rem]', $loginHtml);
+        $this->assertStringContainsString('data-google-button-width="280"', $loginHtml);
 
         config(['social-auth.providers.google.one_tap' => true]);
         $oneTap = view('social-auth::components.one-tap')->render();
