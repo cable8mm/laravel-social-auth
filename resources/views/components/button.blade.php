@@ -25,7 +25,7 @@
     $label = $labels[$provider] ?? ucfirst($provider);
 
     $buttonClasses = match($provider) {
-        'google' => 'social-btn social-btn-google block min-h-12 w-full max-w-[17.5rem]',
+        'google' => 'social-btn social-btn-google block min-h-12 w-full '.($context === 'connect' ? 'max-w-[12.5rem]' : 'max-w-[17.5rem]'),
         'kakao' => 'social-btn social-btn-kakao block min-h-12 w-full max-w-[17.5rem]',
         'naver' => 'social-btn social-btn-naver block min-h-12 w-full max-w-[17.5rem] overflow-hidden rounded-xl bg-[#03A94D]',
         'apple' => 'social-btn social-btn-apple block min-h-12 w-full max-w-[17.5rem]',
@@ -44,6 +44,8 @@
     data-state-url="{{ route('social-auth.state') }}"
     data-intended-url="{{ url()->current() }}"
     data-google-sdk-url="{{ $provider === 'google' ? $jsSdkUrl : '' }}"
+    data-google-button-width="{{ $provider === 'google' && $context === 'connect' ? '200' : '280' }}"
+    data-google-button-type="standard"
     data-redirect-url="{{ $provider === 'apple' ? ($p->getConfig()['redirect'] ?? '') : '' }}"
 >
     @if($provider === 'google')

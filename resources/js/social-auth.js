@@ -188,18 +188,18 @@
                     const target = item.querySelector('.google-gis-button');
                     if (target) {
                         target.replaceChildren();
-                        const text = item.dataset.context === 'register'
-                            ? 'signup_with'
-                            : item.dataset.context === 'connect'
-                                ? 'continue_with'
-                                : 'signin_with';
-
-                        google.accounts.id.renderButton(target, {
+                        const options = {
                             theme: 'outline',
                             size: 'large',
-                            text,
-                            width: 280,
-                        });
+                            text: item.dataset.context === 'register'
+                                ? 'signup_with'
+                                : item.dataset.context === 'connect'
+                                    ? 'continue_with'
+                                    : 'signin_with',
+                            width: Number(item.dataset.googleButtonWidth || 280),
+                        };
+
+                        google.accounts.id.renderButton(target, options);
                     }
                 });
 
