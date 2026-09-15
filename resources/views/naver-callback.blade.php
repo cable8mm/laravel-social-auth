@@ -22,35 +22,31 @@
                 return;
             }
 
-            const payload = {
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = @json($callbackUrl);
+            form.style.display = 'none';
+
+            const fields = {
+                _token: document.querySelector('meta[name="csrf-token"]').content,
                 access_token: accessToken,
-                refresh_token: hash.get('refresh_token'),
-                expires_in: hash.get('expires_in'),
-                state: hash.get('state') || query.get('state'),
+                refresh_token: hash.get('refresh_token') || '',
+                expires_in: hash.get('expires_in') || '',
+                state: hash.get('state') || query.get('state') || '',
             };
 
-            fetch(@json($callbackUrl), {
-                method: 'POST',
-                credentials: 'same-origin',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                },
-                body: JSON.stringify(payload),
-            })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.redirect) {
-                        window.location.replace(data.redirect);
-                        return;
-                    }
+            Object.entries(fields).forEach(([name, value]) => {
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = name;
+                input.value = value;
+                form.appendChild(input);
+            });
 
-                    status.textContent = data.error || '네이버 로그인을 완료하지 못했습니다.';
-                })
-                .catch(() => {
-                    status.textContent = '네이버 로그인 처리 중 오류가 발생했습니다.';
-                });
+            document.body.appendChild(form);
+            window.history.replaceState({}, document.title, window.location.pathname + window.location.search);
+            status.textContent = '네이버 로그인 결과를 확인하고 있습니다.';
+            form.submit();
         })();
     </script>
 </body>

@@ -3,11 +3,17 @@
 
     Object.assign(window.SocialAuth, {
         googleInitialized: false,
+        googleSdkPromise: null,
         appleInitialized: false,
         appleInitializing: false,
 
-        async fetchNonce(element = document.querySelector('[data-provider="google"]')) {
-            const url = new URL(element?.dataset.nonceUrl, window.location.origin);
+        async fetchNonce(element = document.querySelector('[data-provider="google"][data-nonce-url]')) {
+            const nonceUrl = element?.dataset.nonceUrl;
+            if (!nonceUrl) {
+                throw new Error('Google nonce URL is missing');
+            }
+
+            const url = new URL(nonceUrl, window.location.origin);
             url.searchParams.set('redirect', element?.dataset.intendedUrl || window.location.pathname + window.location.search);
             url.searchParams.set('context', element?.dataset.context || 'login');
             url.searchParams.set('provider', element?.dataset.provider || 'google');
@@ -42,6 +48,8 @@
             const data = await res.json();
             if (data.redirect) {
                 window.location.href = data.redirect;
+            } else if (data.status === 'connected' || data.status === 'logged_in') {
+                window.location.reload();
             } else if (data.error) {
                 alert(data.error);
             }
@@ -123,13 +131,51 @@
             }
         },
 
-        initGoogle() {
-            const elements = document.querySelectorAll('[data-provider="google"]');
+        async loadGoogleSdk(element) {
+            if (typeof google !== 'undefined' && google.accounts?.id) return;
+            if (this.googleSdkPromise) return this.googleSdkPromise;
+
+            const src = element.dataset.googleSdkUrl;
+            if (!src) return;
+
+            this.googleSdkPromise = new Promise((resolve, reject) => {
+                const script = document.createElement('script');
+                script.src = src;
+                script.async = true;
+                script.defer = true;
+                script.onload = resolve;
+                script.onerror = reject;
+                document.head.appendChild(script);
+            });
+
+            try {
+                await this.googleSdkPromise;
+            } catch (error) {
+                this.googleSdkPromise = null;
+                throw error;
+            }
+        },
+
+        async initGoogle() {
+            const elements = [...document.querySelectorAll('[data-provider="google"][data-client-id][data-nonce-url]')];
             const element = elements[0];
-            if (!element || typeof google === 'undefined' || !google.accounts?.id || this.googleInitialized) return;
+            if (!element || this.googleInitialized) return;
+
+            try {
+                await this.loadGoogleSdk(element);
+            } catch (error) {
+                console.error('Google GIS SDK failed to load', error);
+                return;
+            }
+
+            if (typeof google === 'undefined' || !google.accounts?.id) {
+                console.error('Google GIS SDK not available');
+                return;
+            }
 
             this.googleInitialized = true;
-                this.fetchNonce(element).then(nonce => {
+            try {
+                const nonce = await this.fetchNonce(element);
                 google.accounts.id.initialize({
                     client_id: element.dataset.clientId,
                     nonce,
@@ -141,6 +187,7 @@
                 elements.forEach(item => {
                     const target = item.querySelector('.google-gis-button');
                     if (target) {
+                        target.replaceChildren();
                         const text = item.dataset.context === 'register'
                             ? 'signup_with'
                             : item.dataset.context === 'connect'
@@ -159,7 +206,10 @@
                 if (document.querySelector('[data-google-one-tap]')) {
                     google.accounts.id.prompt();
                 }
-            });
+            } catch (error) {
+                this.googleInitialized = false;
+                console.error('Google GIS initialization failed', error);
+            }
         },
 
     });

@@ -10,7 +10,7 @@ final class InstallCommand extends Command
 {
     protected $signature = 'social-auth:install';
 
-    protected $description = 'Install Laravel Social Auth configuration, assets, and user-column migration';
+    protected $description = 'Install Laravel Social Auth configuration and user-column migration';
 
     public function handle(): int
     {
@@ -20,14 +20,6 @@ final class InstallCommand extends Command
 
         if ($configPublish !== self::SUCCESS) {
             return $configPublish;
-        }
-
-        $assetPublish = $this->call('vendor:publish', [
-            '--tag' => 'social-auth-assets',
-        ]);
-
-        if ($assetPublish !== self::SUCCESS) {
-            return $assetPublish;
         }
 
         $migrationPublish = $this->call('vendor:publish', [

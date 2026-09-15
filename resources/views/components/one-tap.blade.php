@@ -8,6 +8,7 @@
         data-context="one-tap"
         data-google-one-tap
         data-client-id="{{ $google['client_id'] }}"
+        data-google-sdk-url="{{ $google['js_sdk_url'] }}"
         data-callback-url="{{ route('social-auth.callback', 'google') }}"
         data-nonce-url="{{ route('social-auth.nonce') }}"
         data-intended-url="{{ url()->current() }}"

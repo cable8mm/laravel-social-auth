@@ -55,6 +55,7 @@ class SocialLoginController extends Controller
                         'status' => 'connected',
                         'provider' => $provider,
                         'account_id' => $account->id,
+                        'redirect' => config('social-auth.redirects.connect_success', '/profile'),
                     ]);
                 }
 
