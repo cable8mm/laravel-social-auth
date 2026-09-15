@@ -140,6 +140,11 @@ return [
     */
     'consent' => [
         'layout' => 'layouts.app',
+        'user_fields' => [
+            'terms_of_service' => 'terms_accepted_at',
+            'privacy_policy' => 'privacy_policy_accepted_at',
+            'marketing' => 'marketing_accepted_at',
+        ],
         'required_terms' => [
             'terms_of_service' => [
                 'label' => '이용약관',

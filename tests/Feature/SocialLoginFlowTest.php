@@ -100,6 +100,9 @@ class SocialLoginFlowTest extends TestCase
         $this->assertNull($user->password);
         $this->assertNotNull($user->nickname);
         $this->assertStringStartsWith('user_', $user->nickname);
+        $this->assertNotNull($user->terms_accepted_at);
+        $this->assertNotNull($user->privacy_policy_accepted_at);
+        $this->assertNull($user->marketing_accepted_at);
 
         $this->assertDatabaseHas(config('social-auth.table'), [
             'provider' => 'kakao',

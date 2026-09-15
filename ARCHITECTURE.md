@@ -24,8 +24,8 @@ Any code calling these directly requires a live observation before a correspondi
 
 ## Components
 
-- `SocialAuthServiceProvider` — registers bindings and `social-auth:install`, validates config at boot (`ConfigurationValidator`), publishes config/views/JS/migrations, loads routes.
-- `InstallCommand` — publishes the package config, browser asset, and a timestamped nullable user-columns migration; it does not run application migrations.
+- `SocialAuthServiceProvider` — registers bindings and `social-auth:install`, validates config at boot (`ConfigurationValidator`), publishes config/views/migrations, and loads routes.
+- `InstallCommand` — publishes the package config and a timestamped nullable user-columns migration; it does not run application migrations.
 - `resources/js/social-auth.js` — browser-side provider SDK orchestration, imported by the host application's existing Vite entry.
 - `SocialLoginManager` — orchestration: resolves providers, drives registration/link/unlink flows, owns the "last login method" rule.
 - `ProviderContract` — `key()`, `isEnabled()`, `jsSdkUrl()`, `authenticate(Request): SocialUser`, `revoke(SocialAccount): bool`.
@@ -57,7 +57,7 @@ Any code calling these directly requires a live observation before a correspondi
 `social_accounts`: id, user_id (FK), provider, provider_id, email, name, nickname, avatar, access_token (encrypted, nullable), refresh_token (encrypted, nullable), token_expires_at, raw (json), timestamps.
 Unique indexes: `(provider, provider_id)`, `(user_id, provider)`.
 
-`users`: email and password must be nullable. The package never edits the application's own users migration — a publishable stub is provided under the `social-auth-user-columns` tag instead.
+`users`: email and password must be nullable. The package never edits the application's own users migration — a publishable stub is provided under the `social-auth-user-columns` tag instead. That stub also adds nullable timestamp columns `terms_accepted_at`, `privacy_policy_accepted_at`, and `marketing_accepted_at`.
 
 ## Flows
 
@@ -65,7 +65,9 @@ Unique indexes: `(provider, provider_id)`, `(user_id, provider)`.
 provider authenticate -> `SocialUser`. The browser stores the current same-origin page as the intended destination before provider authentication. If a matching `social_accounts` row exists, log its owner in (`Auth::login` + session regenerate) and consume that destination. Otherwise store `PendingSocialRegistration` in session and redirect to the consent screen — no `User` row is created yet. Consent completion consumes the same destination after creating and logging in the user.
 
 **Consent completion** (`SocialRegistrationController::store`):
-Validate consent payload -> inside a DB transaction, create the `User` row (email/email_verified_at per policy, password null) and the `SocialAccount` row together -> log the new user in.
+Validate consent payload -> inside a DB transaction, create the `User` row (email/email_verified_at per policy, password null, and mapped consent fields) and the `SocialAccount` row together -> log the new user in.
+
+Consent keys are mapped to user columns by `config/social-auth.php` under `consent.user_fields`. The default mapping is `terms_of_service` -> `terms_accepted_at`, `privacy_policy` -> `privacy_policy_accepted_at`, and `marketing` -> `marketing_accepted_at`. Accepted terms receive the current timestamp; unchecked terms receive `null`. A field can be set to `null` to opt out of persisting that consent value.
 
 **Explicit linking** (`SocialLinkController::connect`, `auth` middleware):
 Authenticate provider -> reject if the provider account already belongs to another user, or is already linked to this user -> create `SocialAccount` -> fire `SocialAccountLinked`.

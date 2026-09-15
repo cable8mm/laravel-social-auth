@@ -79,7 +79,6 @@ class SocialAuthServiceProvider extends ServiceProvider
         $this->loadRoutesFrom(dirname(__DIR__).'/routes/web.php');
         $this->loadViewsFrom(dirname(__DIR__).'/resources/views', 'social-auth');
         $this->loadMigrationsFrom(dirname(__DIR__).'/database/migrations');
-
         if ($this->app->runningInConsole()) {
             $this->commands([
                 InstallCommand::class,
