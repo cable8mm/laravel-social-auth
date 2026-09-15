@@ -103,6 +103,9 @@ class RoutesAndUiTest extends TestCase
         $response->assertOk();
         $response->assertSee('네이버 로그인 처리 중입니다.');
         $response->assertSee('access_token');
+        $response->assertSee("form.method = 'POST'", false);
+        $response->assertSee('form.submit()');
+        $response->assertSee('window.history.replaceState');
     }
 
     public function test_callback_without_provider_payload_is_rejected_as_cancelled(): void

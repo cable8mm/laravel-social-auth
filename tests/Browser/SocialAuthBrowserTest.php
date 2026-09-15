@@ -22,6 +22,22 @@ class SocialAuthBrowserTest extends DuskTestCase
         });
     }
 
+    public function test_workbench_has_login_register_and_profile_screens(): void
+    {
+        $this->browse(function (Browser $browser): void {
+            $browser->visit('/login')
+                ->assertPathIs('/login')
+                ->assertSee('로그인')
+                ->assertPresent('form.workbench-form')
+                ->clickLink('회원가입')
+                ->assertPathIs('/register')
+                ->assertSee('회원가입')
+                ->assertPresent('form.workbench-form')
+                ->visit('/profile')
+                ->assertPathIs('/login');
+        });
+    }
+
     public function test_pending_registration_can_complete_consent_in_browser(): void
     {
         $this->browse(function (Browser $browser): void {
