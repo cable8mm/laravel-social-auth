@@ -278,6 +278,7 @@ class SocialLoginFlowTest extends TestCase
             ->assertJson([
                 'status' => 'connected',
                 'provider' => 'kakao',
+                'redirect' => '/profile',
             ]);
         $this->assertAuthenticatedAs($user);
         $this->assertDatabaseHas(config('social-auth.table'), [

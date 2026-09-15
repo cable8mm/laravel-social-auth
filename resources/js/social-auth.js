@@ -48,6 +48,8 @@
             const data = await res.json();
             if (data.redirect) {
                 window.location.href = data.redirect;
+            } else if (data.status === 'connected' || data.status === 'logged_in') {
+                window.location.reload();
             } else if (data.error) {
                 alert(data.error);
             }
