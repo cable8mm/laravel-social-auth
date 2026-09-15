@@ -14,6 +14,14 @@ return new class extends Migration
             $table->string('email')->nullable()->change();
             $table->string('password')->nullable()->change();
         });
+
+        foreach (['terms_accepted_at', 'privacy_policy_accepted_at', 'marketing_accepted_at'] as $column) {
+            if (! Schema::hasColumn('users', $column)) {
+                Schema::table('users', function (Blueprint $table) use ($column): void {
+                    $table->timestamp($column)->nullable();
+                });
+            }
+        }
     }
 
     public function down(): void
@@ -22,5 +30,8 @@ return new class extends Migration
             $table->string('email')->nullable(false)->change();
             $table->string('password')->nullable(false)->change();
         });
+
+        // Consent columns may have existed before this migration was
+        // published. Leave them intact during rollback.
     }
 };

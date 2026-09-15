@@ -13,6 +13,9 @@ class User extends Authenticatable
         'nickname',
         'email',
         'password',
+        'terms_accepted_at',
+        'privacy_policy_accepted_at',
+        'marketing_accepted_at',
     ];
 
     protected $hidden = [
@@ -23,5 +26,8 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
+        'terms_accepted_at' => 'datetime',
+        'privacy_policy_accepted_at' => 'datetime',
+        'marketing_accepted_at' => 'datetime',
     ];
 }

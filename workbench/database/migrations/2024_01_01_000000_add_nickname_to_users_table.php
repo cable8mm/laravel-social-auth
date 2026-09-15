@@ -14,13 +14,23 @@ return new class extends Migration
             $table->string('nickname')->nullable();
             $table->string('password')->nullable()->change();
             $table->string('email')->nullable()->change();
+            $table->timestamp('terms_accepted_at')->nullable();
+            $table->timestamp('privacy_policy_accepted_at')->nullable();
+            $table->timestamp('marketing_accepted_at')->nullable();
         });
+
     }
 
     public function down(): void
     {
         Schema::table('users', function (Blueprint $table): void {
-            $table->dropColumn('nickname');
+            $table->dropColumn([
+                'nickname',
+                'terms_accepted_at',
+                'privacy_policy_accepted_at',
+                'marketing_accepted_at',
+            ]);
         });
+
     }
 };

@@ -51,13 +51,10 @@ final class InstallCommandTest extends TestCase
         $this->assertCount(1, array_diff($migrations, $this->publishedMigrations));
     }
 
-    public function test_install_does_not_run_migrations(): void
+    public function test_install_tells_the_user_to_run_migrations(): void
     {
-        $this->artisan('social-auth:install')->assertExitCode(0);
-
-        $this->assertFalse(
-            collect(File::files(database_path('migrations')))
-                ->contains(fn ($file): bool => str_contains($file->getFilename(), 'create_social_accounts_table'))
-        );
+        $this->artisan('social-auth:install')
+            ->assertExitCode(0)
+            ->expectsOutputToContain('then run php artisan migrate');
     }
 }

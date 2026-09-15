@@ -152,7 +152,7 @@ class SocialLoginManager
         $this->accountService->ensureNotLinkedToOtherUser($providerUser);
 
         $user = DB::transaction(function () use ($providerUser, $consents) {
-            $user = $this->createUser($providerUser);
+            $user = $this->createUser($providerUser, $consents);
             $account = $this->accountService->createForUser($user, $providerUser);
             event(new SocialUserRegistered($user, $account, $consents));
 
@@ -324,7 +324,10 @@ class SocialLoginManager
         return $this->getPendingRegistration() !== null;
     }
 
-    private function createUser(ProviderUser $providerUser): Model
+    /**
+     * @param  array<string, bool>  $consents
+     */
+    private function createUser(ProviderUser $providerUser, array $consents): Model
     {
         $userModel = config('social-auth.user_model');
         $provider = $this->provider($providerUser->provider);
@@ -354,12 +357,20 @@ class SocialLoginManager
             'nickname' => $nickname,
         ]);
 
-        // email_verified_at is security-sensitive and is commonly guarded by
-        // Laravel application's User model. Persist the package's explicit
-        // provider verification decision without relying on $fillable.
-        $user->forceFill([
+        $userFields = [
             'email_verified_at' => $emailVerifiedAt,
-        ])->save();
+        ];
+
+        foreach (config('social-auth.consent.user_fields', []) as $term => $field) {
+            if (is_string($field) && $field !== '') {
+                $userFields[$field] = ! empty($consents[$term]) ? now() : null;
+            }
+        }
+
+        // Security-sensitive fields and consent fields are commonly guarded
+        // by Laravel application's User model. Persist the package's explicit
+        // decisions without relying on $fillable.
+        $user->forceFill($userFields)->save();
 
         return $user;
     }

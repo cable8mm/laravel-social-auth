@@ -64,7 +64,7 @@ Laravel 패키지 자동 발견이 활성화되어 있으면 Service Provider가
 
 #### 1. 설치 명령 실행
 
-설정 파일과 SNS 가입에 필요한 `users.email` / `users.password` nullable 마이그레이션을 한 번에 publish합니다. 브라우저용 JS는 publish하지 않고 Composer가 설치한 vendor 파일을 Vite에서 직접 import합니다.
+설정 파일과 SNS 가입에 필요한 `users.email` / `users.password` nullable migration을 한 번에 publish합니다. 브라우저용 JS는 publish하지 않고 Composer가 설치한 vendor 파일을 Vite에서 직접 import합니다.
 
 ```bash
 php artisan social-auth:install
@@ -82,7 +82,7 @@ Google, Kakao, Naver 개발자 콘솔에서 발급받은 키를 `.env`에 설정
 php artisan migrate
 ```
 
-패키지의 `social_accounts` 마이그레이션은 Service Provider가 자동으로 로드합니다. 따라서 별도로 `social-auth-migrations`를 publish하지 않아도 됩니다.
+패키지의 `social_accounts` migration은 Service Provider가 자동으로 로드합니다. 따라서 별도로 `social-auth-migrations`를 publish하지 않아도 됩니다.
 
 #### 설정 파일만 수동으로 publish하는 경우
 
@@ -118,13 +118,20 @@ import '../../vendor/cable8mm/laravel-social-auth/resources/js/social-auth.js';
 
 패키지는 `@apply`나 별도의 `<style>` Blade 파일을 사용하지 않습니다. 따라서 Tailwind source 등록과 기존 Vite CSS entry만 필요합니다.
 
-#### users 컬럼 마이그레이션만 수동으로 publish하는 경우
+#### users 컬럼 migration만 수동으로 publish하는 경우
 
-SNS 가입은 provider가 이메일을 제공하지 않거나 비밀번호를 사용하지 않는 경우를 지원하므로 `users.email`과 `users.password`가 nullable이어야 합니다. 이 단계는 필수입니다.
+SNS 가입은 provider가 이메일을 제공하지 않거나 비밀번호를 사용하지 않는 경우를 지원하므로 `users.email`과 `users.password`가 nullable이어야 합니다. 또한 약관에 동의한 시각을 저장할 다음 nullable timestamp 컬럼이 필요합니다. 이 단계는 필수입니다.
 
 ```bash
 php artisan vendor:publish --tag=social-auth-user-columns
+php artisan migrate
 ```
+
+이 migration은 `email`과 `password`를 nullable로 변경하고 다음 컬럼을 추가합니다.
+
+- `terms_accepted_at`
+- `privacy_policy_accepted_at`
+- `marketing_accepted_at`
 
 #### 4. 기본 뷰를 수정할 경우에만 views publish
 
@@ -140,14 +147,20 @@ php artisan vendor:publish --tag=social-auth-views
 
 - `users.email`이 nullable
 - `users.password`가 nullable
+- `users.terms_accepted_at`, `users.privacy_policy_accepted_at`, `users.marketing_accepted_at` 컬럼이 존재
 
 ```php
 $table->string('email')->nullable()->unique();
 $table->string('password')->nullable();
 $table->string('nickname')->nullable(); // 선택
+$table->timestamp('terms_accepted_at')->nullable();
+$table->timestamp('privacy_policy_accepted_at')->nullable();
+$table->timestamp('marketing_accepted_at')->nullable();
 ```
 
 패키지는 애플리케이션의 `users` 마이그레이션을 자동으로 변경하지 않습니다.
+
+이미 이전 버전의 `social-auth-user-columns` migration을 실행한 애플리케이션은 기존 migration 파일을 다시 실행하지 않습니다. 그런 경우에는 동일한 세 컬럼을 추가하는 별도 애플리케이션 migration을 만들고 `php artisan migrate`를 실행하세요.
 
 ## .env 예시
 
@@ -342,6 +355,20 @@ One Tap은 로그인된 사용자에게는 렌더링되지 않습니다. Google 
 필수 약관 URL은 `config/social-auth.php` 의 `consent` 섹션에서 설정합니다.
 
 기본 동의 화면은 애플리케이션의 `layouts.app` 레이아웃을 사용합니다. 다른 레이아웃을 사용하는 경우 `config/social-auth.php`의 `consent.layout` 값을 변경하세요. 패키지 화면을 직접 수정하려면 `social-auth-views` 태그로 views를 publish할 수 있습니다.
+
+동의가 완료되면 기본적으로 다음과 같이 `users` 테이블에 동의 시각이 저장됩니다. 동의하지 않은 항목은 `null`입니다.
+
+```php
+'consent' => [
+    'user_fields' => [
+        'terms_of_service' => 'terms_accepted_at',
+        'privacy_policy' => 'privacy_policy_accepted_at',
+        'marketing' => 'marketing_accepted_at',
+    ],
+],
+```
+
+애플리케이션의 컬럼명이 다르면 이 매핑을 변경할 수 있습니다. 특정 동의 값을 저장하지 않으려면 해당 매핑을 `null`로 설정하세요. 패키지는 `$fillable` 설정과 관계없이 이 값을 저장합니다.
 
 ### 프로필 연결/해제
 
