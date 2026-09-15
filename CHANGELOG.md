@@ -1,5 +1,13 @@
 # Release Notes
 
+## v0.5.2 - 2026-09-15
+
+### What's Changed
+
+* feat: persist email_verified_at securely in user creation by [@cable8mm](https://github.com/cable8mm) in https://github.com/cable8mm/laravel-social-auth/pull/20
+
+**Full Changelog**: https://github.com/cable8mm/laravel-social-auth/compare/v0.5.1...v0.5.2
+
 ## v0.5.1 - 2026-09-14
 
 ### What's Changed
