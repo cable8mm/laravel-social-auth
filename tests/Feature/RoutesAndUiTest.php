@@ -69,6 +69,10 @@ class RoutesAndUiTest extends TestCase
         $response->assertSee('social-auth-consent');
         $response->assertSee('social-auth-consent__submit');
         $response->assertSee('social-auth-term-terms_of_service');
+        $response->assertSee('social-auth-consent__original-link');
+        $response->assertSee('원문 보기');
+        $response->assertSee('href="/terms"', false);
+        $response->assertSee('href="/privacy"', false);
         $response->assertSee('<!DOCTYPE html>', false);
         $response->assertSee('Laravel Social Auth', false);
     }
