@@ -1,5 +1,15 @@
 # Release Notes
 
+## v0.5.5 - 2026-09-15
+
+### What's Changed
+
+* feat: add original link to consent terms in consent page by [@cable8mm](https://github.com/cable8mm) in https://github.com/cable8mm/laravel-social-auth/pull/25
+* feat: update naver callback page content by [@cable8mm](https://github.com/cable8mm) in https://github.com/cable8mm/laravel-social-auth/pull/26
+* feat: enhance Google button rendering and styling based on context by [@cable8mm](https://github.com/cable8mm) in https://github.com/cable8mm/laravel-social-auth/pull/27
+
+**Full Changelog**: https://github.com/cable8mm/laravel-social-auth/compare/v0.5.4...v0.5.5
+
 ## v0.5.4 - 2026-09-15
 
 ### What's Changed
