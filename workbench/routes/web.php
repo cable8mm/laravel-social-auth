@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Session;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Workbench\App\Models\User;
 
@@ -64,6 +65,27 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', function (Request $request) {
         return view('profile', ['user' => $request->user()]);
     })->name('profile');
+
+    Route::patch('/profile/credentials', function (Request $request) {
+        $user = $request->user();
+        $attributes = $request->validate([
+            'email' => [
+                'nullable',
+                'email',
+                'max:255',
+                Rule::unique('users', 'email')->ignore($user->getKey()),
+            ],
+            'password' => ['nullable', 'string', 'min:8', 'confirmed'],
+        ]);
+
+        $user->email = $attributes['email'] ?: null;
+        if (! empty($attributes['password'])) {
+            $user->password = Hash::make($attributes['password']);
+        }
+        $user->save();
+
+        return redirect('/profile')->with('success', '이메일과 비밀번호가 업데이트되었습니다.');
+    })->name('profile.credentials.update');
 
     Route::post('/logout', function (Request $request) {
         Auth::logout();

@@ -75,6 +75,7 @@
         .workbench-form { display: grid; gap: 1rem; }
         .workbench-form label:not(.workbench-checkbox) { display: grid; gap: .4rem; }
         .workbench-form label > span { font-size: .875rem; font-weight: 650; }
+        .workbench-field-help { color: #71717a; font-size: .8125rem; margin: -.5rem 0 0; }
         .workbench-form input[type="email"], .workbench-form input[type="password"], .workbench-form input[type="text"] { background: #fff; border: 1px solid #d4d4d8; border-radius: .65rem; color: #18181b; font: inherit; padding: .75rem .8rem; width: 100%; }
         .workbench-form input:focus { border-color: #2563eb; outline: 3px solid rgb(37 99 235 / 18%); }
         .workbench-checkbox { align-items: center; display: flex; gap: .5rem; font-size: .875rem; }

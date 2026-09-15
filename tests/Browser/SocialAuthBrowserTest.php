@@ -52,4 +52,28 @@ class SocialAuthBrowserTest extends DuskTestCase
                 ->assertSee('로그인됨: dusk@example.com');
         });
     }
+
+    public function test_profile_can_update_email_and_password(): void
+    {
+        $this->browse(function (Browser $browser): void {
+            $browser->visit('/profile')
+                ->press('로그아웃')
+                ->waitForLocation('/login')
+                ->visit('/register')
+                ->type('name', 'Profile User')
+                ->type('email', 'profile@example.com')
+                ->type('password', 'password123')
+                ->type('password_confirmation', 'password123')
+                ->press('회원가입')
+                ->waitForLocation('/profile')
+                ->assertInputValue('email', 'profile@example.com')
+                ->type('email', 'updated@example.com')
+                ->type('password', 'updated-password')
+                ->type('password_confirmation', 'updated-password')
+                ->press('이메일 및 비밀번호 저장')
+                ->waitForLocation('/profile')
+                ->assertSee('이메일과 비밀번호가 업데이트되었습니다.')
+                ->assertInputValue('email', 'updated@example.com');
+        });
+    }
 }
