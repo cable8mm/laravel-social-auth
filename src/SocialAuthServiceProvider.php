@@ -93,10 +93,6 @@ class SocialAuthServiceProvider extends ServiceProvider
                 dirname(__DIR__).'/resources/views' => resource_path('views/vendor/social-auth'),
             ], 'social-auth-views');
 
-            $this->publishes([
-                dirname(__DIR__).'/resources/js/social-auth.js' => resource_path('js/vendor/social-auth.js'),
-            ], 'social-auth-assets');
-
             $this->publishesMigrations([
                 dirname(__DIR__).'/database/migrations/2024_01_01_000001_create_social_accounts_table.php' => database_path('migrations/2024_01_01_000001_create_social_accounts_table.php'),
             ], 'social-auth-migrations');

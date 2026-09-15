@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Cable8mm\LaravelSocialAuth\Tests\Feature;
 
+use Cable8mm\LaravelSocialAuth\Models\SocialAccount;
 use Cable8mm\LaravelSocialAuth\Tests\Fixtures\User;
 use Cable8mm\LaravelSocialAuth\Tests\TestCase;
 use Illuminate\Support\Facades\Session;
@@ -140,6 +141,28 @@ class RoutesAndUiTest extends TestCase
         $this->assertStringContainsString('data-provider="kakao"', $html);
     }
 
+    public function test_connected_accounts_puts_disconnect_action_on_the_right(): void
+    {
+        $user = User::create([
+            'name' => 'User',
+            'email' => 'user@example.com',
+            'password' => bcrypt('secret'),
+        ]);
+
+        SocialAccount::create([
+            'user_id' => $user->id,
+            'provider' => 'naver',
+            'provider_id' => 'naver-user',
+        ]);
+
+        $this->actingAs($user);
+        $html = view('social-auth::components.connected-accounts')->render();
+
+        $this->assertStringContainsString('class="shrink-0"', $html);
+        $this->assertStringContainsString('cursor-pointer', $html);
+        $this->assertStringContainsString('연결 해제', $html);
+    }
+
     public function test_apple_button_uses_the_apple_js_sdk(): void
     {
         config([
@@ -158,6 +181,23 @@ class RoutesAndUiTest extends TestCase
         $this->assertStringContainsString('data-color="black"', $html);
         $this->assertStringContainsString('data-type="sign-in"', $html);
         $this->assertStringContainsString('appleid.cdn-apple.com/appleauth', $html);
+    }
+
+    public function test_google_button_has_a_server_rendered_fallback(): void
+    {
+        $html = view('social-auth::components.button', [
+            'provider' => 'google',
+            'context' => 'connect',
+        ])->render();
+
+        $this->assertStringContainsString('google-gis-fallback', $html);
+        $this->assertStringContainsString('Google 계정 연결', $html);
+        $this->assertStringContainsString('window.SocialAuth && window.SocialAuth.initGoogle()', $html);
+        $this->assertStringContainsString('data-google-sdk-url=', $html);
+
+        config(['social-auth.providers.google.one_tap' => true]);
+        $oneTap = view('social-auth::components.one-tap')->render();
+        $this->assertStringContainsString('data-google-sdk-url=', $oneTap);
     }
 
     public function test_kakao_button_does_not_use_an_invalid_integrity_hash(): void

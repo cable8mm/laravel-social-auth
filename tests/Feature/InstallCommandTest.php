@@ -11,8 +11,6 @@ final class InstallCommandTest extends TestCase
 {
     private string $publishedConfig;
 
-    private string $publishedAsset;
-
     /** @var array<int, string> */
     private array $publishedMigrations = [];
 
@@ -21,17 +19,14 @@ final class InstallCommandTest extends TestCase
         parent::setUp();
 
         $this->publishedConfig = config_path('social-auth.php');
-        $this->publishedAsset = resource_path('js/vendor/social-auth.js');
         $this->publishedMigrations = glob(database_path('migrations/*_make_user_credentials_nullable.php')) ?: [];
 
         File::delete($this->publishedConfig);
-        File::delete($this->publishedAsset);
     }
 
     protected function tearDown(): void
     {
         File::delete($this->publishedConfig);
-        File::delete($this->publishedAsset);
 
         foreach (glob(database_path('migrations/*_make_user_credentials_nullable.php')) ?: [] as $migration) {
             if (! in_array($migration, $this->publishedMigrations, true)) {
@@ -49,7 +44,7 @@ final class InstallCommandTest extends TestCase
             ->expectsOutput('Laravel Social Auth installed successfully.');
 
         $this->assertFileExists($this->publishedConfig);
-        $this->assertFileExists($this->publishedAsset);
+        $this->assertFileDoesNotExist(resource_path('js/vendor/social-auth.js'));
 
         $migrations = glob(database_path('migrations/*_make_user_credentials_nullable.php')) ?: [];
 
