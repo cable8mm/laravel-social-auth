@@ -90,6 +90,11 @@
             text-underline-offset: 3px;
         }
 
+        .social-auth-consent__original-link {
+            flex: 0 0 auto;
+            white-space: nowrap;
+        }
+
         .social-auth-consent__badge {
             color: #6b7280;
             font-size: .8125rem;
@@ -177,13 +182,17 @@
                             @if($term['required'] ?? false) required @endif
                         >
                         <label for="social-auth-term-{{ $key }}">
-                            @if(!empty($term['url']))
-                                <a href="{{ $term['url'] }}" target="_blank" rel="noopener">{{ $term['label'] }}</a>
-                            @else
-                                {{ $term['label'] }}
-                            @endif
+                            {{ $term['label'] }}
                             <span class="social-auth-consent__badge">({{ ($term['required'] ?? false) ? '필수' : '선택' }})</span>
                         </label>
+                        @if(!empty($term['url']))
+                            <a
+                                class="social-auth-consent__original-link"
+                                href="{{ $term['url'] }}"
+                                target="_blank"
+                                rel="noopener"
+                            >원문 보기</a>
+                        @endif
                     </div>
                 @endforeach
             </fieldset>
