@@ -1,5 +1,13 @@
 # Release Notes
 
+## v0.5.6 - 2026-09-16
+
+### What's Changed
+
+* feat: implement email conflict handling by [@cable8mm](https://github.com/cable8mm) in https://github.com/cable8mm/laravel-social-auth/pull/28
+
+**Full Changelog**: https://github.com/cable8mm/laravel-social-auth/compare/v0.5.5...v0.5.6
+
 ## v0.5.5 - 2026-09-15
 
 ### What's Changed
