@@ -64,6 +64,8 @@ Unique indexes: `(provider, provider_id)`, `(user_id, provider)`.
 **Login / registration callback** (`SocialLoginController::callback`):
 provider authenticate -> `SocialUser`. The browser stores the current same-origin page as the intended destination before provider authentication. If a matching `social_accounts` row exists, log its owner in (`Auth::login` + session regenerate) and consume that destination. Otherwise store `PendingSocialRegistration` in session and redirect to the consent screen — no `User` row is created yet. Consent completion consumes the same destination after creating and logging in the user.
 
+If no matching social account exists but the provider reports an email already used by a local user, the manager rejects the callback before storing `PendingSocialRegistration`. The controller returns to the configured failure redirect (normally `/login`) with a safe message; it never automatically merges or links the accounts. The authenticated user must explicitly connect the provider from the profile.
+
 **Consent completion** (`SocialRegistrationController::store`):
 Validate consent payload -> inside a DB transaction, create the `User` row (email/email_verified_at per policy, password null, and mapped consent fields) and the `SocialAccount` row together -> log the new user in.
 

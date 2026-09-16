@@ -212,6 +212,47 @@ class SocialLoginFlowTest extends TestCase
         $this->assertSame(2, User::where('email', 'same@example.com')->count());
     }
 
+    public function test_existing_email_returns_to_login_without_consent_screen(): void
+    {
+        User::create([
+            'name' => 'Existing User',
+            'email' => 'same@example.com',
+            'password' => bcrypt('secret'),
+        ]);
+
+        Http::fake([
+            'https://kauth.kakao.com/oauth/token' => Http::response([
+                'access_token' => 'kakao-access-token',
+                'refresh_token' => 'kakao-refresh-token',
+                'expires_in' => 21_600,
+                'token_type' => 'bearer',
+            ]),
+            'https://kapi.kakao.com/v2/user/me' => Http::response([
+                'id' => 98_765,
+                'properties' => ['nickname' => 'Kakao User'],
+                'kakao_account' => [
+                    'email' => 'same@example.com',
+                    'is_email_verified' => true,
+                    'is_email_valid' => true,
+                ],
+            ]),
+        ]);
+
+        $state = $this->getJson(route('social-auth.state', [
+            'redirect' => '/login',
+        ]))->json('state');
+
+        $response = $this->post(route('social-auth.callback', 'kakao'), [
+            'code' => 'kakao-code',
+            'state' => $state,
+        ]);
+
+        $response->assertRedirect('/login');
+        $response->assertSessionHas('error', '이미 가입된 이메일 주소입니다. 기존 계정으로 로그인한 후 프로필에서 이 SNS 계정을 연결해 주세요.');
+        $this->assertFalse(Session::has(config('social-auth.session.pending_registration')));
+        $this->assertSame(1, User::where('email', 'same@example.com')->count());
+    }
+
     public function test_explicit_connect_succeeds(): void
     {
         Event::fake();

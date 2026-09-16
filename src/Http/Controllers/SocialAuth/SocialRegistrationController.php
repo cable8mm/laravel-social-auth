@@ -7,6 +7,7 @@ namespace Cable8mm\LaravelSocialAuth\Http\Controllers\SocialAuth;
 use Cable8mm\LaravelSocialAuth\Contracts\RegistrationConsentContract;
 use Cable8mm\LaravelSocialAuth\Exceptions\SocialAuthException;
 use Cable8mm\LaravelSocialAuth\Services\SocialLoginManager;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -61,6 +62,17 @@ class SocialRegistrationController extends Controller
             }
 
             return redirect()->back()->with('error', $e->getMessage());
+        } catch (UniqueConstraintViolationException) {
+            $exception = SocialAuthException::emailAlreadyRegistered();
+            $this->manager->clearPendingRegistration();
+
+            if ($request->expectsJson()) {
+                return response()->json(['error' => $exception->getMessage()], 422);
+            }
+
+            return redirect()
+                ->to($this->manager->consumeIntendedUrl())
+                ->with('error', $exception->getMessage());
         }
     }
 }

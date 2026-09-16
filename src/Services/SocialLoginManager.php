@@ -121,6 +121,11 @@ class SocialLoginManager
             ];
         }
 
+        // Do not expose the consent flow when this verified provider email
+        // already belongs to a local account. Linking must be an explicit
+        // action from that account's authenticated profile.
+        $this->ensureEmailIsAvailable($providerUser);
+
         // No automatic merge by email — always go to pending registration
         $this->storePendingRegistration($providerUser);
 
@@ -322,6 +327,21 @@ class SocialLoginManager
     public function hasPendingRegistration(): bool
     {
         return $this->getPendingRegistration() !== null;
+    }
+
+    private function ensureEmailIsAvailable(ProviderUser $providerUser): void
+    {
+        if ($providerUser->email === null || $providerUser->email === '') {
+            return;
+        }
+
+        $userModel = config('social-auth.user_model');
+
+        if ($userModel::query()->where('email', $providerUser->email)->exists()) {
+            $this->clearPendingRegistration();
+
+            throw SocialAuthException::emailAlreadyRegistered();
+        }
     }
 
     /**

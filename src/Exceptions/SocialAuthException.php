@@ -53,6 +53,11 @@ class SocialAuthException extends Exception
         return new self('You must accept the required terms and conditions to complete registration.');
     }
 
+    public static function emailAlreadyRegistered(): self
+    {
+        return new self('이미 가입된 이메일 주소입니다. 기존 계정으로 로그인한 후 프로필에서 이 SNS 계정을 연결해 주세요.');
+    }
+
     public static function unauthenticated(): self
     {
         return new self('Authentication required.');
