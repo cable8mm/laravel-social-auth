@@ -1,5 +1,15 @@
 # Release Notes
 
+## v0.6.0 - 2026-09-16
+
+### What's Changed
+
+* fix: update README for consistency in import statements and add Laravel version badge by [@cable8mm](https://github.com/cable8mm) in https://github.com/cable8mm/laravel-social-auth/pull/29
+* feat: implement consent checkbox functionality and update consent view styles by [@cable8mm](https://github.com/cable8mm) in https://github.com/cable8mm/laravel-social-auth/pull/30
+* feat: implement Naver Login Plus consent management and update related configurations by [@cable8mm](https://github.com/cable8mm) in https://github.com/cable8mm/laravel-social-auth/pull/31
+
+**Full Changelog**: https://github.com/cable8mm/laravel-social-auth/compare/v0.5.6...v0.6.0
+
 ## v0.5.6 - 2026-09-16
 
 ### What's Changed
