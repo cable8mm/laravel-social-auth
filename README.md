@@ -3,6 +3,7 @@
 [![code-style](https://github.com/cable8mm/laravel-social-auth/actions/workflows/code-style.yml/badge.svg)](https://github.com/cable8mm/laravel-social-auth/actions/workflows/code-style.yml)
 [![run-tests](https://github.com/cable8mm/laravel-social-auth/actions/workflows/run-tests.yml/badge.svg)](https://github.com/cable8mm/laravel-social-auth/actions/workflows/run-tests.yml)
 ![PHP Version](https://img.shields.io/packagist/dependency-v/cable8mm/laravel-social-auth/php)
+![Laravel Version](https://img.shields.io/badge/laravel-%5E12.0%7C%5E13.0-orange?style=flat&logo=laravel)
 ![Packagist Version](https://img.shields.io/packagist/v/cable8mm/laravel-social-auth)
 ![Packagist Downloads](https://img.shields.io/packagist/dt/cable8mm/laravel-social-auth)
 ![Packagist License](https://img.shields.io/packagist/l/cable8mm/laravel-social-auth)
@@ -95,7 +96,7 @@ php artisan vendor:publish --tag=social-auth-config
 기존 `resources/js/app.js`에서 Composer가 설치한 vendor 파일을 직접 import합니다.
 
 ```js
-import '../../vendor/cable8mm/laravel-social-auth/resources/js/social-auth.js';
+import "../../vendor/cable8mm/laravel-social-auth/resources/js/social-auth.js";
 ```
 
 패키지 업데이트 후에는 Vite build만 다시 실행하면 최신 JS가 반영됩니다.
@@ -105,7 +106,7 @@ import '../../vendor/cable8mm/laravel-social-auth/resources/js/social-auth.js';
 기본 버튼 UI는 Tailwind CSS 유틸리티 클래스로 구성되어 있습니다. 호스트 애플리케이션의 Tailwind CSS가 패키지 Blade 뷰를 스캔하도록 `resources/css/app.css`에 패키지 경로를 추가하세요.
 
 ```css
-@import 'tailwindcss';
+@import "tailwindcss";
 
 @source '../../vendor/cable8mm/laravel-social-auth/resources/views';
 ```
@@ -272,7 +273,7 @@ Apple이 전달하는 `signedPayload` JWS의 서명, issuer, audience와 이벤�
 Provider SDK와 One Tap 초기화 코드는 애플리케이션의 Vite entry에 한 번만 import합니다. `resources/js/app.js`에 다음 한 줄을 추가하세요.
 
 ```js
-import '../../vendor/cable8mm/laravel-social-auth/resources/js/social-auth.js';
+import "../../vendor/cable8mm/laravel-social-auth/resources/js/social-auth.js";
 ```
 
 기존 layout의 `@vite(['resources/css/app.css', 'resources/js/app.js'])`는 그대로 사용합니다. 별도의 `@vite` entry를 추가할 필요가 없습니다.
