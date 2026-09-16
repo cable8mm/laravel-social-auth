@@ -53,6 +53,21 @@ class SocialAuthBrowserTest extends DuskTestCase
         });
     }
 
+    public function test_consent_all_checkbox_selects_and_unselects_every_term(): void
+    {
+        $this->browse(function (Browser $browser): void {
+            $browser->visit('/test/social-auth/prepare-consent')
+                ->check('consent_all')
+                ->assertChecked('consent_all')
+                ->assertChecked('terms_of_service')
+                ->assertChecked('privacy_policy')
+                ->assertChecked('marketing')
+                ->uncheck('privacy_policy')
+                ->assertNotChecked('consent_all')
+                ->assertNotChecked('privacy_policy');
+        });
+    }
+
     public function test_profile_can_update_email_and_password(): void
     {
         $this->browse(function (Browser $browser): void {
