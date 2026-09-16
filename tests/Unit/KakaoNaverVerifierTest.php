@@ -144,4 +144,42 @@ class KakaoNaverVerifierTest extends TestCase
         $this->expectException(SocialAuthException::class);
         $verifier->fetchProfile('bad-token');
     }
+
+    public function test_naver_service_agreements_are_keyed_by_term_code(): void
+    {
+        Http::fake([
+            'https://openapi.naver.com/v1/nid/agreement' => Http::response([
+                'result' => 'success',
+                'accessToken' => 'naver-access-token',
+                'agreementInfos' => [
+                    [
+                        'termCode' => 'terms-code',
+                        'clientId' => 'client-id',
+                        'agreeDate' => '04:25:06.123 PM 09/16/2026',
+                    ],
+                ],
+            ], 200),
+        ]);
+
+        $verifier = new NaverTokenVerifier;
+        $agreements = $verifier->fetchAgreement('naver-access-token');
+
+        $this->assertSame(
+            ['terms-code' => '04:25:06.123 PM 09/16/2026'],
+            $agreements,
+        );
+    }
+
+    public function test_naver_invalid_service_agreement_response_fails(): void
+    {
+        Http::fake([
+            'https://openapi.naver.com/v1/nid/agreement' => Http::response([
+                'result' => 'failure',
+            ], 200),
+        ]);
+
+        $verifier = new NaverTokenVerifier;
+        $this->expectException(SocialAuthException::class);
+        $verifier->fetchAgreement('bad-token');
+    }
 }

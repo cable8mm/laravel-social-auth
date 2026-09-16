@@ -18,6 +18,7 @@ use Cable8mm\LaravelSocialAuth\Providers\AppleProvider;
 use Cable8mm\LaravelSocialAuth\Providers\GoogleProvider;
 use Cable8mm\LaravelSocialAuth\Providers\KakaoProvider;
 use Cable8mm\LaravelSocialAuth\Providers\NaverProvider;
+use Carbon\CarbonImmutable;
 use Illuminate\Contracts\Auth\StatefulGuard;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
@@ -124,7 +125,16 @@ class SocialLoginManager
         // Do not expose the consent flow when this verified provider email
         // already belongs to a local account. Linking must be an explicit
         // action from that account's authenticated profile.
+        if ($provider instanceof NaverProvider) {
+            $providerUser = $provider->withProviderConsent($providerUser);
+        }
+
         $this->ensureEmailIsAvailable($providerUser);
+
+        $providerConsentTimestamps = $this->providerConsentTimestamps($providerUser);
+        if ($providerConsentTimestamps !== null) {
+            return $this->finishRegistration($providerUser, [], $providerConsentTimestamps);
+        }
 
         // No automatic merge by email — always go to pending registration
         $this->storePendingRegistration($providerUser);
@@ -153,28 +163,7 @@ class SocialLoginManager
 
         $providerUser = $this->hydrateProviderUser($pending);
 
-        // Double-check not linked in the meantime
-        $this->accountService->ensureNotLinkedToOtherUser($providerUser);
-
-        $user = DB::transaction(function () use ($providerUser, $consents) {
-            $user = $this->createUser($providerUser, $consents);
-            $account = $this->accountService->createForUser($user, $providerUser);
-            event(new SocialUserRegistered($user, $account, $consents));
-
-            return $user;
-        });
-
-        $this->clearPendingRegistration();
-        $this->loginUser($user);
-
-        $account = $this->accountService->findByProvider($providerUser->provider, $providerUser->providerId);
-
-        return [
-            'status' => 'registered',
-            'user' => $user,
-            'social_account' => $account,
-            'redirect' => $this->consumeIntendedUrl(),
-        ];
+        return $this->finishRegistration($providerUser, $consents);
     }
 
     /**
@@ -345,9 +334,102 @@ class SocialLoginManager
     }
 
     /**
+     * @return array<string, CarbonImmutable>|null
+     */
+    private function providerConsentTimestamps(ProviderUser $providerUser): ?array
+    {
+        $config = config("social-auth.consent.providers.{$providerUser->provider}", []);
+        if (! is_array($config) || ! ($config['enabled'] ?? false)) {
+            return null;
+        }
+
+        $termCodes = is_array($config['term_codes'] ?? null) ? $config['term_codes'] : [];
+        $agreements = $providerUser->consents;
+        $timestamps = [];
+
+        foreach ($this->consentService->allTerms() as $term => $definition) {
+            $termCode = $termCodes[$term] ?? null;
+            if (! is_string($termCode) || $termCode === '') {
+                if ($definition['required'] ?? false) {
+                    throw SocialAuthException::providerConsentRequired($providerUser->provider);
+                }
+
+                continue;
+            }
+
+            $agreeDate = $agreements[$termCode] ?? null;
+            if (! is_string($agreeDate) || $agreeDate === '') {
+                if ($definition['required'] ?? false) {
+                    throw SocialAuthException::providerConsentRequired($providerUser->provider);
+                }
+
+                continue;
+            }
+
+            try {
+                $timestamps[$term] = $this->parseProviderConsentDate($agreeDate);
+            } catch (\Throwable) {
+                throw SocialAuthException::providerConsentRequired($providerUser->provider);
+            }
+        }
+
+        return $timestamps;
+    }
+
+    private function parseProviderConsentDate(string $agreeDate): CarbonImmutable
+    {
+        foreach (['h:i:s.v A m/d/Y', 'h:i:s A m/d/Y'] as $format) {
+            $parsed = CarbonImmutable::createFromFormat($format, $agreeDate);
+            if ($parsed !== false) {
+                return $parsed;
+            }
+        }
+
+        return CarbonImmutable::parse($agreeDate);
+    }
+
+    /**
+     * @param  array<string, bool>  $consents
+     * @param  array<string, CarbonImmutable>  $consentTimestamps
+     * @return array{status: string, user: Model, social_account: SocialAccount|null, redirect: string}
+     */
+    private function finishRegistration(
+        ProviderUser $providerUser,
+        array $consents,
+        array $consentTimestamps = [],
+    ): array {
+        // Double-check not linked in the meantime
+        $this->accountService->ensureNotLinkedToOtherUser($providerUser);
+
+        $user = DB::transaction(function () use ($providerUser, $consents, $consentTimestamps) {
+            $user = $this->createUser($providerUser, $consents, $consentTimestamps);
+            $account = $this->accountService->createForUser($user, $providerUser);
+            $eventConsents = $consents;
+            foreach (array_keys($consentTimestamps) as $term) {
+                $eventConsents[$term] = true;
+            }
+            event(new SocialUserRegistered($user, $account, $eventConsents));
+
+            return $user;
+        });
+
+        $this->clearPendingRegistration();
+        $this->loginUser($user);
+
+        $account = $this->accountService->findByProvider($providerUser->provider, $providerUser->providerId);
+
+        return [
+            'status' => 'registered',
+            'user' => $user,
+            'social_account' => $account,
+            'redirect' => $this->consumeIntendedUrl(),
+        ];
+    }
+
+    /**
      * @param  array<string, bool>  $consents
      */
-    private function createUser(ProviderUser $providerUser, array $consents): Model
+    private function createUser(ProviderUser $providerUser, array $consents, array $consentTimestamps = []): Model
     {
         $userModel = config('social-auth.user_model');
         $provider = $this->provider($providerUser->provider);
@@ -383,7 +465,8 @@ class SocialLoginManager
 
         foreach (config('social-auth.consent.user_fields', []) as $term => $field) {
             if (is_string($field) && $field !== '') {
-                $userFields[$field] = ! empty($consents[$term]) ? now() : null;
+                $userFields[$field] = $consentTimestamps[$term]
+                    ?? (! empty($consents[$term]) ? now() : null);
             }
         }
 
@@ -422,6 +505,7 @@ class SocialLoginManager
             refreshToken: $data['refresh_token'] ?? null,
             tokenExpiresAt: $expiresAt,
             raw: $data['raw'] ?? [],
+            consents: $data['consents'] ?? [],
         );
     }
 }

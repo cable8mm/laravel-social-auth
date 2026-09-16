@@ -40,6 +40,22 @@ class WorkbenchServiceProvider extends ServiceProvider
         Config::set('social-auth.providers.kakao.js_client_id', $env('KAKAO_JAVASCRIPT_KEY', 'dusk-kakao-javascript-key'));
         Config::set('social-auth.providers.naver.enabled', true);
         Config::set('social-auth.providers.naver.client_id', $env('NAVER_CLIENT_ID', 'dusk-naver-client-id'));
+        Config::set(
+            'social-auth.consent.providers.naver.enabled',
+            filter_var($env('NAVER_LOGIN_PLUS', 'false'), FILTER_VALIDATE_BOOLEAN),
+        );
+        Config::set(
+            'social-auth.consent.providers.naver.term_codes.terms_of_service',
+            $env('NAVER_TERMS_OF_SERVICE_CODE', ''),
+        );
+        Config::set(
+            'social-auth.consent.providers.naver.term_codes.privacy_policy',
+            $env('NAVER_PRIVACY_POLICY_CODE', ''),
+        );
+        Config::set(
+            'social-auth.consent.providers.naver.term_codes.marketing',
+            $env('NAVER_MARKETING_CODE', ''),
+        );
         Config::set('social-auth.button_order', ['naver', 'kakao', 'google']);
     }
 }

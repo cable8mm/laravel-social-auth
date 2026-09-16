@@ -12,6 +12,7 @@
 - Kakao account status webhook and JWKS (https://kauth.kakao.com/.well-known/jwks.json)
 - Kakao JS SDK — browser runtime, app-switch vs web fallback behavior
 - Naver profile API (https://openapi.naver.com/v1/nid/me)
+- Naver Login Plus agreement API (https://openapi.naver.com/v1/nid/agreement)
 - Naver disconnect callback (encrypted user ID + HMAC-SHA256)
 - Naver JS SDK — browser runtime, app-switch vs web fallback behavior
 - Apple authorization/token/revoke endpoints (https://appleid.apple.com)
@@ -32,7 +33,7 @@ Any code calling these directly requires a live observation before a correspondi
 - `GoogleProvider` / `KakaoProvider` / `NaverProvider` / `AppleProvider` — implement `ProviderContract`, each delegates credential/token verification to its Verifier.
 - `GoogleCredentialVerifier` — JWT signature (via JWKS), issuer, audience, expiry, nonce.
 - `KakaoTokenVerifier` — authorization code -> token exchange, profile fetch.
-- `NaverTokenVerifier` — access token -> profile fetch, resultcode check.
+- `NaverTokenVerifier` — access token -> profile fetch, resultcode check, and optional Login Plus agreement lookup.
 - `AppleTokenVerifier` — authorization code exchange, client-secret JWT generation, identity-token verification, and revoke.
 - `SocialUser` — normalized, already-sanitized DTO returned by every provider.
 - `PendingSocialRegistration` — session-serializable snapshot of a `SocialUser`, held between callback and consent completion. No `User` row exists until consent succeeds.
@@ -70,6 +71,8 @@ If no matching social account exists but the provider reports an email already u
 Validate consent payload -> inside a DB transaction, create the `User` row (email/email_verified_at per policy, password null, and mapped consent fields) and the `SocialAccount` row together -> log the new user in.
 
 Consent keys are mapped to user columns by `config/social-auth.php` under `consent.user_fields`. The default mapping is `terms_of_service` -> `terms_accepted_at`, `privacy_policy` -> `privacy_policy_accepted_at`, and `marketing` -> `marketing_accepted_at`. Accepted terms receive the current timestamp; unchecked terms receive `null`. A field can be set to `null` to opt out of persisting that consent value.
+
+Provider-managed consent is opt-in under `consent.providers`. For Naver, the application maps its Naver Login Plus `termCode` values to the local consent keys. When enabled, `NaverTokenVerifier` fetches the agreement list using the access token, and registration proceeds without the local consent screen only when every required local term has a matching provider agreement. Provider agreement timestamps are stored in the configured user consent fields. Missing required agreements or agreement API failures stop registration and return a safe error to the failure redirect. The Kakao configuration namespace is reserved for a future Kakao Sync implementation.
 
 **Explicit linking** (`SocialLinkController::connect`, `auth` middleware):
 Authenticate provider -> reject if the provider account already belongs to another user, or is already linked to this user -> create `SocialAccount` -> fire `SocialAccountLinked`.

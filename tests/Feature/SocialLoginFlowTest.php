@@ -253,6 +253,66 @@ class SocialLoginFlowTest extends TestCase
         $this->assertSame(1, User::where('email', 'same@example.com')->count());
     }
 
+    public function test_naver_provider_consent_registers_without_local_consent_screen(): void
+    {
+        config([
+            'social-auth.consent.providers.naver.enabled' => true,
+            'social-auth.consent.providers.naver.term_codes' => [
+                'terms_of_service' => 'terms-code',
+                'privacy_policy' => 'privacy-code',
+                'marketing' => 'marketing-code',
+            ],
+        ]);
+
+        Http::fake([
+            'https://openapi.naver.com/v1/nid/me' => Http::response([
+                'resultcode' => '00',
+                'response' => [
+                    'id' => 'naver-provider-consent-user',
+                    'email' => 'naver-consent@example.com',
+                    'name' => 'Naver User',
+                    'nickname' => 'Naver Nickname',
+                ],
+            ]),
+            'https://openapi.naver.com/v1/nid/agreement' => Http::response([
+                'result' => 'success',
+                'agreementInfos' => [
+                    [
+                        'termCode' => 'terms-code',
+                        'clientId' => 'test-naver-client-id',
+                        'agreeDate' => '04:25:06.123 PM 09/16/2026',
+                    ],
+                    [
+                        'termCode' => 'privacy-code',
+                        'clientId' => 'test-naver-client-id',
+                        'agreeDate' => '04:25:07.123 PM 09/16/2026',
+                    ],
+                ],
+            ]),
+        ]);
+
+        $state = $this->getJson(route('social-auth.state', [
+            'redirect' => '/profile',
+        ]))->json('state');
+
+        $response = $this->post(route('social-auth.callback', 'naver'), [
+            'access_token' => 'naver-access-token',
+            'state' => $state,
+        ]);
+
+        $response->assertRedirect('/profile');
+        $this->assertAuthenticated();
+        $this->assertDatabaseHas('users', [
+            'email' => 'naver-consent@example.com',
+        ]);
+
+        $user = User::where('email', 'naver-consent@example.com')->firstOrFail();
+        $this->assertNotNull($user->terms_accepted_at);
+        $this->assertNotNull($user->privacy_policy_accepted_at);
+        $this->assertNull($user->marketing_accepted_at);
+        $this->assertFalse(Session::has(config('social-auth.session.pending_registration')));
+    }
+
     public function test_explicit_connect_succeeds(): void
     {
         Event::fake();

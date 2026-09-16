@@ -49,6 +49,21 @@ class NaverProvider extends AbstractProvider
         );
     }
 
+    public function withProviderConsent(ProviderUser $providerUser): ProviderUser
+    {
+        if (! (bool) config('social-auth.consent.providers.naver.enabled', false)) {
+            return $providerUser;
+        }
+
+        if ($providerUser->accessToken === null || $providerUser->accessToken === '') {
+            throw SocialAuthException::verificationFailed('naver', 'Missing access token for service agreements');
+        }
+
+        $agreements = (new NaverTokenVerifier)->fetchAgreement($providerUser->accessToken);
+
+        return $providerUser->withConsents($agreements);
+    }
+
     public function revoke(?string $accessToken): bool
     {
         if (empty($accessToken)) {
