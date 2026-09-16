@@ -51,9 +51,22 @@
             } else if (data.status === 'connected' || data.status === 'logged_in') {
                 window.location.reload();
             } else if (data.error) {
-                alert(data.error);
+                this.showError(provider, context, data.error);
             }
             return data;
+        },
+
+        showError(provider, context, message) {
+            const element = document.querySelector(`[data-provider="${provider}"][data-context="${context}"]`)
+                || document.querySelector(`[data-provider="${provider}"]`);
+            const container = element?.closest('[data-social-auth-buttons]');
+            const messageElement = container?.querySelector('[data-social-auth-message]');
+
+            if (!messageElement) return;
+
+            messageElement.textContent = message;
+            messageElement.classList.remove('hidden');
+            messageElement.focus?.({ preventScroll: true });
         },
 
         async loginKakao(context) {

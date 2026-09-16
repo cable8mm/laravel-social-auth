@@ -333,6 +333,16 @@ Laravel이 생성한 `resources/views/pages/auth/login.blade.php` 또는 프로�
 
 로그인 화면에서는 `context="login"`, 회원가입 화면에서는 `context="register"`를 사용하며, 두 화면 모두 같은 callback과 계정 생성 흐름을 공유합니다. Google은 GIS가 `Sign up with Google`, Naver는 `네이버로 시작하기`, Kakao는 `카카오로 시작하기` 문구를 사용합니다.
 
+소셜 인증 중 오류가 발생하면 패키지가 버튼 영역 아래에 인라인 오류 메시지를 표시합니다. 브라우저 `alert` 창을 사용하지 않으므로 사용자가 현재 화면과 입력 상태를 유지한 채 오류를 확인할 수 있습니다. 별도의 오류 UI 코드를 추가할 필요는 없습니다.
+
+서버에서 일반 redirect로 전달된 오류까지 로그인 화면에 표시하려면 애플리케이션의 로그인 view에서 Laravel flash session을 표시하세요. 패키지의 기본 Workbench 로그인 화면은 이미 다음과 같이 처리합니다.
+
+```blade
+@if (session('error'))
+    <div role="alert">{{ session('error') }}</div>
+@endif
+```
+
 ### Google One Tap
 
 Google One Tap을 로그인하지 않은 사용자의 모든 화면에서 시도하려면 `.env`에서 활성화하고 공통 layout에 컴포넌트를 한 번 추가합니다.

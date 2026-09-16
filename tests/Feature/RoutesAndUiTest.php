@@ -7,6 +7,8 @@ namespace Cable8mm\LaravelSocialAuth\Tests\Feature;
 use Cable8mm\LaravelSocialAuth\Models\SocialAccount;
 use Cable8mm\LaravelSocialAuth\Tests\Fixtures\User;
 use Cable8mm\LaravelSocialAuth\Tests\TestCase;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Session;
 
 class RoutesAndUiTest extends TestCase
@@ -75,6 +77,37 @@ class RoutesAndUiTest extends TestCase
         $response->assertSee('href="/privacy"', false);
         $response->assertSee('<!DOCTYPE html>', false);
         $response->assertSee('Laravel Social Auth', false);
+    }
+
+    public function test_duplicate_registration_email_fallback_returns_to_login_with_safe_message(): void
+    {
+        Schema::table('users', function (Blueprint $table): void {
+            $table->unique('email');
+        });
+
+        User::create([
+            'name' => 'Existing User',
+            'email' => 'same@example.com',
+            'password' => bcrypt('secret'),
+        ]);
+
+        Session::put(config('social-auth.session.pending_registration'), [
+            'provider' => 'google',
+            'provider_id' => 'new-google-user',
+            'email' => 'same@example.com',
+            'email_verified' => true,
+        ]);
+        Session::put(config('social-auth.session.intended'), '/login');
+
+        $response = $this->post(route('social-auth.consent.submit'), [
+            'terms_of_service' => '1',
+            'privacy_policy' => '1',
+        ]);
+
+        $response->assertRedirect('/login');
+        $response->assertSessionHas('error', '이미 가입된 이메일 주소입니다. 기존 계정으로 로그인한 후 프로필에서 이 SNS 계정을 연결해 주세요.');
+        $this->assertFalse(Session::has(config('social-auth.session.pending_registration')));
+        $this->assertSame(1, User::where('email', 'same@example.com')->count());
     }
 
     public function test_callback_invalid_state(): void
@@ -290,6 +323,7 @@ class RoutesAndUiTest extends TestCase
         $this->assertStringContainsString('bg-[#03A94D]', $html);
         $this->assertStringContainsString('class="btn-naver ', $html);
         $this->assertStringContainsString('w-full', $html);
+        $this->assertStringContainsString('data-social-auth-message', $html);
     }
 
     public function test_google_one_tap_is_opt_in_for_guests(): void
