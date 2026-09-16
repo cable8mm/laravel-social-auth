@@ -140,6 +140,23 @@ return [
     */
     'consent' => [
         'layout' => 'layouts.app',
+        // Provider-managed consent is opt-in. Each provider owns its term
+        // codes, so applications must map them to the local consent keys.
+        'providers' => [
+            'naver' => [
+                'enabled' => (bool) env('NAVER_LOGIN_PLUS', false),
+                'term_codes' => [
+                    'terms_of_service' => env('NAVER_TERMS_OF_SERVICE_CODE'),
+                    'privacy_policy' => env('NAVER_PRIVACY_POLICY_CODE'),
+                    'marketing' => env('NAVER_MARKETING_CODE'),
+                ],
+            ],
+            // Reserved for a future Kakao Sync implementation.
+            'kakao' => [
+                'enabled' => false,
+                'term_codes' => [],
+            ],
+        ],
         'user_fields' => [
             'terms_of_service' => 'terms_accepted_at',
             'privacy_policy' => 'privacy_policy_accepted_at',

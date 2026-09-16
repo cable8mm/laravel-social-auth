@@ -244,6 +244,42 @@ https://your-domain.com/social-auth/naver/deauthorize
 
 Naver가 사용자의 서비스 동의 철회 또는 Naver 회원 탈퇴를 알리면 패키지가 HMAC 서명과 암호화된 이용자 고유 ID를 검증한 뒤 해당 Naver SNS 연결만 제거하고 `204 No Content`를 반환합니다. 로컬 `users` 삭제는 자동으로 수행하지 않습니다.
 
+#### Naver 로그인 플러스 약관 동의 대행
+
+네이버 개발자센터에서 `네이버 로그인 플러스 > 서비스 약관 정보`를 설정하면 네이버 동의창에서 서비스 약관 동의를 받을 수 있습니다. 이 기능을 사용할 때는 패키지의 별도 `/social-auth/consent` 화면을 생략하도록 설정할 수 있습니다. 네이버에서 제공하는 약관 동의 내역은 `termCode`로 확인되므로, 애플리케이션의 약관 키와 네이버 약관 코드를 `config/social-auth.php`에 매핑해야 합니다.
+
+패키지 설정 파일을 직접 수정하지 않으려면 `.env`에 다음 값을 설정하면 됩니다.
+
+```env
+NAVER_LOGIN_PLUS=true
+NAVER_TERMS_OF_SERVICE_CODE=네이버_이용약관_termCode
+NAVER_PRIVACY_POLICY_CODE=네이버_개인정보처리방침_termCode
+NAVER_MARKETING_CODE=네이버_마케팅_termCode
+```
+
+설정 후에는 반드시 캐시를 삭제하세요.
+
+```bash
+php artisan optimize:clear
+```
+
+```php
+'consent' => [
+    'providers' => [
+        'naver' => [
+            'enabled' => true,
+            'term_codes' => [
+                'terms_of_service' => '네이버에서_발급한_이용약관_코드',
+                'privacy_policy' => '네이버에서_발급한_개인정보처리방침_코드',
+                'marketing' => '네이버에서_발급한_마케팅_코드',
+            ],
+        ],
+    ],
+],
+```
+
+`term_codes`는 애플리케이션마다 다르므로 패키지가 기본값을 제공하지 않습니다. 필수 약관의 코드가 없거나 네이버 약관 동의 내역을 확인하지 못하면 가입을 중단하고 로그인 실패 주소로 이동합니다. 확인된 동의 시각은 기존 `terms_accepted_at`, `privacy_policy_accepted_at`, `marketing_accepted_at` 컬럼에 저장됩니다. 네이버 로그인 플러스의 약관 동의 내역은 네이버의 agreement API를 통해 확인합니다. [네이버 공식 개발가이드](https://developers.naver.com/docs/login/devguide/devguide.md)
+
 ### Apple
 
 1. Apple Developer에서 Sign in with Apple을 활성화한 App ID와 웹용 Services ID를 등록합니다.

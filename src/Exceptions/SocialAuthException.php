@@ -58,6 +58,17 @@ class SocialAuthException extends Exception
         return new self('이미 가입된 이메일 주소입니다. 기존 계정으로 로그인한 후 프로필에서 이 SNS 계정을 연결해 주세요.');
     }
 
+    public static function providerConsentRequired(string $provider): self
+    {
+        $label = match ($provider) {
+            'naver' => '네이버',
+            'kakao' => '카카오',
+            default => ucfirst($provider),
+        };
+
+        return new self("{$label}에서 필수 약관 동의를 확인하지 못했습니다. 다시 시도해 주세요.");
+    }
+
     public static function unauthenticated(): self
     {
         return new self('Authentication required.');

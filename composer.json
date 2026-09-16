@@ -85,7 +85,8 @@
         ],
         "lint": [
             "@php vendor/bin/pint --ansi"
-        ]
+        ],
+        "optimize:clear": "@php vendor/bin/testbench optimize:clear --env=testing"
     },
     "config": {
         "sort-packages": true,
