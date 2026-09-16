@@ -365,6 +365,8 @@ One Tap은 로그인된 사용자에게는 렌더링되지 않습니다. Google 
 신규 SNS 사용자는 pending 세션 저장 후 `/social-auth/consent` 로 이동합니다.  
 필수 약관 URL은 `config/social-auth.php` 의 `consent` 섹션에서 설정합니다.
 
+기본 동의 화면에는 `모두 선택` 체크박스가 제공됩니다. 이를 선택하면 필수·선택 약관이 모두 체크되고, 개별 약관을 하나라도 해제하면 `모두 선택`도 자동으로 해제됩니다.
+
 기본 동의 화면은 애플리케이션의 `layouts.app` 레이아웃을 사용합니다. 다른 레이아웃을 사용하는 경우 `config/social-auth.php`의 `consent.layout` 값을 변경하세요. 패키지 화면을 직접 수정하려면 `social-auth-views` 태그로 views를 publish할 수 있습니다.
 
 동의가 완료되면 기본적으로 다음과 같이 `users` 테이블에 동의 시각이 저장됩니다. 동의하지 않은 항목은 `null`입니다.

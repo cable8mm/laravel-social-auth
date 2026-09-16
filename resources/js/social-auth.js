@@ -228,6 +228,30 @@
     });
 
     function bootSocialAuth() {
+        const consentForm = document.querySelector('[data-social-auth-consent-form]');
+        const consentAll = consentForm?.querySelector('[data-social-auth-consent-all]');
+        const consentItems = consentForm
+            ? [...consentForm.querySelectorAll('[data-social-auth-consent]')]
+            : [];
+
+        if (consentAll && consentItems.length > 0) {
+            const syncConsentAll = () => {
+                const checkedCount = consentItems.filter(item => item.checked).length;
+                consentAll.checked = checkedCount === consentItems.length;
+                consentAll.indeterminate = checkedCount > 0 && checkedCount < consentItems.length;
+            };
+
+            consentAll.addEventListener('change', () => {
+                consentItems.forEach(item => {
+                    item.checked = consentAll.checked;
+                });
+                consentAll.indeterminate = false;
+            });
+
+            consentItems.forEach(item => item.addEventListener('change', syncConsentAll));
+            syncConsentAll();
+        }
+
         if (document.querySelector('[data-provider="google"]')) {
             const googleTimer = setInterval(() => {
                 if (typeof google !== 'undefined' && google.accounts) {

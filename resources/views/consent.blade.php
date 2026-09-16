@@ -61,6 +61,31 @@
             padding: 0;
         }
 
+        .social-auth-consent__all {
+            align-items: center;
+            background: #f8fafc;
+            border: 1px solid #e5e7eb;
+            border-radius: .625rem;
+            display: flex;
+            gap: .75rem;
+            margin-bottom: .5rem;
+            padding: .875rem;
+        }
+
+        .social-auth-consent__all input {
+            accent-color: #111827;
+            flex: 0 0 auto;
+            height: 1.125rem;
+            width: 1.125rem;
+        }
+
+        .social-auth-consent__all label {
+            cursor: pointer;
+            flex: 1;
+            font-size: .9375rem;
+            font-weight: 700;
+        }
+
         .social-auth-consent__term {
             align-items: flex-start;
             border-top: 1px solid #edf0f2;
@@ -138,6 +163,7 @@
             .social-auth-consent { background: #1b1e22; border-color: #30343a; box-shadow: 0 1rem 3rem rgb(0 0 0 / 22%); }
             .social-auth-consent__eyebrow, .social-auth-consent__intro, .social-auth-consent__badge { color: #a5acb7; }
             .social-auth-consent__error { background: #351b22; border-color: #71303d; color: #fda4af; }
+            .social-auth-consent__all { background: #20242a; border-color: #30343a; }
             .social-auth-consent__term { border-color: #30343a; }
             .social-auth-consent__submit { background: #f3f4f6; color: #111827; }
             .social-auth-consent__submit:hover { background: #d1d5db; }
@@ -166,8 +192,13 @@
             <div class="social-auth-consent__error" role="alert">{{ session('error') }}</div>
         @endif
 
-        <form method="POST" action="{{ route('social-auth.consent.submit') }}">
+        <form method="POST" action="{{ route('social-auth.consent.submit') }}" data-social-auth-consent-form>
             @csrf
+
+            <div class="social-auth-consent__all">
+                <input id="social-auth-consent-all" name="consent_all" type="checkbox" data-social-auth-consent-all>
+                <label for="social-auth-consent-all">모두 선택</label>
+            </div>
 
             <fieldset class="social-auth-consent__terms">
                 <legend class="sr-only">서비스 약관 동의</legend>
@@ -179,6 +210,7 @@
                             type="checkbox"
                             name="{{ $key }}"
                             value="1"
+                            data-social-auth-consent
                             @if($term['required'] ?? false) required @endif
                         >
                         <label for="social-auth-term-{{ $key }}">
