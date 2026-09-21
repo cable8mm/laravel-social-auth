@@ -1,5 +1,13 @@
 # Release Notes
 
+## v1.0.0 - 2026-09-21
+
+### What's Changed
+
+* fix: add missing PHP extensions to composer.json requirements by [@cable8mm](https://github.com/cable8mm) in https://github.com/cable8mm/laravel-social-auth/pull/32
+
+**Full Changelog**: https://github.com/cable8mm/laravel-social-auth/compare/v0.6.0...v1.0.0
+
 ## v0.6.0 - 2026-09-16
 
 ### What's Changed
