@@ -1,5 +1,13 @@
 # Release Notes
 
+## v1.2.0 - 2026-10-15
+
+### What's Changed
+
+* feat: make user-facing messages and views translatable (en, ko) by [@cable8mm](https://github.com/cable8mm) in https://github.com/cable8mm/laravel-social-auth/pull/35
+
+**Full Changelog**: https://github.com/cable8mm/laravel-social-auth/compare/v1.1.1...v1.2.0
+
 ## v1.1.1 - 2026-10-15
 
 ### What's Changed
