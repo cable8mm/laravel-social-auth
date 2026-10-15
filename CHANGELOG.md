@@ -1,5 +1,13 @@
 # Release Notes
 
+## v1.1.1 - 2026-10-15
+
+### What's Changed
+
+* fix: keep redacted provider error details on verifier failures by [@cable8mm](https://github.com/cable8mm) in https://github.com/cable8mm/laravel-social-auth/pull/34
+
+**Full Changelog**: https://github.com/cable8mm/laravel-social-auth/compare/v1.1.0...v1.1.1
+
 ## v1.1.0 - 2026-10-15
 
 ### What's Changed
