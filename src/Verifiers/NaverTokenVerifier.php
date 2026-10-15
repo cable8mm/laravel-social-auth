@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Cable8mm\LaravelSocialAuth\Verifiers;
 
+use Cable8mm\LaravelSocialAuth\Data\ProviderError;
 use Cable8mm\LaravelSocialAuth\Exceptions\SocialAuthException;
 use Illuminate\Support\Facades\Http;
 
@@ -29,17 +30,17 @@ class NaverTokenVerifier
             ->get(self::PROFILE_URL);
 
         if ($response->serverError()) {
-            throw SocialAuthException::providerRequestFailed('naver', 'Failed to fetch user profile');
+            throw SocialAuthException::providerRequestFailed('naver', 'Failed to fetch user profile', ProviderError::fromResponse($response, [$accessToken]));
         }
 
         if (! $response->successful()) {
-            throw SocialAuthException::verificationFailed('naver', 'Failed to fetch user profile');
+            throw SocialAuthException::verificationFailed('naver', 'Failed to fetch user profile', ProviderError::fromResponse($response, [$accessToken]));
         }
 
         $body = $response->json();
 
         if (($body['resultcode'] ?? '') !== '00' || empty($body['response']['id'])) {
-            throw SocialAuthException::verificationFailed('naver', 'Invalid profile response');
+            throw SocialAuthException::verificationFailed('naver', 'Invalid profile response', ProviderError::fromResponse($response, [$accessToken]));
         }
 
         return $body['response'];
@@ -76,16 +77,16 @@ class NaverTokenVerifier
             ->get(self::AGREEMENT_URL);
 
         if ($response->serverError()) {
-            throw SocialAuthException::providerRequestFailed('naver', 'Failed to fetch service agreements');
+            throw SocialAuthException::providerRequestFailed('naver', 'Failed to fetch service agreements', ProviderError::fromResponse($response, [$accessToken]));
         }
 
         if (! $response->successful()) {
-            throw SocialAuthException::verificationFailed('naver', 'Failed to fetch service agreements');
+            throw SocialAuthException::verificationFailed('naver', 'Failed to fetch service agreements', ProviderError::fromResponse($response, [$accessToken]));
         }
 
         $body = $response->json();
         if (($body['result'] ?? '') !== 'success' || ! is_array($body['agreementInfos'] ?? null)) {
-            throw SocialAuthException::verificationFailed('naver', 'Invalid service agreement response');
+            throw SocialAuthException::verificationFailed('naver', 'Invalid service agreement response', ProviderError::fromResponse($response, [$accessToken]));
         }
 
         $agreements = [];

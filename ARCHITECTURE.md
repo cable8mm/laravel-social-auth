@@ -69,6 +69,8 @@ If no matching social account exists but the provider reports an email already u
 
 When a non-connect callback throws `SocialAuthException`, `SocialLoginController` dispatches `SocialLoginFailed` once with the route provider, the exception's `failureReason()`, and the exception, then returns the same JSON 422 or failure redirect as before. Reasons are assigned by the exception factory: `emailAlreadyRegistered` -> `existing_email_unlinked`; `verificationFailed`, `invalidState`, `invalidNonce` -> `invalid_credential`; `providerConsentRequired` -> `consent_rejected`; everything else, including `providerRequestFailed` (provider API 5xx), -> `provider_error`. Connect-flow failures do not dispatch it.
 
+When a provider HTTP call fails (Kakao token/profile, Naver profile/agreement, Apple code exchange), the verifier attaches `ProviderError::fromResponse()` to the exception: HTTP status plus the provider's `error`, error code (`error_code`, `code`, `resultcode`, or `detail.reason`), and description (`error_description`, `msg`, or `message`). Values sent with the request (authorization code, access token, client secret) and `code=`/`token=`-style fragments are replaced with `[redacted]`, and each field is capped at 500 characters. The details are available via `SocialAuthException::providerError()` and never change the exception message. Google credential verification makes no provider token exchange, so it has no provider error body to keep.
+
 **Consent completion** (`SocialRegistrationController::store`):
 Validate consent payload -> inside a DB transaction, create the `User` row (email/email_verified_at per policy, password null, and mapped consent fields) and the `SocialAccount` row together -> log the new user in.
 

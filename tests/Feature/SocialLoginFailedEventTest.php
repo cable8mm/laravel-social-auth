@@ -81,6 +81,30 @@ class SocialLoginFailedEventTest extends TestCase
         $this->assertFailedOnce('kakao', SocialLoginFailed::INVALID_CREDENTIAL);
     }
 
+    public function test_event_exception_carries_redacted_provider_error(): void
+    {
+        Http::fake([
+            'https://kauth.kakao.com/oauth/token' => Http::response([
+                'error' => 'invalid_grant',
+                'error_description' => 'authorization code not found for code=used-code',
+                'error_code' => 'KOE320',
+            ], 400),
+        ]);
+
+        $response = $this->post(route('social-auth.callback', 'kakao'), [
+            'code' => 'used-code',
+            'state' => $this->state(),
+        ]);
+
+        $response->assertSessionHas('error', 'Verification failed for provider [kakao]: Token exchange failed');
+        Event::assertDispatched(
+            SocialLoginFailed::class,
+            fn (SocialLoginFailed $event): bool => $event->exception instanceof SocialAuthException
+                && $event->exception->providerError()?->errorCode === 'KOE320'
+                && $event->exception->providerError()?->errorDescription === 'authorization code not found for code=[redacted]',
+        );
+    }
+
     public function test_provider_server_error_dispatches_provider_error(): void
     {
         Http::fake([

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Cable8mm\LaravelSocialAuth\Exceptions;
 
+use Cable8mm\LaravelSocialAuth\Data\ProviderError;
 use Cable8mm\LaravelSocialAuth\Events\SocialLoginFailed;
 use Exception;
 
@@ -11,12 +12,29 @@ class SocialAuthException extends Exception
 {
     private string $failureReason = SocialLoginFailed::PROVIDER_ERROR;
 
+    private ?ProviderError $providerError = null;
+
     /**
      * Machine-readable reason used for the SocialLoginFailed event.
      */
     public function failureReason(): string
     {
         return $this->failureReason;
+    }
+
+    /**
+     * Redacted error details returned by the provider, if any. Not part of the user-facing message.
+     */
+    public function providerError(): ?ProviderError
+    {
+        return $this->providerError;
+    }
+
+    private function withProviderError(?ProviderError $providerError): self
+    {
+        $this->providerError = $providerError;
+
+        return $this;
     }
 
     private function withFailureReason(string $reason): self
@@ -41,23 +59,26 @@ class SocialAuthException extends Exception
         return new self("Provider [{$provider}] is not registered.");
     }
 
-    public static function verificationFailed(string $provider, string $reason = ''): self
+    public static function verificationFailed(string $provider, string $reason = '', ?ProviderError $providerError = null): self
     {
         $msg = "Verification failed for provider [{$provider}]";
         if ($reason !== '') {
             $msg .= ": {$reason}";
         }
 
-        return (new self($msg))->withFailureReason(SocialLoginFailed::INVALID_CREDENTIAL);
+        return (new self($msg))
+            ->withFailureReason(SocialLoginFailed::INVALID_CREDENTIAL)
+            ->withProviderError($providerError);
     }
 
     /**
      * Provider API returned a server error. Keeps the verification message
      * shown to users while reporting the failure as a provider error.
      */
-    public static function providerRequestFailed(string $provider, string $reason): self
+    public static function providerRequestFailed(string $provider, string $reason, ?ProviderError $providerError = null): self
     {
-        return new self("Verification failed for provider [{$provider}]: {$reason}");
+        return (new self("Verification failed for provider [{$provider}]: {$reason}"))
+            ->withProviderError($providerError);
     }
 
     public static function accountAlreadyLinked(string $provider): self

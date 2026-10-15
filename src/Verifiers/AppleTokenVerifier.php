@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Cable8mm\LaravelSocialAuth\Verifiers;
 
+use Cable8mm\LaravelSocialAuth\Data\ProviderError;
 use Cable8mm\LaravelSocialAuth\Exceptions\SocialAuthException;
 use Firebase\JWT\JWK;
 use Firebase\JWT\JWT;
@@ -45,11 +46,11 @@ final class AppleTokenVerifier
         $response = Http::asForm()->timeout(10)->post(self::TOKEN_URL, $payload);
 
         if ($response->serverError()) {
-            throw SocialAuthException::providerRequestFailed('apple', 'Authorization code exchange failed');
+            throw SocialAuthException::providerRequestFailed('apple', 'Authorization code exchange failed', ProviderError::fromResponse($response, [$code, $payload['client_secret']]));
         }
 
         if (! $response->successful() || ! is_array($response->json())) {
-            throw SocialAuthException::verificationFailed('apple', 'Authorization code exchange failed');
+            throw SocialAuthException::verificationFailed('apple', 'Authorization code exchange failed', ProviderError::fromResponse($response, [$code, $payload['client_secret']]));
         }
 
         return $response->json();

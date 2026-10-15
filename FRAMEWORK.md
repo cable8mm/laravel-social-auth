@@ -54,7 +54,7 @@ PSR-4 root: `Cable8mm\SocialAuth\` -> `src/`. Test namespace: `Cable8mm\SocialAu
 - All PHP formatted with Laravel Pint (`pint.json` — `laravel` preset) before a task is considered done. Run `vendor/bin/pint` from the package root.
 - Favor `final` classes and `readonly` value objects (`SocialUser`, `PendingSocialRegistration`) where the class has no legitimate subclassing use case.
 - No abstraction without a concrete second use — e.g. no generic "OAuth flow" base class shared by Kakao/Naver until a third code-exchange provider actually shows up (see AGENTS.md DESIGN_RULES).
-- Exception messages that can reach an end user (`ProviderVerificationException`, `AccountLinkConflictException`, `LastLoginMethodException`) must stay generic — never interpolate raw provider error detail into them. Log detail separately instead.
+- Exception messages that can reach an end user (`ProviderVerificationException`, `AccountLinkConflictException`, `LastLoginMethodException`) must stay generic — never interpolate raw provider error detail into them. Provider error detail is carried separately as a redacted `ProviderError` on `SocialAuthException::providerError()`.
 
 ## Testing conventions
 
