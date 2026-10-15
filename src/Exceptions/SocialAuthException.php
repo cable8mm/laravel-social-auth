@@ -4,10 +4,28 @@ declare(strict_types=1);
 
 namespace Cable8mm\LaravelSocialAuth\Exceptions;
 
+use Cable8mm\LaravelSocialAuth\Events\SocialLoginFailed;
 use Exception;
 
 class SocialAuthException extends Exception
 {
+    private string $failureReason = SocialLoginFailed::PROVIDER_ERROR;
+
+    /**
+     * Machine-readable reason used for the SocialLoginFailed event.
+     */
+    public function failureReason(): string
+    {
+        return $this->failureReason;
+    }
+
+    private function withFailureReason(string $reason): self
+    {
+        $this->failureReason = $reason;
+
+        return $this;
+    }
+
     public static function invalidConfiguration(string $message): self
     {
         return new self("Social Auth configuration error: {$message}");
@@ -30,7 +48,16 @@ class SocialAuthException extends Exception
             $msg .= ": {$reason}";
         }
 
-        return new self($msg);
+        return (new self($msg))->withFailureReason(SocialLoginFailed::INVALID_CREDENTIAL);
+    }
+
+    /**
+     * Provider API returned a server error. Keeps the verification message
+     * shown to users while reporting the failure as a provider error.
+     */
+    public static function providerRequestFailed(string $provider, string $reason): self
+    {
+        return new self("Verification failed for provider [{$provider}]: {$reason}");
     }
 
     public static function accountAlreadyLinked(string $provider): self
@@ -55,7 +82,8 @@ class SocialAuthException extends Exception
 
     public static function emailAlreadyRegistered(): self
     {
-        return new self('이미 가입된 이메일 주소입니다. 기존 계정으로 로그인한 후 프로필에서 이 SNS 계정을 연결해 주세요.');
+        return (new self('이미 가입된 이메일 주소입니다. 기존 계정으로 로그인한 후 프로필에서 이 SNS 계정을 연결해 주세요.'))
+            ->withFailureReason(SocialLoginFailed::EXISTING_EMAIL_UNLINKED);
     }
 
     public static function providerConsentRequired(string $provider): self
@@ -66,7 +94,8 @@ class SocialAuthException extends Exception
             default => ucfirst($provider),
         };
 
-        return new self("{$label}에서 필수 약관 동의를 확인하지 못했습니다. 다시 시도해 주세요.");
+        return (new self("{$label}에서 필수 약관 동의를 확인하지 못했습니다. 다시 시도해 주세요."))
+            ->withFailureReason(SocialLoginFailed::CONSENT_REJECTED);
     }
 
     public static function unauthenticated(): self
@@ -76,11 +105,13 @@ class SocialAuthException extends Exception
 
     public static function invalidState(): self
     {
-        return new self('Invalid or missing state parameter. Please try again.');
+        return (new self('Invalid or missing state parameter. Please try again.'))
+            ->withFailureReason(SocialLoginFailed::INVALID_CREDENTIAL);
     }
 
     public static function invalidNonce(): self
     {
-        return new self('Invalid or missing nonce. Please try again.');
+        return (new self('Invalid or missing nonce. Please try again.'))
+            ->withFailureReason(SocialLoginFailed::INVALID_CREDENTIAL);
     }
 }

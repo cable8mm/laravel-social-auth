@@ -44,6 +44,10 @@ final class AppleTokenVerifier
 
         $response = Http::asForm()->timeout(10)->post(self::TOKEN_URL, $payload);
 
+        if ($response->serverError()) {
+            throw SocialAuthException::providerRequestFailed('apple', 'Authorization code exchange failed');
+        }
+
         if (! $response->successful() || ! is_array($response->json())) {
             throw SocialAuthException::verificationFailed('apple', 'Authorization code exchange failed');
         }

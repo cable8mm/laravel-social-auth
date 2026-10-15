@@ -44,7 +44,7 @@ Any code calling these directly requires a live observation before a correspondi
 - `NicknameGeneratorContract` / `DefaultNicknameGenerator` — resolved in the service provider from config (Closure, class-string, or a `User` model method name).
 - `ProviderProfileMapper` — applies the per-provider `name_mapping` config; nickname is never provider-sourced.
 - `ChallengeGenerator` — issues and session-stores the Google nonce and Kakao/Naver OAuth state values, called from the button views.
-- `SocialAccountLinked` / `SocialAccountUnlinked` — events.
+- `SocialAccountLinked` / `SocialAccountUnlinked` / `SocialLoginFailed` — events.
 - `SocialLoginController` — nonce/state endpoints and provider callback; thin, delegates to `SocialLoginManager`.
 - `SocialRegistrationController` — consent screen and registration completion; thin, delegates to `SocialLoginManager`.
 - `SocialLinkController` — authenticated connect/disconnect endpoints; thin, delegates to `SocialLoginManager`.
@@ -66,6 +66,8 @@ Unique indexes: `(provider, provider_id)`, `(user_id, provider)`.
 provider authenticate -> `SocialUser`. The browser stores the current same-origin page as the intended destination before provider authentication. If a matching `social_accounts` row exists, log its owner in (`Auth::login` + session regenerate) and consume that destination. Otherwise store `PendingSocialRegistration` in session and redirect to the consent screen — no `User` row is created yet. Consent completion consumes the same destination after creating and logging in the user.
 
 If no matching social account exists but the provider reports an email already used by a local user, the manager rejects the callback before storing `PendingSocialRegistration`. The controller returns to the configured failure redirect (normally `/login`) with a safe message; it never automatically merges or links the accounts. The authenticated user must explicitly connect the provider from the profile.
+
+When a non-connect callback throws `SocialAuthException`, `SocialLoginController` dispatches `SocialLoginFailed` once with the route provider, the exception's `failureReason()`, and the exception, then returns the same JSON 422 or failure redirect as before. Reasons are assigned by the exception factory: `emailAlreadyRegistered` -> `existing_email_unlinked`; `verificationFailed`, `invalidState`, `invalidNonce` -> `invalid_credential`; `providerConsentRequired` -> `consent_rejected`; everything else, including `providerRequestFailed` (provider API 5xx), -> `provider_error`. Connect-flow failures do not dispatch it.
 
 **Consent completion** (`SocialRegistrationController::store`):
 Validate consent payload -> inside a DB transaction, create the `User` row (email/email_verified_at per policy, password null, and mapped consent fields) and the `SocialAccount` row together -> log the new user in.

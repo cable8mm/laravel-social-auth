@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Cable8mm\LaravelSocialAuth\Http\Controllers\SocialAuth;
 
+use Cable8mm\LaravelSocialAuth\Events\SocialLoginFailed;
 use Cable8mm\LaravelSocialAuth\Exceptions\SocialAuthException;
 use Cable8mm\LaravelSocialAuth\Services\SocialLoginManager;
 use Illuminate\Http\JsonResponse;
@@ -75,6 +76,8 @@ class SocialLoginController extends Controller
             $connecting = $this->isConnecting($provider);
             if ($connecting) {
                 Session::forget(config('social-auth.session.connecting_provider', 'social_auth.connecting_provider'));
+            } else {
+                event(new SocialLoginFailed($provider, $e->failureReason(), $e));
             }
 
             if ($request->expectsJson()) {

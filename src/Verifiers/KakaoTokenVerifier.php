@@ -46,6 +46,10 @@ class KakaoTokenVerifier
             ->timeout(15)
             ->post(self::TOKEN_URL, $payload);
 
+        if ($response->serverError()) {
+            throw SocialAuthException::providerRequestFailed('kakao', 'Token exchange failed');
+        }
+
         if (! $response->successful()) {
             throw SocialAuthException::verificationFailed('kakao', 'Token exchange failed');
         }
@@ -74,6 +78,10 @@ class KakaoTokenVerifier
         $response = Http::withToken($accessToken)
             ->timeout(15)
             ->get(self::USER_URL);
+
+        if ($response->serverError()) {
+            throw SocialAuthException::providerRequestFailed('kakao', 'Failed to fetch user profile');
+        }
 
         if (! $response->successful()) {
             throw SocialAuthException::verificationFailed('kakao', 'Failed to fetch user profile');
