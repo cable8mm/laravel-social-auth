@@ -470,6 +470,9 @@ Event::listen(function (SocialLoginFailed $event) {
     logger()->info('Social login failed', [
         'provider' => $event->provider,
         'reason' => $event->reason,
+        'detail' => $event->exception instanceof SocialAuthException
+            ? $event->exception->reason()
+            : null,
         // 제공자가 돌려준 오류 정보 (비밀값 제거됨). 예: ['status' => 400, 'error' => 'invalid_grant', 'error_code' => 'KOE320', ...]
         'provider_error' => $event->exception instanceof SocialAuthException
             ? $event->exception->providerError()?->toArray()
@@ -477,6 +480,67 @@ Event::listen(function (SocialLoginFailed $event) {
     ]);
 });
 ```
+
+### 다국어 메시지
+
+예외 메시지(JSON 응답의 `error`, 리디렉트의 `error` flash), 연결/해제 성공 flash, 기본 Blade 화면의 문구는 애플리케이션의 locale(`app.locale`)에 맞춰 번역됩니다. 패키지는 영어(`en`)와 한국어(`ko`) 번역을 제공하며, 그 밖의 locale은 Laravel의 `fallback_locale`을 따릅니다.
+
+문구를 바꾸거나 다른 언어를 추가하려면 번역 파일을 publish합니다.
+
+```bash
+php artisan vendor:publish --tag=social-auth-lang
+```
+
+publish된 파일은 `lang/vendor/social-auth/{locale}/`에 생성됩니다. 바꾸고 싶은 key만 남겨 두어도 나머지 key는 패키지 번역을 그대로 사용합니다.
+
+`messages.php` key (`:provider`에는 `providers.php`에서 번역한 provider 이름이 들어갑니다.)
+
+| Key                             | 사용 위치                                       | 매개변수    |
+| ------------------------------- | ----------------------------------------------- | ----------- |
+| `invalid_configuration`         | `SocialAuthException::invalidConfiguration()`   | `:message`  |
+| `provider_not_enabled`          | `providerNotEnabled()`                          | `:provider` |
+| `provider_not_found`            | `providerNotFound()`                            | `:provider` |
+| `verification_failed`           | `verificationFailed()`                          | `:provider` |
+| `provider_request_failed`       | `providerRequestFailed()`                       | `:provider` |
+| `account_already_linked`        | `accountAlreadyLinked()`                        | `:provider` |
+| `already_connected`             | `alreadyConnected()`                            | `:provider` |
+| `cannot_disconnect_last_method` | `cannotDisconnectLastMethod()`                  |             |
+| `consent_required`              | `consentRequired()`                             |             |
+| `email_already_registered`      | `emailAlreadyRegistered()`                      |             |
+| `provider_consent_required`     | `providerConsentRequired()`                     | `:provider` |
+| `unauthenticated`               | `unauthenticated()`                             |             |
+| `invalid_state`                 | `invalidState()`                                |             |
+| `invalid_nonce`                 | `invalidNonce()`                                |             |
+| `connected`                     | SNS 계정 연결 성공 flash                        | `:provider` |
+| `disconnected`                  | SNS 계정 연결 해제 성공 flash                   | `:provider` |
+
+`providers.php` key: `naver`, `kakao`, `google`, `apple`. 등록되지 않은 provider는 key의 첫 글자를 대문자로 바꿔 표시합니다.
+
+`views.php` key (Blade 화면 문구)
+
+| Key                                     | 사용 위치                                                   | 매개변수    |
+| --------------------------------------- | ----------------------------------------------------------- | ----------- |
+| `buttons.{google,kakao,naver}.login`    | `<x-social-auth::buttons context="login" />` 버튼 문구      |             |
+| `buttons.{google,kakao,naver}.register` | `context="register"` 버튼 문구                              |             |
+| `buttons.{google,kakao,naver}.connect`  | `context="connect"` 버튼 문구 (연결된 SNS 계정 목록)        |             |
+| `consent.eyebrow`                       | 약관 동의 화면 상단 문구                                    | `:provider` |
+| `consent.title`                         | 약관 동의 화면 제목                                         |             |
+| `consent.intro`                         | 약관 동의 화면 안내 문구                                    |             |
+| `consent.select_all`                    | 모두 선택 체크박스                                          |             |
+| `consent.legend`                        | 약관 목록 legend (스크린 리더용)                            |             |
+| `consent.required` / `consent.optional` | 약관별 필수/선택 표시                                       |             |
+| `consent.view_original`                 | 약관 원문 링크                                              |             |
+| `consent.submit`                        | 동의하고 가입 완료 버튼                                     |             |
+| `connected_accounts.title`              | 연결된 SNS 계정 목록 제목                                   |             |
+| `connected_accounts.connected`          | 연결됨 상태                                                 |             |
+| `connected_accounts.not_connected`      | 미연결 상태                                                 |             |
+| `connected_accounts.disconnect`         | 연결 해제 버튼                                              |             |
+| `naver_callback.checking`               | Naver callback 화면의 진행 문구                             |             |
+| `naver_callback.failed`                 | Naver callback 화면의 실패 문구                             | `:provider` |
+
+버튼 문구는 provider별 브랜드 표기를 따르기 위해 provider·context마다 별도 key로 둡니다. Apple 버튼 문구는 Sign in with Apple JS가 직접 표시하므로 key가 없습니다. 연결된 SNS 계정 목록과 약관 동의 화면의 provider 이름은 `providers.php`를 사용합니다.
+
+사용자에게 보이는 메시지에는 provider가 알려 준 기술적 실패 원인이 들어가지 않습니다. 원인은 `SocialAuthException::reason()`(예: `Token exchange failed`)과 `providerError()`로 확인할 수 있습니다. 웹훅 endpoint의 `invalid_request` 같은 기계용 응답 코드는 번역하지 않습니다.
 
 ### Facade
 

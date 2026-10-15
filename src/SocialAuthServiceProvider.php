@@ -74,6 +74,9 @@ class SocialAuthServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        // Loaded first so configuration errors thrown below are translated.
+        $this->loadTranslationsFrom(dirname(__DIR__).'/lang', 'social-auth');
+
         $this->validateConfiguration();
 
         $this->loadRoutesFrom(dirname(__DIR__).'/routes/web.php');
@@ -91,6 +94,10 @@ class SocialAuthServiceProvider extends ServiceProvider
             $this->publishes([
                 dirname(__DIR__).'/resources/views' => resource_path('views/vendor/social-auth'),
             ], 'social-auth-views');
+
+            $this->publishes([
+                dirname(__DIR__).'/lang' => $this->app->langPath('vendor/social-auth'),
+            ], 'social-auth-lang');
 
             $this->publishesMigrations([
                 dirname(__DIR__).'/database/migrations/2024_01_01_000001_create_social_accounts_table.php' => database_path('migrations/2024_01_01_000001_create_social_accounts_table.php'),

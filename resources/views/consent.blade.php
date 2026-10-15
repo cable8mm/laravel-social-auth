@@ -175,18 +175,9 @@
 </style>
 <div class="social-auth-consent-page">
     <main class="social-auth-consent">
-        @php
-            $providerLabels = [
-                'google' => 'Google',
-                'kakao' => '카카오',
-                'naver' => '네이버',
-            ];
-            $providerLabel = $providerLabels[$pending['provider'] ?? ''] ?? ucfirst($pending['provider'] ?? 'SNS');
-        @endphp
-
-        <p class="social-auth-consent__eyebrow">{{ $providerLabel }} 계정으로 가입</p>
-        <h1>약관에 동의해 주세요</h1>
-        <p class="social-auth-consent__intro">서비스 이용을 시작하려면 아래 약관을 확인하고 동의해 주세요.</p>
+        <p class="social-auth-consent__eyebrow">{{ __('social-auth::views.consent.eyebrow', ['provider' => \Cable8mm\LaravelSocialAuth\Support\ProviderLabel::for((string) ($pending['provider'] ?? 'SNS'))]) }}</p>
+        <h1>{{ __('social-auth::views.consent.title') }}</h1>
+        <p class="social-auth-consent__intro">{{ __('social-auth::views.consent.intro') }}</p>
 
         @if(session('error'))
             <div class="social-auth-consent__error" role="alert">{{ session('error') }}</div>
@@ -197,11 +188,11 @@
 
             <div class="social-auth-consent__all">
                 <input id="social-auth-consent-all" name="consent_all" type="checkbox" data-social-auth-consent-all>
-                <label for="social-auth-consent-all">모두 선택</label>
+                <label for="social-auth-consent-all">{{ __('social-auth::views.consent.select_all') }}</label>
             </div>
 
             <fieldset class="social-auth-consent__terms">
-                <legend class="sr-only">서비스 약관 동의</legend>
+                <legend class="sr-only">{{ __('social-auth::views.consent.legend') }}</legend>
 
                 @foreach($terms as $key => $term)
                     <div class="social-auth-consent__term">
@@ -215,7 +206,7 @@
                         >
                         <label for="social-auth-term-{{ $key }}">
                             {{ $term['label'] }}
-                            <span class="social-auth-consent__badge">({{ ($term['required'] ?? false) ? '필수' : '선택' }})</span>
+                            <span class="social-auth-consent__badge">({{ ($term['required'] ?? false) ? __('social-auth::views.consent.required') : __('social-auth::views.consent.optional') }})</span>
                         </label>
                         @if(!empty($term['url']))
                             <a
@@ -223,13 +214,13 @@
                                 href="{{ $term['url'] }}"
                                 target="_blank"
                                 rel="noopener"
-                            >원문 보기</a>
+                            >{{ __('social-auth::views.consent.view_original') }}</a>
                         @endif
                     </div>
                 @endforeach
             </fieldset>
 
-            <button class="social-auth-consent__submit" type="submit">동의하고 가입 완료</button>
+            <button class="social-auth-consent__submit" type="submit">{{ __('social-auth::views.consent.submit') }}</button>
         </form>
     </main>
 </div>

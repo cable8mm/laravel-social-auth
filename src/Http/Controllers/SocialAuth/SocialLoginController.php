@@ -7,6 +7,7 @@ namespace Cable8mm\LaravelSocialAuth\Http\Controllers\SocialAuth;
 use Cable8mm\LaravelSocialAuth\Events\SocialLoginFailed;
 use Cable8mm\LaravelSocialAuth\Exceptions\SocialAuthException;
 use Cable8mm\LaravelSocialAuth\Services\SocialLoginManager;
+use Cable8mm\LaravelSocialAuth\Support\ProviderLabel;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -62,7 +63,7 @@ class SocialLoginController extends Controller
 
                 return redirect()
                     ->to(config('social-auth.redirects.connect_success', '/profile'))
-                    ->with('success', ucfirst($provider).' account connected.');
+                    ->with('success', __('social-auth::messages.connected', ['provider' => ProviderLabel::for($provider)]));
             }
 
             $result = $this->manager->handleCallback($provider, $request->all());

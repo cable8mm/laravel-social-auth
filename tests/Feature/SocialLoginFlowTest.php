@@ -214,6 +214,7 @@ class SocialLoginFlowTest extends TestCase
 
     public function test_existing_email_returns_to_login_without_consent_screen(): void
     {
+        app()->setLocale('ko');
         User::create([
             'name' => 'Existing User',
             'email' => 'same@example.com',

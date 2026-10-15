@@ -6,11 +6,14 @@ namespace Cable8mm\LaravelSocialAuth\Exceptions;
 
 use Cable8mm\LaravelSocialAuth\Data\ProviderError;
 use Cable8mm\LaravelSocialAuth\Events\SocialLoginFailed;
+use Cable8mm\LaravelSocialAuth\Support\ProviderLabel;
 use Exception;
 
 class SocialAuthException extends Exception
 {
     private string $failureReason = SocialLoginFailed::PROVIDER_ERROR;
+
+    private ?string $reason = null;
 
     private ?ProviderError $providerError = null;
 
@@ -23,11 +26,26 @@ class SocialAuthException extends Exception
     }
 
     /**
+     * Technical reason from the verifier (e.g. "Token exchange failed"). Not part of the user-facing message.
+     */
+    public function reason(): ?string
+    {
+        return $this->reason;
+    }
+
+    /**
      * Redacted error details returned by the provider, if any. Not part of the user-facing message.
      */
     public function providerError(): ?ProviderError
     {
         return $this->providerError;
+    }
+
+    private function withReason(string $reason): self
+    {
+        $this->reason = $reason !== '' ? $reason : null;
+
+        return $this;
     }
 
     private function withProviderError(?ProviderError $providerError): self
@@ -44,95 +62,93 @@ class SocialAuthException extends Exception
         return $this;
     }
 
+    /**
+     * @param  array<string, string>  $replace
+     */
+    private static function message(string $key, array $replace = []): self
+    {
+        return new self((string) __("social-auth::messages.{$key}", $replace));
+    }
+
     public static function invalidConfiguration(string $message): self
     {
-        return new self("Social Auth configuration error: {$message}");
+        return self::message('invalid_configuration', ['message' => $message]);
     }
 
     public static function providerNotEnabled(string $provider): self
     {
-        return new self("Provider [{$provider}] is not enabled.");
+        return self::message('provider_not_enabled', ['provider' => ProviderLabel::for($provider)]);
     }
 
     public static function providerNotFound(string $provider): self
     {
-        return new self("Provider [{$provider}] is not registered.");
+        return self::message('provider_not_found', ['provider' => ProviderLabel::for($provider)]);
     }
 
     public static function verificationFailed(string $provider, string $reason = '', ?ProviderError $providerError = null): self
     {
-        $msg = "Verification failed for provider [{$provider}]";
-        if ($reason !== '') {
-            $msg .= ": {$reason}";
-        }
-
-        return (new self($msg))
+        return self::message('verification_failed', ['provider' => ProviderLabel::for($provider)])
+            ->withReason($reason)
             ->withFailureReason(SocialLoginFailed::INVALID_CREDENTIAL)
             ->withProviderError($providerError);
     }
 
     /**
-     * Provider API returned a server error. Keeps the verification message
-     * shown to users while reporting the failure as a provider error.
+     * Provider API returned a server error. Reported as a provider error.
      */
     public static function providerRequestFailed(string $provider, string $reason, ?ProviderError $providerError = null): self
     {
-        return (new self("Verification failed for provider [{$provider}]: {$reason}"))
+        return self::message('provider_request_failed', ['provider' => ProviderLabel::for($provider)])
+            ->withReason($reason)
             ->withProviderError($providerError);
     }
 
     public static function accountAlreadyLinked(string $provider): self
     {
-        return new self("This {$provider} account is already linked to another user.");
+        return self::message('account_already_linked', ['provider' => ProviderLabel::for($provider)]);
     }
 
     public static function alreadyConnected(string $provider): self
     {
-        return new self("You already have a {$provider} account connected.");
+        return self::message('already_connected', ['provider' => ProviderLabel::for($provider)]);
     }
 
     public static function cannotDisconnectLastMethod(): self
     {
-        return new self('Cannot disconnect the last login method. Please set a password or connect another account first.');
+        return self::message('cannot_disconnect_last_method');
     }
 
     public static function consentRequired(): self
     {
-        return new self('You must accept the required terms and conditions to complete registration.');
+        return self::message('consent_required');
     }
 
     public static function emailAlreadyRegistered(): self
     {
-        return (new self('이미 가입된 이메일 주소입니다. 기존 계정으로 로그인한 후 프로필에서 이 SNS 계정을 연결해 주세요.'))
+        return self::message('email_already_registered')
             ->withFailureReason(SocialLoginFailed::EXISTING_EMAIL_UNLINKED);
     }
 
     public static function providerConsentRequired(string $provider): self
     {
-        $label = match ($provider) {
-            'naver' => '네이버',
-            'kakao' => '카카오',
-            default => ucfirst($provider),
-        };
-
-        return (new self("{$label}에서 필수 약관 동의를 확인하지 못했습니다. 다시 시도해 주세요."))
+        return self::message('provider_consent_required', ['provider' => ProviderLabel::for($provider)])
             ->withFailureReason(SocialLoginFailed::CONSENT_REJECTED);
     }
 
     public static function unauthenticated(): self
     {
-        return new self('Authentication required.');
+        return self::message('unauthenticated');
     }
 
     public static function invalidState(): self
     {
-        return (new self('Invalid or missing state parameter. Please try again.'))
+        return self::message('invalid_state')
             ->withFailureReason(SocialLoginFailed::INVALID_CREDENTIAL);
     }
 
     public static function invalidNonce(): self
     {
-        return (new self('Invalid or missing nonce. Please try again.'))
+        return self::message('invalid_nonce')
             ->withFailureReason(SocialLoginFailed::INVALID_CREDENTIAL);
     }
 }

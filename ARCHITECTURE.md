@@ -45,6 +45,8 @@ Any code calling these directly requires a live observation before a correspondi
 - `ProviderProfileMapper` — applies the per-provider `name_mapping` config; nickname is never provider-sourced.
 - `ChallengeGenerator` — issues and session-stores the Google nonce and Kakao/Naver OAuth state values, called from the button views.
 - `SocialAccountLinked` / `SocialAccountUnlinked` / `SocialLoginFailed` — events.
+- `lang/{en,ko}/messages.php`, `lang/{en,ko}/providers.php`, `lang/{en,ko}/views.php` — package translations loaded under the `social-auth` namespace (before boot-time config validation, so configuration errors are translated) and publishable with the `social-auth-lang` tag. Every `SocialAuthException` factory builds its message with `__('social-auth::messages.<key>')`; the technical failure reason is stored separately and exposed by `SocialAuthException::reason()`. The Blade views take every user-facing string from `social-auth::views.*` and provider names from `ProviderLabel`.
+- `ProviderLabel` — returns the translated provider name (`social-auth::providers.<key>`), falling back to `ucfirst($provider)` for unknown providers; used as the `:provider` parameter in messages and views.
 - `SocialLoginController` — nonce/state endpoints and provider callback; thin, delegates to `SocialLoginManager`.
 - `SocialRegistrationController` — consent screen and registration completion; thin, delegates to `SocialLoginManager`.
 - `SocialLinkController` — authenticated connect/disconnect endpoints; thin, delegates to `SocialLoginManager`.

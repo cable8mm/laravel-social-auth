@@ -26,7 +26,7 @@ src/
   Console/InstallCommand.php
   SocialLoginManager.php
   Contracts/        ProviderContract, RegistrationConsentContract, NicknameGeneratorContract
-  Support/           SocialUser, PendingSocialRegistration, ChallengeGenerator,
+  Support/           ProviderLabel, SocialUser, PendingSocialRegistration, ChallengeGenerator,
                       DefaultNicknameGenerator, DefaultRegistrationConsent,
                       ProviderProfileMapper, ConfigurationValidator
   Providers/         GoogleProvider, KakaoProvider, NaverProvider
@@ -39,6 +39,7 @@ src/
     SocialAuth/       SocialLoginController, SocialRegistrationController,
                       SocialLinkController
 config/social-auth.php
+lang/{en,ko}/                   (messages.php, providers.php, views.php — `social-auth::` translations)
 routes/web.php
 database/migrations/            (social_accounts — auto-loaded)
 database/migrations/stubs/      (users nullable-columns stub — publish-only, never auto-run)
@@ -54,6 +55,7 @@ PSR-4 root: `Cable8mm\SocialAuth\` -> `src/`. Test namespace: `Cable8mm\SocialAu
 - All PHP formatted with Laravel Pint (`pint.json` — `laravel` preset) before a task is considered done. Run `vendor/bin/pint` from the package root.
 - Favor `final` classes and `readonly` value objects (`SocialUser`, `PendingSocialRegistration`) where the class has no legitimate subclassing use case.
 - No abstraction without a concrete second use — e.g. no generic "OAuth flow" base class shared by Kakao/Naver until a third code-exchange provider actually shows up (see AGENTS.md DESIGN_RULES).
+- User-facing strings are never hardcoded: add a key to both `lang/en/messages.php` and `lang/ko/messages.php` and build the message with `__('social-auth::messages.<key>')`. Blade view copy goes in `lang/{en,ko}/views.php` (`__('social-auth::views.<key>')`), and provider names in views come from `ProviderLabel::for()`, never `ucfirst()`.
 - Exception messages that can reach an end user (`ProviderVerificationException`, `AccountLinkConflictException`, `LastLoginMethodException`) must stay generic — never interpolate raw provider error detail into them. Provider error detail is carried separately as a redacted `ProviderError` on `SocialAuthException::providerError()`.
 
 ## Testing conventions

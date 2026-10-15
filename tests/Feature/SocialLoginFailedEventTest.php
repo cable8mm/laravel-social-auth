@@ -24,6 +24,7 @@ class SocialLoginFailedEventTest extends TestCase
 
     public function test_existing_email_dispatches_existing_email_unlinked_on_redirect(): void
     {
+        app()->setLocale('ko');
         User::create(['name' => 'Existing', 'email' => 'same@example.com', 'password' => bcrypt('secret')]);
         $this->fakeKakao(email: 'same@example.com');
 
@@ -39,6 +40,7 @@ class SocialLoginFailedEventTest extends TestCase
 
     public function test_existing_email_dispatches_existing_email_unlinked_on_json(): void
     {
+        app()->setLocale('ko');
         User::create(['name' => 'Existing', 'email' => 'same@example.com', 'password' => bcrypt('secret')]);
         $this->fakeKakao(email: 'same@example.com');
 
@@ -77,7 +79,7 @@ class SocialLoginFailedEventTest extends TestCase
         ]);
 
         $response->assertRedirect('/login');
-        $response->assertSessionHas('error', 'Verification failed for provider [kakao]: Token exchange failed');
+        $response->assertSessionHas('error', 'Verification failed for provider [Kakao]');
         $this->assertFailedOnce('kakao', SocialLoginFailed::INVALID_CREDENTIAL);
     }
 
@@ -96,10 +98,11 @@ class SocialLoginFailedEventTest extends TestCase
             'state' => $this->state(),
         ]);
 
-        $response->assertSessionHas('error', 'Verification failed for provider [kakao]: Token exchange failed');
+        $response->assertSessionHas('error', 'Verification failed for provider [Kakao]');
         Event::assertDispatched(
             SocialLoginFailed::class,
             fn (SocialLoginFailed $event): bool => $event->exception instanceof SocialAuthException
+                && $event->exception->reason() === 'Token exchange failed'
                 && $event->exception->providerError()?->errorCode === 'KOE320'
                 && $event->exception->providerError()?->errorDescription === 'authorization code not found for code=[redacted]',
         );
@@ -117,7 +120,7 @@ class SocialLoginFailedEventTest extends TestCase
         ]);
 
         $response->assertStatus(422)
-            ->assertJson(['error' => 'Verification failed for provider [kakao]: Token exchange failed']);
+            ->assertJson(['error' => 'Verification failed for provider [Kakao]']);
         $this->assertFailedOnce('kakao', SocialLoginFailed::PROVIDER_ERROR);
     }
 
@@ -133,6 +136,7 @@ class SocialLoginFailedEventTest extends TestCase
 
     public function test_missing_provider_consent_dispatches_consent_rejected(): void
     {
+        app()->setLocale('ko');
         config([
             'social-auth.consent.providers.naver.enabled' => true,
             'social-auth.consent.providers.naver.term_codes' => [

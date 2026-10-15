@@ -6,6 +6,7 @@ namespace Cable8mm\LaravelSocialAuth\Http\Controllers\SocialAuth;
 
 use Cable8mm\LaravelSocialAuth\Exceptions\SocialAuthException;
 use Cable8mm\LaravelSocialAuth\Services\SocialLoginManager;
+use Cable8mm\LaravelSocialAuth\Support\ProviderLabel;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -39,7 +40,7 @@ class SocialLinkController extends Controller
 
             return redirect()
                 ->to(config('social-auth.redirects.connect_success', '/profile'))
-                ->with('success', ucfirst($provider).' account connected.');
+                ->with('success', __('social-auth::messages.connected', ['provider' => ProviderLabel::for($provider)]));
         } catch (SocialAuthException $e) {
             if ($request->expectsJson()) {
                 return response()->json(['error' => $e->getMessage()], 422);
@@ -67,7 +68,7 @@ class SocialLinkController extends Controller
 
             return redirect()
                 ->to(config('social-auth.redirects.disconnect_success', '/profile'))
-                ->with('success', ucfirst($provider).' account disconnected.');
+                ->with('success', __('social-auth::messages.disconnected', ['provider' => ProviderLabel::for($provider)]));
         } catch (SocialAuthException $e) {
             if ($request->expectsJson()) {
                 return response()->json(['error' => $e->getMessage()], 422);
