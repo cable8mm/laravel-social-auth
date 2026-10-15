@@ -58,7 +58,7 @@
         <div class="social-auth-callback__card" id="social-auth-callback-card">
             <span class="social-auth-callback__spinner" aria-hidden="true"></span>
             <p class="social-auth-callback__status" id="social-auth-status" role="status" aria-live="polite">
-                로그인 정보를 확인하고 있습니다.
+                {{ __('social-auth::views.naver_callback.checking') }}
             </p>
         </div>
     </main>
@@ -74,7 +74,7 @@
 
             if (error || !accessToken) {
                 card.classList.add('is-error');
-                status.textContent = query.get('error_description') || hash.get('error_description') || '네이버 로그인을 완료하지 못했습니다.';
+                status.textContent = query.get('error_description') || hash.get('error_description') || @json(__('social-auth::views.naver_callback.failed', ['provider' => \Cable8mm\LaravelSocialAuth\Support\ProviderLabel::for('naver')]));
                 return;
             }
 

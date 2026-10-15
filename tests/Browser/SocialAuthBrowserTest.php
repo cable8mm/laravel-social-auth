@@ -8,6 +8,16 @@ use Laravel\Dusk\Browser;
 
 class SocialAuthBrowserTest extends DuskTestCase
 {
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        // The assertions below check the Korean package copy.
+        $this->beforeServingApplication(function ($app, $config): void {
+            $config->set('app.locale', 'ko');
+        });
+    }
+
     public function test_social_buttons_are_rendered_in_configured_order(): void
     {
         $this->browse(function (Browser $browser): void {

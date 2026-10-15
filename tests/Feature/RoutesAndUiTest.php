@@ -58,6 +58,7 @@ class RoutesAndUiTest extends TestCase
 
     public function test_consent_page_with_pending(): void
     {
+        app()->setLocale('ko');
         Session::put(config('social-auth.session.pending_registration'), [
             'provider' => 'kakao',
             'provider_id' => 'x',
@@ -84,6 +85,7 @@ class RoutesAndUiTest extends TestCase
 
     public function test_duplicate_registration_email_fallback_returns_to_login_with_safe_message(): void
     {
+        app()->setLocale('ko');
         Schema::table('users', function (Blueprint $table): void {
             $table->unique('email');
         });
@@ -139,6 +141,7 @@ class RoutesAndUiTest extends TestCase
 
     public function test_naver_callback_renders_fragment_handoff_page(): void
     {
+        app()->setLocale('ko');
         $response = $this->get(route('social-auth.callback', 'naver'));
 
         $response->assertOk();
@@ -184,6 +187,7 @@ class RoutesAndUiTest extends TestCase
 
     public function test_connected_accounts_puts_disconnect_action_on_the_right(): void
     {
+        app()->setLocale('ko');
         $user = User::create([
             'name' => 'User',
             'email' => 'user@example.com',
@@ -226,6 +230,7 @@ class RoutesAndUiTest extends TestCase
 
     public function test_google_button_has_a_server_rendered_fallback(): void
     {
+        app()->setLocale('ko');
         $html = view('social-auth::components.button', [
             'provider' => 'google',
             'context' => 'connect',
@@ -264,6 +269,7 @@ class RoutesAndUiTest extends TestCase
 
     public function test_naver_button_uses_the_package_button_markup(): void
     {
+        app()->setLocale('ko');
         $html = view('social-auth::components.button', [
             'provider' => 'naver',
             'context' => 'login',
@@ -278,6 +284,7 @@ class RoutesAndUiTest extends TestCase
 
     public function test_register_buttons_use_registration_labels(): void
     {
+        app()->setLocale('ko');
         config([
             'social-auth.providers.apple.enabled' => true,
             'social-auth.providers.apple.client_id' => 'com.example.web',
@@ -304,6 +311,7 @@ class RoutesAndUiTest extends TestCase
 
     public function test_kakao_button_includes_tailwind_styling(): void
     {
+        app()->setLocale('ko');
         $html = view('social-auth::components.button', [
             'provider' => 'kakao',
             'context' => 'login',

@@ -33,7 +33,8 @@ class ProviderErrorTest extends TestCase
         $verifier = new KakaoTokenVerifier('client-id', 'kakao-client-secret', 'https://app.test/callback');
         $e = $this->failure(fn () => $verifier->exchangeCode('kakao-secret-code'));
 
-        $this->assertSame('Verification failed for provider [kakao]: Token exchange failed', $e->getMessage());
+        $this->assertSame('Verification failed for provider [Kakao]', $e->getMessage());
+        $this->assertSame('Token exchange failed', $e->reason());
         $this->assertSame(SocialLoginFailed::INVALID_CREDENTIAL, $e->failureReason());
         $this->assertSame([
             'status' => 400,
@@ -71,7 +72,8 @@ class ProviderErrorTest extends TestCase
         $verifier = new KakaoTokenVerifier('client-id', null, null);
         $e = $this->failure(fn () => $verifier->fetchProfile('kakao-access-token'));
 
-        $this->assertSame('Verification failed for provider [kakao]: Failed to fetch user profile', $e->getMessage());
+        $this->assertSame('Verification failed for provider [Kakao]', $e->getMessage());
+        $this->assertSame('Failed to fetch user profile', $e->reason());
         $this->assertSame([
             'status' => 401,
             'error' => null,
@@ -91,7 +93,8 @@ class ProviderErrorTest extends TestCase
 
         $e = $this->failure(fn () => (new NaverTokenVerifier)->fetchProfile('naver-access-token'));
 
-        $this->assertSame('Verification failed for provider [naver]: Failed to fetch user profile', $e->getMessage());
+        $this->assertSame('Verification failed for provider [Naver]', $e->getMessage());
+        $this->assertSame('Failed to fetch user profile', $e->reason());
         $this->assertSame([
             'status' => 401,
             'error' => null,
@@ -114,7 +117,8 @@ class ProviderErrorTest extends TestCase
 
         $e = $this->failure(fn () => (new NaverTokenVerifier)->fetchAgreement('naver-access-token'));
 
-        $this->assertSame('Verification failed for provider [naver]: Failed to fetch service agreements', $e->getMessage());
+        $this->assertSame('Verification failed for provider [Naver]', $e->getMessage());
+        $this->assertSame('Failed to fetch service agreements', $e->reason());
         $this->assertSame([
             'status' => 400,
             'error' => 'Bad Request',
@@ -138,7 +142,8 @@ class ProviderErrorTest extends TestCase
         $verifier = new AppleTokenVerifier('com.example.web', 'team-id', 'key-id', $privateKey, null);
         $e = $this->failure(fn () => $verifier->exchangeCode('apple-secret-code'));
 
-        $this->assertSame('Verification failed for provider [apple]: Authorization code exchange failed', $e->getMessage());
+        $this->assertSame('Verification failed for provider [Apple]', $e->getMessage());
+        $this->assertSame('Authorization code exchange failed', $e->reason());
         $this->assertSame([
             'status' => 400,
             'error' => 'invalid_grant',

@@ -93,6 +93,14 @@ Google, Kakao, Naver 로그인을 하나의 Laravel 패키지에서 통합 관�
 - provider별 이름 매핑은 설정 가능 (Google/Naver는 name 매핑 가능, Kakao는 name 매핑 안 함)
 - 닉네임은 모든 provider 공통으로 항상 nickname generator가 생성 (provider 닉네임 자동 사용 금지)
 
+## 다국어 메시지
+
+- 사용자에게 보이는 모든 패키지 메시지(예외 메시지, 연결/해제 성공 flash)와 기본 Blade UI 문구(SNS 버튼, 약관 동의 화면, 연결된 SNS 계정 목록, Naver callback 화면)는 애플리케이션 locale에 따라 번역됨
+- 패키지는 영어(`en`)와 한국어(`ko`) 번역을 제공하며, 애플리케이션은 `social-auth-lang` 태그로 번역 파일을 publish해 key 단위로 덮어쓸 수 있음
+- provider 이름도 번역하며(예: kakao → Kakao / 카카오), 문장마다 provider를 하드코딩하지 않고 `:provider` 매개변수로 넣음. 단, SNS 버튼 문구는 provider별 브랜드 표기(예: `네이버 아이디로 로그인`)를 따르므로 provider·화면(login/register/connect)별 key로 둠
+- 사용자에게 보이는 메시지에는 provider의 기술적 실패 원인을 넣지 않음. 원인은 예외에 별도로 보관해 이벤트와 로그에서 사용할 수 있게 함
+- 웹훅 endpoint의 기계용 응답 코드는 번역 대상이 아님
+
 ## 인증 UI 요구사항
 
 - 로그인 화면용 / 회원가입 화면용 SNS 버튼
