@@ -28,6 +28,10 @@ class NaverTokenVerifier
             ->timeout(15)
             ->get(self::PROFILE_URL);
 
+        if ($response->serverError()) {
+            throw SocialAuthException::providerRequestFailed('naver', 'Failed to fetch user profile');
+        }
+
         if (! $response->successful()) {
             throw SocialAuthException::verificationFailed('naver', 'Failed to fetch user profile');
         }
@@ -70,6 +74,10 @@ class NaverTokenVerifier
         ])
             ->timeout(15)
             ->get(self::AGREEMENT_URL);
+
+        if ($response->serverError()) {
+            throw SocialAuthException::providerRequestFailed('naver', 'Failed to fetch service agreements');
+        }
 
         if (! $response->successful()) {
             throw SocialAuthException::verificationFailed('naver', 'Failed to fetch service agreements');

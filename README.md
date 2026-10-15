@@ -452,6 +452,26 @@ php artisan config:clear
 - `SocialUserLoggedIn`
 - `SocialAccountConnected`
 - `SocialAccountDisconnected`
+- `SocialLoginFailed`: 연결 흐름이 아닌 SNS 로그인/가입 callback이 실패할 때 한 번 dispatch됩니다. `provider`, `reason`, `exception` 속성을 제공합니다.
+
+| `reason`                  | 의미                                                                 |
+| ------------------------- | -------------------------------------------------------------------- |
+| `existing_email_unlinked` | 같은 이메일의 기존 계정이 있어 자동 병합을 거부함                    |
+| `invalid_credential`      | provider credential, authorization code, state, nonce 검증 실패      |
+| `consent_rejected`        | provider-managed consent(네이버 로그인 플러스 등)의 필수 약관 확인 실패 |
+| `provider_error`          | provider API 서버 오류 등 그 밖의 실패                               |
+
+```php
+use Cable8mm\LaravelSocialAuth\Events\SocialLoginFailed;
+use Illuminate\Support\Facades\Event;
+
+Event::listen(function (SocialLoginFailed $event) {
+    logger()->info('Social login failed', [
+        'provider' => $event->provider,
+        'reason' => $event->reason,
+    ]);
+});
+```
 
 ### Facade
 

@@ -63,6 +63,17 @@ Google, Kakao, Naver 로그인을 하나의 Laravel 패키지에서 통합 관�
 - 기존 계정과 SNS 계정 연결은 반드시 로그인한 사용자가 프로필에서 명시적으로 실행
 - provider ID가 기존 연결과 일치하지 않고 provider 이메일이 기존 사용자와 일치하면 약관 동의 화면으로 보내지 않고 로그인 화면으로 돌아가 안전한 안내 메시지를 표시함
 
+### 로그인 실패 이벤트
+
+- SNS 로그인/가입 callback이 실패하면 `SocialLoginFailed` 이벤트를 정확히 한 번 dispatch함. 애플리케이션은 이를 접속 기록 등에 사용할 수 있음
+- 이벤트는 provider, 기계가 읽을 수 있는 고정 reason, 원인 예외를 전달함
+  - `existing_email_unlinked`: 같은 이메일의 기존 계정이 있어 자동 병합을 거부함
+  - `invalid_credential`: provider credential, authorization code, state, nonce 검증 실패
+  - `consent_rejected`: provider-managed consent의 필수 약관 확인 실패
+  - `provider_error`: provider API 서버 오류 등 그 밖의 실패
+- 프로필의 SNS 계정 연결 흐름의 실패는 이 이벤트를 보내지 않음
+- 이벤트 추가로 기존 응답 코드, 리디렉트 위치, 오류 메시지는 바뀌지 않음
+
 ### SNS 계정 연결 (프로필)
 
 - 인증된 사용자가 프로필에서 Google/Kakao/Naver/Apple 계정을 연결할 수 있어야 함
