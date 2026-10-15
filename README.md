@@ -463,12 +463,17 @@ php artisan config:clear
 
 ```php
 use Cable8mm\LaravelSocialAuth\Events\SocialLoginFailed;
+use Cable8mm\LaravelSocialAuth\Exceptions\SocialAuthException;
 use Illuminate\Support\Facades\Event;
 
 Event::listen(function (SocialLoginFailed $event) {
     logger()->info('Social login failed', [
         'provider' => $event->provider,
         'reason' => $event->reason,
+        // 제공자가 돌려준 오류 정보 (비밀값 제거됨). 예: ['status' => 400, 'error' => 'invalid_grant', 'error_code' => 'KOE320', ...]
+        'provider_error' => $event->exception instanceof SocialAuthException
+            ? $event->exception->providerError()?->toArray()
+            : null,
     ]);
 });
 ```

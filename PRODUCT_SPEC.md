@@ -72,6 +72,7 @@ Google, Kakao, Naver 로그인을 하나의 Laravel 패키지에서 통합 관�
   - `consent_rejected`: provider-managed consent의 필수 약관 확인 실패
   - `provider_error`: provider API 서버 오류 등 그 밖의 실패
 - 프로필의 SNS 계정 연결 흐름의 실패는 이 이벤트를 보내지 않음
+- provider가 오류 응답(error, error_code, error_description 등)을 돌려준 경우 원인 예외에 그 정보를 담아 전달함. 액세스 토큰, 인가 코드, client_secret 같은 비밀값은 제거하며, 사용자에게 보이는 오류 문구는 일반적인 문구를 유지함
 - 이벤트 추가로 기존 응답 코드, 리디렉트 위치, 오류 메시지는 바뀌지 않음
 
 ### SNS 계정 연결 (프로필)

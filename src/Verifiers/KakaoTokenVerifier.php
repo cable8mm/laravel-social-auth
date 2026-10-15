@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Cable8mm\LaravelSocialAuth\Verifiers;
 
+use Cable8mm\LaravelSocialAuth\Data\ProviderError;
 use Cable8mm\LaravelSocialAuth\Exceptions\SocialAuthException;
 use Illuminate\Support\Facades\Http;
 
@@ -47,11 +48,11 @@ class KakaoTokenVerifier
             ->post(self::TOKEN_URL, $payload);
 
         if ($response->serverError()) {
-            throw SocialAuthException::providerRequestFailed('kakao', 'Token exchange failed');
+            throw SocialAuthException::providerRequestFailed('kakao', 'Token exchange failed', ProviderError::fromResponse($response, [$code, $this->clientSecret]));
         }
 
         if (! $response->successful()) {
-            throw SocialAuthException::verificationFailed('kakao', 'Token exchange failed');
+            throw SocialAuthException::verificationFailed('kakao', 'Token exchange failed', ProviderError::fromResponse($response, [$code, $this->clientSecret]));
         }
 
         $tokens = $response->json();
@@ -80,11 +81,11 @@ class KakaoTokenVerifier
             ->get(self::USER_URL);
 
         if ($response->serverError()) {
-            throw SocialAuthException::providerRequestFailed('kakao', 'Failed to fetch user profile');
+            throw SocialAuthException::providerRequestFailed('kakao', 'Failed to fetch user profile', ProviderError::fromResponse($response, [$accessToken]));
         }
 
         if (! $response->successful()) {
-            throw SocialAuthException::verificationFailed('kakao', 'Failed to fetch user profile');
+            throw SocialAuthException::verificationFailed('kakao', 'Failed to fetch user profile', ProviderError::fromResponse($response, [$accessToken]));
         }
 
         $profile = $response->json();
