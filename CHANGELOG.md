@@ -1,22 +1,5 @@
 # Release Notes
 
-## Unreleased (v1.2.0)
-
-### Added
-
-* Translatable user-facing messages with English (`en`) and Korean (`ko`) language files under the `social-auth` namespace (`social-auth::messages.*`, `social-auth::providers.*`). Publish them with `php artisan vendor:publish --tag=social-auth-lang`.
-* `SocialAuthException::reason()` returns the technical failure reason (e.g. `Token exchange failed`) that used to be appended to the message.
-* Connect/disconnect success flashes are translated (`connected`, `disconnected`).
-* The default Blade views (buttons, consent screen, connected accounts, Naver callback page) take their copy from `social-auth::views.*`, with English and Korean translations.
-
-### Changed
-
-* `verificationFailed` / `providerRequestFailed` messages no longer include the technical reason: `Verification failed for provider [kakao]: Token exchange failed` is now `Verification failed for provider [Kakao]`. Read the reason from `SocialAuthException::reason()` (also available on `SocialLoginFailed::$exception`).
-* English messages that include a provider name now use the translated name (`Kakao`, `Naver`, `Google`, `Apple`) instead of the lowercase key, e.g. `Provider [Kakao] is not enabled.`
-* `emailAlreadyRegistered` and `providerConsentRequired` were Korean-only. They now have English text, and the Korean text is served under the `ko` locale. Apps on the `ko` locale see the same Korean text as before. Apps on other locales now see English instead of Korean.
-* The Blade views now follow the application locale. Apps on the `ko` locale see the same Korean copy as before, except that provider names in the connected-accounts list (previously `Naver`, `Kakao`, `Google` in every locale) and the Google label on the consent screen now come from `providers.php` (`네이버`, `카카오`, `구글`). Apps on other locales now see English copy instead of Korean.
-* The `ko.json` and middleware workarounds that translated these messages in applications can be removed.
-
 ## v1.1.1 - 2026-10-15
 
 ### What's Changed
