@@ -1,5 +1,13 @@
 # Release Notes
 
+## v1.1.0 - 2026-10-15
+
+### What's Changed
+
+* feat: add SocialLoginFailed event for login/registration failures by [@cable8mm](https://github.com/cable8mm) in https://github.com/cable8mm/laravel-social-auth/pull/33
+
+**Full Changelog**: https://github.com/cable8mm/laravel-social-auth/compare/v1.0.0...v1.1.0
+
 ## v1.0.0 - 2026-09-21
 
 ### What's Changed
