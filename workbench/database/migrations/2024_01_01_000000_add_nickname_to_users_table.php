@@ -12,6 +12,7 @@ return new class extends Migration
     {
         Schema::table('users', function (Blueprint $table): void {
             $table->string('nickname')->nullable();
+            $table->string('name')->nullable()->change();
             $table->string('password')->nullable()->change();
             $table->string('email')->nullable()->change();
             $table->timestamp('terms_accepted_at')->nullable();

@@ -86,12 +86,26 @@ Findings from a read-only review of `main` at 073d752. Each fix task includes th
 
 ### [DECISION] Docs vs code — owner decides which side is right; do not implement until decided
 
-- [ ] Component names and contracts: docs list `ConfigurationValidator`, `SocialUser`, `PendingSocialRegistration`, `ChallengeGenerator`, `ProviderProfileMapper`, `SocialAccountRepository`, `DefaultRegistrationConsent`, events `SocialAccountLinked/Unlinked`, `ProviderContract::key/jsSdkUrl/authenticate(Request)`, config `remote_revoke_enabled`, namespace `Cable8mm\SocialAuth`; code has `SocialAuthServiceProvider::validateConfiguration`, `Data\ProviderUser`, `SocialLoginManager::generateNonce/State`, `AbstractProvider::mapProfile`, `Services\SocialAccountService`, `RegistrationConsentService`, events `SocialAccountConnected/Disconnected` (+ `SocialUserLoggedIn/Registered`), `getName/getJsSdkUrl/verify(array)`, `remote_revoke`, `Cable8mm\LaravelSocialAuth`. TECH_STACK.md heading still says `FRAMEWORK.md`
-- [ ] Naver remote revoke: implemented (`NaverProvider::revoke`, `NaverTokenVerifier::revoke`) but PRODUCT_SPEC lists it as out of scope
-- [ ] Connect path: ARCHITECTURE describes `SocialLinkController::connect`; the JS never calls it and connects go through `SocialLoginController::callback` + the `connecting_provider` session key, duplicating the logic
-- [ ] `<style>` blocks in `naver-callback.blade.php` (incl. `:root`/`body` rules) and `consent.blade.php`; TECH_STACK forbids injecting a `<style>` block
-- [ ] Naver nickname: default `nickname_mapping => 'nickname'` stores the Naver nickname in `users.nickname`; PRODUCT_SPEC/ARCHITECTURE say the nickname always comes from the generator (`config/social-auth.php:68`, `SocialLoginManager.php:447`)
-- [ ] `users.name` fallback: with no provider name it becomes the generated nickname; PRODUCT_SPEC says GitHub name is null when absent (default `users.name` is NOT NULL) (`SocialLoginManager.php:465`)
+All six decided on 2026-10-22; each item notes the decision.
+
+- [x] Component names and contracts: docs list `ConfigurationValidator`, `SocialUser`, `PendingSocialRegistration`, `ChallengeGenerator`, `ProviderProfileMapper`, `SocialAccountRepository`, `DefaultRegistrationConsent`, events `SocialAccountLinked/Unlinked`, `ProviderContract::key/jsSdkUrl/authenticate(Request)`, config `remote_revoke_enabled`, namespace `Cable8mm\SocialAuth`; code has `SocialAuthServiceProvider::validateConfiguration`, `Data\ProviderUser`, `SocialLoginManager::generateNonce/State`, `AbstractProvider::mapProfile`, `Services\SocialAccountService`, `RegistrationConsentService`, events `SocialAccountConnected/Disconnected` (+ `SocialUserLoggedIn/Registered`), `getName/getJsSdkUrl/verify(array)`, `remote_revoke`, `Cable8mm\LaravelSocialAuth`. TECH_STACK.md heading still says `FRAMEWORK.md`
+  - Decided (2026-10-22): code is right. Update TECH_STACK.md and ARCHITECTURE.md to the code's names and contracts.
+- [x] Naver remote revoke: implemented (`NaverProvider::revoke`, `NaverTokenVerifier::revoke`) but PRODUCT_SPEC lists it as out of scope
+  - Decided: code is right. Remove Naver remote revoke from PRODUCT_SPEC's out-of-scope list.
+- [x] Connect path: ARCHITECTURE describes `SocialLinkController::connect`; the JS never calls it and connects go through `SocialLoginController::callback` + the `connecting_provider` session key, duplicating the logic
+  - Decided: docs only. ARCHITECTURE describes both paths as they work today (JS buttons connect through the callback with `connecting_provider`; `POST /{provider}/connect` remains for direct use). The connect-intent bug is its own heading below.
+- [x] `<style>` blocks in `naver-callback.blade.php` (incl. `:root`/`body` rules) and `consent.blade.php`; TECH_STACK forbids injecting a `<style>` block
+  - Decided: TECH_STACK is right; the host app owns styling (Tailwind CSS v4 assumed). Replace the `<style>` blocks with Tailwind utility classes, drop the `:root`/`body` rules, keep the `social-auth-*` marker classes the tests and apps select on.
+- [x] Naver nickname: default `nickname_mapping => 'nickname'` stores the Naver nickname in `users.nickname`; PRODUCT_SPEC/ARCHITECTURE say the nickname always comes from the generator (`config/social-auth.php:68`, `SocialLoginManager.php:447`)
+  - Decided: code is right. Nickname use is chosen per provider by data quality (Naver's is good, Kakao's is not). Update PRODUCT_SPEC/ARCHITECTURE: per-provider `nickname_mapping`, Naver on by default, generator when empty. README: note a unique `users.nickname` column can collide.
+- [x] `users.name` fallback: with no provider name it becomes the generated nickname; PRODUCT_SPEC says GitHub name is null when absent (default `users.name` is NOT NULL) (`SocialLoginManager.php:465`)
+  - Decided: PRODUCT_SPEC is right; filling `users.name` is the application's job. Store the mapped name or null (no nickname fallback); ship a separate publishable migration making `users.name` nullable (already-published stubs won't re-run); README; test a no-name sign-up.
+
+### Fix: connect intent (own PR)
+
+Sensitive: touches how an authenticated callback is told apart from login/sign-up. Ship alone, not with other headings.
+
+- [ ] Bind connect intent to the flow instead of one global session key. Today `connecting_provider` is a single value that later nonce/state fetches overwrite (another tab, or Google and Apple both initialising on the profile page). The callback then runs login/sign-up for an authenticated user: it can switch the session to the account owning that provider ID, or send the user through consent and create a new account. Google: the connect button posts the credential to the existing `POST /{provider}/connect` (`data-connect-url`, already rendered). Kakao/Naver/GitHub/Apple: store the connect target with the issued `state` and decide on callback from the returned `state`. Remove `connecting_provider`. Tests: Google connect via `/connect`; an in-progress Kakao connect stays a connect after another tab fetches a new state/nonce. Update ARCHITECTURE (`src/Http/Controllers/SocialAuth/SocialLoginController.php:51-113`, `resources/js/social-auth.js`)
 
 ### Cleanup
 

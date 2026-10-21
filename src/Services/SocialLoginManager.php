@@ -478,7 +478,8 @@ class SocialLoginManager
 
         /** @var Model $user */
         $user = $userModel::query()->create([
-            'name' => $mapped['name'] ?? $nickname,
+            // No provider name stays null; a default name is the application's decision.
+            'name' => $mapped['name'] ?? null,
             'email' => $providerUser->email,
             'password' => null,
             'nickname' => $nickname,

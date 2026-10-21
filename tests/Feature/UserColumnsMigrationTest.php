@@ -28,4 +28,16 @@ class UserColumnsMigrationTest extends TestCase
         $this->assertArrayHasKey('privacy_policy_accepted_at', $columns);
         $this->assertArrayHasKey('marketing_accepted_at', $columns);
     }
+
+    public function test_user_name_migration_makes_name_nullable(): void
+    {
+        Schema::table('users', function (SchemaBlueprint $table): void {
+            $table->string('name')->nullable(false)->change();
+        });
+
+        $migration = require __DIR__.'/../../database/migrations/stubs/2024_01_01_000003_make_user_name_nullable.php';
+        $migration->up();
+
+        $this->assertTrue(collect(Schema::getColumns('users'))->keyBy('name')['name']['nullable']);
+    }
 }

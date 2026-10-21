@@ -105,6 +105,8 @@ class SocialAuthServiceProvider extends ServiceProvider
 
             $this->publishesMigrations([
                 dirname(__DIR__).'/database/migrations/stubs/2024_01_01_000002_make_user_credentials_nullable.php' => database_path('migrations/2024_01_01_000002_make_user_credentials_nullable.php'),
+                // A separate file so applications that already ran the credentials stub still get it.
+                dirname(__DIR__).'/database/migrations/stubs/2024_01_01_000003_make_user_name_nullable.php' => database_path('migrations/2024_01_01_000003_make_user_name_nullable.php'),
             ], 'social-auth-user-columns');
         }
 
