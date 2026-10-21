@@ -197,6 +197,13 @@ class SocialLoginManager
             return;
         }
 
+        // Pages rendered on the consent screen (e.g. the layout's One Tap)
+        // must not replace the page the sign-up started from.
+        $consentPath = parse_url(config('social-auth.redirects.registration_consent', '/social-auth/consent'), PHP_URL_PATH);
+        if (rtrim((string) parse_url($url, PHP_URL_PATH), '/') === rtrim((string) $consentPath, '/')) {
+            return;
+        }
+
         Session::put(
             config('social-auth.session.intended', 'social_auth.intended'),
             $url,
