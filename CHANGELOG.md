@@ -1,5 +1,17 @@
 # Release Notes
 
+## v1.2.1 - 2026-10-21
+
+### What's Changed
+
+* build(deps-dev): bump vite from 8.3.0 to 8.3.4 in /workbench by [@dependabot](https://github.com/dependabot)[bot] in https://github.com/cable8mm/laravel-social-auth/pull/36
+
+### New Contributors
+
+* [@dependabot](https://github.com/dependabot)[bot] made their first contribution in https://github.com/cable8mm/laravel-social-auth/pull/36
+
+**Full Changelog**: https://github.com/cable8mm/laravel-social-auth/compare/v1.2.0...v1.2.1
+
 ## v1.2.0 - 2026-10-15
 
 ### What's Changed
