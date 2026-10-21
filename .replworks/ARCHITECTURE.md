@@ -68,7 +68,7 @@ Unique indexes: `(provider, provider_id)`, `(user_id, provider)`.
 ## Flows
 
 **Login / registration callback** (`SocialLoginController::callback`):
-provider authenticate -> `SocialUser`. The browser stores the current same-origin page as the intended destination before provider authentication. If a matching `social_accounts` row exists, log its owner in (`Auth::login` + session regenerate) and consume that destination. Otherwise store `PendingSocialRegistration` in session and redirect to the consent screen — no `User` row is created yet. Consent completion consumes the same destination after creating and logging in the user.
+provider authenticate -> `SocialUser`. The browser stores the current same-origin page as the intended destination before provider authentication. If a matching `social_accounts` row exists, log its owner in (`Auth::login` + session regenerate) and consume that destination. Otherwise store `PendingSocialRegistration` in session and redirect to the consent screen — no `User` row is created yet. Consent completion consumes the same destination after creating and logging in the user. The consent screen's own URL is never stored as the destination: pages rendered on it (for example the layout's guest Google One Tap, which fetches a nonce with the current page as `redirect`) must not replace the page the sign-up started from.
 
 If no matching social account exists but the provider reports an email already used by a local user, the manager rejects the callback before storing `PendingSocialRegistration`. The controller returns to the configured failure redirect (normally `/login`) with a safe message; it never automatically merges or links the accounts. The authenticated user must explicitly connect the provider from the profile.
 
@@ -87,7 +87,7 @@ Provider-managed consent is opt-in under `consent.providers`. For Naver, the app
 Authenticate provider -> reject if the provider account already belongs to another user, or is already linked to this user -> create `SocialAccount` -> fire `SocialAccountLinked`.
 
 **Unlinking** (`SocialLinkController::disconnect`):
-Reject if `protect_last_login_method` is true and this is the user's only login method (no password, no email, at most one social account) -> attempt provider-specific remote revoke with the stored `SocialAccount` when it has an access token -> for GitHub, if the access token is expired (or expires within 60 seconds) and a refresh token exists, refresh first and revoke with the new access token; the refreshed tokens are not persisted because the row is deleted next -> delete local row regardless of remote revoke outcome -> fire `SocialAccountUnlinked`.
+Reject if `protect_last_login_method` is true and this is the user's only login method (no password and at most one social account; an email alone cannot log in, so it does not count) -> attempt provider-specific remote revoke with the stored `SocialAccount` when it has an access token -> for GitHub, if the access token is expired (or expires within 60 seconds) and a refresh token exists, refresh first and revoke with the new access token; the refreshed tokens are not persisted because the row is deleted next -> delete local row regardless of remote revoke outcome -> fire `SocialAccountUnlinked`.
 
 ## Security architecture
 

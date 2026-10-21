@@ -160,6 +160,31 @@ class GitHubLoginTest extends TestCase
         $this->assertAuthenticatedAs($user);
     }
 
+    public function test_sign_up_redirects_to_the_page_it_started_from_not_the_consent_screen(): void
+    {
+        $this->fakeGitHub([
+            ['email' => 'octocat@github.com', 'verified' => true, 'primary' => true, 'visibility' => 'public'],
+        ]);
+
+        $state = $this->getJson(route('social-auth.state', ['redirect' => '/login']))->json('state');
+
+        $this->get(route('social-auth.callback', ['provider' => 'github', 'code' => 'github-code', 'state' => $state]))
+            ->assertRedirect(config('social-auth.redirects.registration_consent'));
+
+        $this->get(route('social-auth.consent'))->assertOk();
+
+        // The guest One Tap component in the application layout also renders on
+        // the consent screen and fetches a nonce with its own URL as `redirect`.
+        $this->getJson(route('social-auth.nonce', ['redirect' => route('social-auth.consent')]))->assertOk();
+
+        $this->post(route('social-auth.consent.submit'), [
+            'terms_of_service' => '1',
+            'privacy_policy' => '1',
+        ])->assertRedirect('/login');
+
+        $this->assertAuthenticated();
+    }
+
     public function test_disconnect_attempts_github_grant_revoke(): void
     {
         Http::fake([

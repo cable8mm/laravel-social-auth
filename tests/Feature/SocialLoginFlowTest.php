@@ -462,6 +462,30 @@ class SocialLoginFlowTest extends TestCase
         $manager->disconnect('google', $user);
     }
 
+    public function test_cannot_disconnect_only_social_account_when_user_has_email_but_no_password(): void
+    {
+        $user = User::create([
+            'name' => 'User',
+            'email' => 'user@example.com',
+            'password' => null,
+        ]);
+
+        SocialAccount::create([
+            'user_id' => $user->id,
+            'provider' => 'google',
+            'provider_id' => 'g-email-only',
+        ]);
+
+        $manager = $this->app->make(SocialLoginManager::class);
+
+        try {
+            $manager->disconnect('google', $user);
+            $this->fail('Disconnecting the only login method should be rejected.');
+        } catch (SocialAuthException) {
+            $this->assertDatabaseHas(config('social-auth.table'), ['provider_id' => 'g-email-only']);
+        }
+    }
+
     public function test_remote_revoke_failure_still_removes_local_account(): void
     {
         config(['social-auth.remote_revoke' => true]);

@@ -54,7 +54,7 @@ Validation note: the local PHPUnit, Dusk, Pint, Composer checks, and manual live
 - [x] Config, button (redirect to GitHub authorize), translations, default button order
 - [x] Unit/feature tests against GitHub's documented response shapes
 - [x] Live verification with a registered GitHub App on the Workbench (2026-10-22): sign-up with consent, re-login, connect from profile, disconnect with a valid token, disconnect with an expired token (refresh then grant delete, `remote_revoked: true`), and disconnect after the user revoked on GitHub (refresh fails, local row removed, `remote_revoked: false`)
-- [ ] Verify the default intended redirect after social sign-up (live sign-up bounced `/social-auth/consent` -> `/login` -> `/`)
+- [x] Verify the default intended redirect after social sign-up (live sign-up bounced `/social-auth/consent` -> `/login` -> `/` because the guest One Tap on the consent screen overwrote the intended URL; the consent URL is no longer stored as the destination)
 
 ## Remaining
 
