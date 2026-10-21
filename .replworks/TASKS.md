@@ -59,8 +59,8 @@ Validation note: the local PHPUnit, Dusk, Pint, Composer checks, and manual live
 ## Remaining
 
 - [ ] Verify the Kakao account status webhook against the live Kakao webhook test tool using a public HTTPS endpoint
-- [ ] Verify the Naver disconnect callback against Naver's live callback delivery using a public HTTPS endpoint
-- [ ] Live-verify Naver disconnect from the profile with `/oauth2.0/revoke` (expect `remote_revoked: true` and the app gone from Naver's connected services)
+- [x] Verify the Naver disconnect callback against Naver's live callback delivery using a public HTTPS endpoint (2026-10-22 via ngrok: disconnecting the app in Naver's connected services called `/social-auth/naver/deauthorize`, which passed signature and timestamp checks and removed the local Naver connection)
+- [x] Live-verify Naver disconnect from the profile with `/oauth2.0/revoke` (2026-10-22: `social-auth disconnected {"provider":"naver","remote_revoked":true}` twice)
 - [ ] Register and verify Google RISC delivery against a public HTTPS endpoint using the Google RISC verification stream
 - [ ] Register and verify Apple Server-to-Server Notification delivery against a public HTTPS endpoint
 - [x] Live-verify connect from the profile on the Workbench after the connect-intent fix: Google (via `POST /google/connect`), Kakao, Naver, GitHub; and a Kakao connect with a second profile tab opened mid-flow (2026-10-22: all four connected to the signed-in user, no extra user created; Kakao reconnect completed with a second tab opened mid-flow)
