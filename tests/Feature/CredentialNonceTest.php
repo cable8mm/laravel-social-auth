@@ -86,8 +86,8 @@ class CredentialNonceTest extends TestCase
                 'alg' => 'ES256',
                 'kid' => 'apple-test-key',
                 'crv' => 'P-256',
-                'x' => $this->base64UrlEncode($details['ec']['x']),
-                'y' => $this->base64UrlEncode($details['ec']['y']),
+                'x' => $this->base64UrlEncode(str_pad($details['ec']['x'], 32, "\0", STR_PAD_LEFT)),
+                'y' => $this->base64UrlEncode(str_pad($details['ec']['y'], 32, "\0", STR_PAD_LEFT)),
             ]]]),
             'https://appleid.apple.com/auth/token' => Http::response([
                 'access_token' => 'apple-access-token',

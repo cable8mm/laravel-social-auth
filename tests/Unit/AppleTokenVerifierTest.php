@@ -23,8 +23,8 @@ class AppleTokenVerifierTest extends TestCase
 
         return [
             'private' => $privateKey,
-            'x' => $this->base64UrlEncode($details['ec']['x']),
-            'y' => $this->base64UrlEncode($details['ec']['y']),
+            'x' => $this->base64UrlEncode(str_pad($details['ec']['x'], 32, "\0", STR_PAD_LEFT)),
+            'y' => $this->base64UrlEncode(str_pad($details['ec']['y'], 32, "\0", STR_PAD_LEFT)),
         ];
     }
 

@@ -11,10 +11,13 @@ composer.lock
 /.phpunit.cache
 /.env.testing
 # Laravel Workbench / Orchestra Testbench
-/workbench/storage/
+/workbench/storage
 /workbench/vendor/
 /workbench/bootstrap/cache/
 /workbench/.env
 workbench/database/database.sqlite
 /workbench/node_modules
 /workbench/public/build/
+
+# Claude Code local preview server config
+/.claude/launch.json
