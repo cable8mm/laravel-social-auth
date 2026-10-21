@@ -398,7 +398,60 @@ class SocialLoginFlowTest extends TestCase
             'provider_id' => '12345',
         ]);
         $this->assertDatabaseCount('users', 1);
-        $this->assertFalse(Session::has(config('social-auth.session.connecting_provider')));
+        $this->assertFalse(Session::has(config('social-auth.session.connect_intent')));
+    }
+
+    public function test_kakao_connect_survives_a_nonce_fetch_from_another_button(): void
+    {
+        $user = User::create(['name' => 'User', 'email' => 'user@example.com', 'password' => bcrypt('secret')]);
+        $this->fakeKakaoProfile(900_001);
+        $this->actingAs($user);
+
+        $state = $this->getJson(route('social-auth.state', ['context' => 'connect', 'provider' => 'kakao']))->json('state');
+        // The profile's Google button (or another tab) fetches a nonce while the Kakao connect is in flight.
+        $this->getJson(route('social-auth.nonce', ['context' => 'connect', 'provider' => 'google']))->assertOk();
+
+        $this->postJson(route('social-auth.callback', 'kakao'), ['code' => 'kakao-code', 'state' => $state])
+            ->assertOk()
+            ->assertJson(['status' => 'connected', 'provider' => 'kakao']);
+
+        $this->assertAuthenticatedAs($user);
+        $this->assertDatabaseHas(config('social-auth.table'), ['user_id' => $user->id, 'provider_id' => '900001']);
+        $this->assertDatabaseCount('users', 1);
+    }
+
+    public function test_a_newer_login_state_never_turns_a_connect_callback_into_a_login(): void
+    {
+        $user = User::create(['name' => 'User', 'email' => 'user@example.com', 'password' => bcrypt('secret')]);
+        $this->fakeKakaoProfile(900_002);
+        $this->actingAs($user);
+
+        $connectState = $this->getJson(route('social-auth.state', ['context' => 'connect', 'provider' => 'kakao']))->json('state');
+        // Another tab starts a login flow and replaces the session state.
+        $this->getJson(route('social-auth.state'))->assertOk();
+
+        $this->postJson(route('social-auth.callback', 'kakao'), ['code' => 'kakao-code', 'state' => $connectState])
+            ->assertStatus(422);
+
+        $this->assertAuthenticatedAs($user);
+        $this->assertDatabaseCount('users', 1);
+        $this->assertDatabaseMissing(config('social-auth.table'), ['provider_id' => '900002']);
+        $this->assertFalse(Session::has(config('social-auth.session.pending_registration')));
+    }
+
+    private function fakeKakaoProfile(int $kakaoId): void
+    {
+        Http::fake([
+            'https://kauth.kakao.com/oauth/token' => Http::response([
+                'access_token' => 'kakao-access-token',
+                'token_type' => 'bearer',
+                'expires_in' => 21_600,
+            ]),
+            'https://kapi.kakao.com/v2/user/me' => Http::response([
+                'id' => $kakaoId,
+                'kakao_account' => [],
+            ]),
+        ]);
     }
 
     public function test_connect_rejects_already_linked_to_other_user(): void

@@ -243,7 +243,7 @@ return [
         'nonce' => 'social_auth.nonce',
         'state' => 'social_auth.state',
         'intended' => 'social_auth.intended',
-        'connecting_provider' => 'social_auth.connecting_provider',
+        'connect_intent' => 'social_auth.connect_intent',
     ],
 
     /*

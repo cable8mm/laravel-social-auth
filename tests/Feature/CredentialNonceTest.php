@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Cable8mm\LaravelSocialAuth\Tests\Feature;
 
 use Cable8mm\LaravelSocialAuth\Services\SocialLoginManager;
+use Cable8mm\LaravelSocialAuth\Tests\Fixtures\User;
 use Cable8mm\LaravelSocialAuth\Tests\TestCase;
 use Firebase\JWT\JWT;
 use Illuminate\Support\Facades\Cache;
@@ -112,6 +113,26 @@ class CredentialNonceTest extends TestCase
         $this->postJson(route('social-auth.callback', 'google'), ['credential' => $credential])
             ->assertOk()
             ->assertJson(['status' => 'pending_consent']);
+    }
+
+    public function test_authenticated_google_credential_connects_through_the_connect_route(): void
+    {
+        $user = User::create(['name' => 'User', 'email' => 'user@example.com', 'password' => bcrypt('secret')]);
+        $this->actingAs($user);
+        $nonce = $this->getJson(route('social-auth.nonce'))->json('nonce');
+        $credential = $this->googleCredential(['nonce' => $nonce]);
+
+        $this->postJson(route('social-auth.connect', 'google'), ['credential' => $credential])
+            ->assertOk()
+            ->assertJson(['status' => 'connected', 'provider' => 'google']);
+
+        $this->assertAuthenticatedAs($user);
+        $this->assertDatabaseHas(config('social-auth.table'), [
+            'user_id' => $user->id,
+            'provider' => 'google',
+            'provider_id' => 'google-nonce-user',
+        ]);
+        $this->assertDatabaseCount('users', 1);
     }
 
     public function test_google_credential_without_a_session_nonce_is_rejected(): void

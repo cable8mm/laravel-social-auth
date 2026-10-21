@@ -62,6 +62,7 @@ Validation note: the local PHPUnit, Dusk, Pint, Composer checks, and manual live
 - [ ] Verify the Naver disconnect callback against Naver's live callback delivery using a public HTTPS endpoint
 - [ ] Register and verify Google RISC delivery against a public HTTPS endpoint using the Google RISC verification stream
 - [ ] Register and verify Apple Server-to-Server Notification delivery against a public HTTPS endpoint
+- [x] Live-verify connect from the profile on the Workbench after the connect-intent fix: Google (via `POST /google/connect`), Kakao, Naver, GitHub; and a Kakao connect with a second profile tab opened mid-flow (2026-10-22: all four connected to the signed-in user, no extra user created; Kakao reconnect completed with a second tab opened mid-flow)
 - [x] Live-verify Kakao disconnect on the Workbench after the unlink request moved to `Authorization: Bearer` (2026-10-22: `social-auth disconnected {"provider":"kakao","remote_revoked":true}`)
 
 ## Code review (2026-10-22)
@@ -105,7 +106,7 @@ All six decided on 2026-10-22; each item notes the decision.
 
 Sensitive: touches how an authenticated callback is told apart from login/sign-up. Ship alone, not with other headings.
 
-- [ ] Bind connect intent to the flow instead of one global session key. Today `connecting_provider` is a single value that later nonce/state fetches overwrite (another tab, or Google and Apple both initialising on the profile page). The callback then runs login/sign-up for an authenticated user: it can switch the session to the account owning that provider ID, or send the user through consent and create a new account. Google: the connect button posts the credential to the existing `POST /{provider}/connect` (`data-connect-url`, already rendered). Kakao/Naver/GitHub/Apple: store the connect target with the issued `state` and decide on callback from the returned `state`. Remove `connecting_provider`. Tests: Google connect via `/connect`; an in-progress Kakao connect stays a connect after another tab fetches a new state/nonce. Update ARCHITECTURE (`src/Http/Controllers/SocialAuth/SocialLoginController.php:51-113`, `resources/js/social-auth.js`)
+- [x] Bind connect intent to the flow instead of one global session key. Today `connecting_provider` is a single value that later nonce/state fetches overwrite (another tab, or Google and Apple both initialising on the profile page). The callback then runs login/sign-up for an authenticated user: it can switch the session to the account owning that provider ID, or send the user through consent and create a new account. Google: the connect button posts the credential to the existing `POST /{provider}/connect` (`data-connect-url`, already rendered). Kakao/Naver/GitHub/Apple: store the connect target with the issued `state` and decide on callback from the returned `state`. Remove `connecting_provider`. Tests: Google connect via `/connect`; an in-progress Kakao connect stays a connect after another tab fetches a new state/nonce. Update ARCHITECTURE (`src/Http/Controllers/SocialAuth/SocialLoginController.php:51-113`, `resources/js/social-auth.js`)
 
 ### Cleanup
 

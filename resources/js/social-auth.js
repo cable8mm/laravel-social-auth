@@ -15,8 +15,6 @@
 
             const url = new URL(nonceUrl, window.location.origin);
             url.searchParams.set('redirect', element?.dataset.intendedUrl || window.location.pathname + window.location.search);
-            url.searchParams.set('context', element?.dataset.context || 'login');
-            url.searchParams.set('provider', element?.dataset.provider || 'google');
             const res = await fetch(url, { credentials: 'same-origin' });
             const data = await res.json();
             return data.nonce;
@@ -35,7 +33,11 @@
         async postCallback(provider, payload, context = 'login') {
             const element = document.querySelector(`[data-provider="${provider}"][data-context="${context}"]`)
                 || document.querySelector(`[data-provider="${provider}"]`);
-            const res = await fetch(element?.dataset.callbackUrl, {
+            // A credential obtained on the page connects through the authenticated connect route, never the login callback.
+            const url = context === 'connect' && element?.dataset.connectUrl
+                ? element.dataset.connectUrl
+                : element?.dataset.callbackUrl;
+            const res = await fetch(url, {
                 method: 'POST',
                 credentials: 'same-origin',
                 headers: {
