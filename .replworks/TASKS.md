@@ -62,7 +62,7 @@ Validation note: the local PHPUnit, Dusk, Pint, Composer checks, and manual live
 - [ ] Verify the Naver disconnect callback against Naver's live callback delivery using a public HTTPS endpoint
 - [ ] Register and verify Google RISC delivery against a public HTTPS endpoint using the Google RISC verification stream
 - [ ] Register and verify Apple Server-to-Server Notification delivery against a public HTTPS endpoint
-- [ ] Live-verify connect from the profile on the Workbench after the connect-intent fix: Google (via `POST /google/connect`), Kakao, Naver, GitHub; and a Kakao connect with a second profile tab opened mid-flow
+- [x] Live-verify connect from the profile on the Workbench after the connect-intent fix: Google (via `POST /google/connect`), Kakao, Naver, GitHub; and a Kakao connect with a second profile tab opened mid-flow (2026-10-22: all four connected to the signed-in user, no extra user created; Kakao reconnect completed with a second tab opened mid-flow)
 - [x] Live-verify Kakao disconnect on the Workbench after the unlink request moved to `Authorization: Bearer` (2026-10-22: `social-auth disconnected {"provider":"kakao","remote_revoked":true}`)
 
 ## Code review (2026-10-22)
