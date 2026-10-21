@@ -110,6 +110,19 @@
             naverLogin.authorize();
         },
 
+        async loginGitHub(context) {
+            const element = document.querySelector(`[data-provider="github"][data-context="${context}"]`);
+            if (!element?.dataset.authorizeUrl) return;
+
+            const state = await this.fetchState(element);
+            const url = new URL(element.dataset.authorizeUrl);
+            url.searchParams.set('client_id', element.dataset.clientId);
+            url.searchParams.set('redirect_uri', element.dataset.redirectUrl || element.dataset.callbackUrl);
+            url.searchParams.set('scope', element.dataset.scope || '');
+            url.searchParams.set('state', state);
+            window.location.assign(url.toString());
+        },
+
         async initApple(context) {
             if (typeof AppleID === 'undefined' || !AppleID.auth) {
                 console.error('Apple JS SDK not loaded');

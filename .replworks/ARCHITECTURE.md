@@ -19,6 +19,8 @@
 - Apple Sign in with Apple Server-to-Server Notification endpoint and JWS delivery
 - Apple JWKS endpoint (https://appleid.apple.com/auth/keys)
 - Sign in with Apple JS SDK — browser runtime and Apple Account authentication
+- GitHub OAuth authorize/token endpoints (https://github.com/login/oauth/authorize, https://github.com/login/oauth/access_token)
+- GitHub REST API user, emails, and grant-delete endpoints (https://api.github.com/user, /user/emails, /applications/{client_id}/grant)
 ```
 
 Any code calling these directly requires a live observation before a corresponding mock may be written (see FRAMEWORK.md MOCK_RULES). Browser-side SDK behavior (app-switch detection, popup vs redirect) is implemented in Blade/JS and cannot be unit tested — it is out of scope for PHPUnit and would need manual/E2E browser verification instead.
@@ -30,11 +32,12 @@ Any code calling these directly requires a live observation before a correspondi
 - `resources/js/social-auth.js` — browser-side provider SDK orchestration, imported by the host application's existing Vite entry.
 - `SocialLoginManager` — orchestration: resolves providers, drives registration/link/unlink flows, owns the "last login method" rule.
 - `ProviderContract` — `key()`, `isEnabled()`, `jsSdkUrl()`, `authenticate(Request): SocialUser`, `revoke(SocialAccount): bool`.
-- `GoogleProvider` / `KakaoProvider` / `NaverProvider` / `AppleProvider` — implement `ProviderContract`, each delegates credential/token verification to its Verifier.
+- `GoogleProvider` / `KakaoProvider` / `NaverProvider` / `AppleProvider` / `GitHubProvider` — implement `ProviderContract`, each delegates credential/token verification to its Verifier.
 - `GoogleCredentialVerifier` — JWT signature (via JWKS), issuer, audience, expiry, nonce.
 - `KakaoTokenVerifier` — authorization code -> token exchange, profile fetch.
 - `NaverTokenVerifier` — access token -> profile fetch, resultcode check, and optional Login Plus agreement lookup.
 - `AppleTokenVerifier` — authorization code exchange, client-secret JWT generation, identity-token verification, and revoke.
+- `GitHubTokenVerifier` — authorization code -> token exchange (GitHub returns OAuth errors with HTTP 200, so an `error` body is treated as a failure), user and email-list fetch, and grant-delete revoke (HTTP Basic auth with client ID/secret).
 - `SocialUser` — normalized, already-sanitized DTO returned by every provider.
 - `PendingSocialRegistration` — session-serializable snapshot of a `SocialUser`, held between callback and consent completion. No `User` row exists until consent succeeds.
 - `SocialAccount` (model) — `social_accounts` table; `access_token` and `refresh_token` use Laravel's `encrypted` cast.
@@ -71,7 +74,7 @@ If no matching social account exists but the provider reports an email already u
 
 When a non-connect callback throws `SocialAuthException`, `SocialLoginController` dispatches `SocialLoginFailed` once with the route provider, the exception's `failureReason()`, and the exception, then returns the same JSON 422 or failure redirect as before. Reasons are assigned by the exception factory: `emailAlreadyRegistered` -> `existing_email_unlinked`; `verificationFailed`, `invalidState`, `invalidNonce` -> `invalid_credential`; `providerConsentRequired` -> `consent_rejected`; everything else, including `providerRequestFailed` (provider API 5xx), -> `provider_error`. Connect-flow failures do not dispatch it.
 
-When a provider HTTP call fails (Kakao token/profile, Naver profile/agreement, Apple code exchange), the verifier attaches `ProviderError::fromResponse()` to the exception: HTTP status plus the provider's `error`, error code (`error_code`, `code`, `resultcode`, or `detail.reason`), and description (`error_description`, `msg`, or `message`). Values sent with the request (authorization code, access token, client secret) and `code=`/`token=`-style fragments are replaced with `[redacted]`, and each field is capped at 500 characters. The details are available via `SocialAuthException::providerError()` and never change the exception message. Google credential verification makes no provider token exchange, so it has no provider error body to keep.
+When a provider HTTP call fails (Kakao token/profile, Naver profile/agreement, Apple code exchange, GitHub token/user/emails), the verifier attaches `ProviderError::fromResponse()` to the exception: HTTP status plus the provider's `error`, error code (`error_code`, `code`, `resultcode`, or `detail.reason`), and description (`error_description`, `msg`, or `message`). Values sent with the request (authorization code, access token, client secret) and `code=`/`token=`-style fragments are replaced with `[redacted]`, and each field is capped at 500 characters. The details are available via `SocialAuthException::providerError()` and never change the exception message. Google credential verification makes no provider token exchange, so it has no provider error body to keep.
 
 **Consent completion** (`SocialRegistrationController::store`):
 Validate consent payload -> inside a DB transaction, create the `User` row (email/email_verified_at per policy, password null, and mapped consent fields) and the `SocialAccount` row together -> log the new user in.
@@ -93,8 +96,9 @@ Reject if `protect_last_login_method` is true and this is the user's only login 
 - **Kakao / Naver**: standard OAuth `state` parameter, minted the same way, compared on callback before any token exchange call is made.
 - **Kakao account status webhook**: verifies SET RS256 signature with Kakao JWKS, issuer, audience, and event structure before dispatching or mutating a local social account.
 - **Naver disconnect callback**: verifies the client ID and HMAC-SHA256 signature before decrypting the AES-128-CBC user identifier and removing its local social account.
+- **GitHub**: standard OAuth `state`, minted the same way, compared on callback before any token exchange call is made. The browser is redirected to GitHub's authorize URL (no JS SDK); GitHub redirects back to the callback with `code` and `state` via GET.
 - **Apple**: standard OAuth `state` plus an ID-token `nonce`, both compared on callback before accepting the identity.
 - **Apple Server-to-Server Notifications**: verifies the signed `signedPayload` JWS with Apple's JWKS, issuer, audience, and event type. The package dispatches status events and removes only the local Apple connection for `consent-revoked` and `account-deleted`.
-- **Email trust boundary**: Google uses the `email_verified` claim in the JWT. Kakao uses the nested `kakao_account.is_email_verified` and `kakao_account.is_email_valid` flags; local email verification is granted only when both are true. Naver treats email presence in the profile response as sufficient, since Naver does not return unconfirmed emails.
+- **Email trust boundary**: Google uses the `email_verified` claim in the JWT. Kakao uses the nested `kakao_account.is_email_verified` and `kakao_account.is_email_valid` flags; local email verification is granted only when both are true. Naver treats email presence in the profile response as sufficient, since Naver does not return unconfirmed emails. GitHub ignores the public profile `email` and uses only the `/user/emails` entry with `primary: true` and `verified: true`; when none exists the email is null.
 - **Token storage vs remote revoke**: the published config enables encrypted token storage and remote revoke by default. `ConfigurationValidator` rejects `store_tokens=false` combined with `remote_revoke_enabled=true` if an application changes those policies in its published config.
 - Sensitive tokens are stripped from the `raw` blob before it is passed into `SocialUser` / persisted (see each Provider's `authenticate()`).

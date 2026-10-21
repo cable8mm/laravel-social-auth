@@ -84,6 +84,17 @@ return [
             'name_mapping' => 'name',
             'nickname_mapping' => null,
         ],
+
+        'github' => [
+            'enabled' => (bool) env('GITHUB_CLIENT_ID') && (bool) env('GITHUB_CLIENT_SECRET'),
+            'client_id' => env('GITHUB_CLIENT_ID'),
+            'client_secret' => env('GITHUB_CLIENT_SECRET'),
+            'redirect' => env('GITHUB_REDIRECT_URI'),
+            'authorize_url' => 'https://github.com/login/oauth/authorize',
+            'scopes' => ['read:user', 'user:email'],
+            'name_mapping' => 'name',
+            'nickname_mapping' => null,
+        ],
     ],
 
     /*
@@ -91,7 +102,7 @@ return [
     | Button Order
     |--------------------------------------------------------------------------
     */
-    'button_order' => ['naver', 'kakao', 'google', 'apple'],
+    'button_order' => ['naver', 'kakao', 'google', 'github', 'apple'],
 
     /*
     |--------------------------------------------------------------------------

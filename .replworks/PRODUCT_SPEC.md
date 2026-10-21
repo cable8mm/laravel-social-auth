@@ -2,7 +2,7 @@
 
 ## 목표
 
-Google, Kakao, Naver 로그인을 하나의 Laravel 패키지에서 통합 관리한다. 다른 Laravel 프로젝트에서 재사용 가능해야 한다.
+Google, Kakao, Naver, Apple, GitHub 로그인을 하나의 Laravel 패키지에서 통합 관리한다. 다른 Laravel 프로젝트에서 재사용 가능해야 한다.
 
 ## 지원 인증 방식
 
@@ -37,6 +37,15 @@ Google, Kakao, Naver 로그인을 하나의 Laravel 패키지에서 통합 관�
 - state와 nonce를 검증하고, 연결 해제 시 저장된 access token으로 Apple revoke를 시도
 - Apple Server-to-Server Notification을 검증하고 `SocialAccountStatusChanged` 이벤트로 전달함
 - `consent-revoked`와 `account-deleted` 이벤트에서는 로컬 Apple SNS 연결만 제거하고, 로컬 사용자 삭제와 전체 세션 종료는 애플리케이션 정책으로 남김
+
+### GitHub
+
+- GitHub OAuth App의 웹 authorization code 흐름을 사용 (GitHub는 공식 JS SDK가 없으므로 브라우저를 GitHub 인가 화면으로 redirect)
+- 서버에서 authorization code를 access token으로 교환하고 state를 검증
+- GitHub의 숫자 `id`를 provider ID로 사용 (`login`은 변경 가능하므로 provider ID로 쓰지 않음)
+- `user:email` scope로 이메일 목록을 조회하고, `primary`이면서 `verified`인 이메일만 로컬 email로 사용하며 이 경우 로컬 이메일 인증 완료로 처리. 그런 이메일이 없으면 로컬 email은 null
+- GitHub `name`은 설정으로 users.name에 매핑 가능. 값이 없으면 null
+- 연결 해제 시 저장된 access token으로 GitHub grant 삭제(remote revoke)를 시도하며, 실패해도 로컬 연결 해제는 진행
 
 ## 핵심 계정 정책
 
@@ -77,7 +86,7 @@ Google, Kakao, Naver 로그인을 하나의 Laravel 패키지에서 통합 관�
 
 ### SNS 계정 연결 (프로필)
 
-- 인증된 사용자가 프로필에서 Google/Kakao/Naver/Apple 계정을 연결할 수 있어야 함
+- 인증된 사용자가 프로필에서 Google/Kakao/Naver/Apple/GitHub 계정을 연결할 수 있어야 함
 - 이미 다른 사용자에 연결된 provider/provider_id는 연결 거부
 - 같은 사용자에게 같은 provider 중복 연결 금지
 - 연결 성공/실패 각각 사용자에게 안전하게 피드백
@@ -90,7 +99,7 @@ Google, Kakao, Naver 로그인을 하나의 Laravel 패키지에서 통합 관�
 
 ### 이름과 닉네임
 
-- provider별 이름 매핑은 설정 가능 (Google/Naver는 name 매핑 가능, Kakao는 name 매핑 안 함)
+- provider별 이름 매핑은 설정 가능 (Google/Naver/GitHub는 name 매핑 가능, Kakao는 name 매핑 안 함)
 - 닉네임은 모든 provider 공통으로 항상 nickname generator가 생성 (provider 닉네임 자동 사용 금지)
 
 ## 다국어 메시지
@@ -107,7 +116,7 @@ Google, Kakao, Naver 로그인을 하나의 Laravel 패키지에서 통합 관�
 - SNS 약관 동의 화면
 - 프로필의 연결된 SNS 계정 목록 + 연결/연결해제 버튼
 - provider가 설정되지 않은 경우 해당 버튼 숨김
-- 버튼 순서 설정 가능, 기본 순서: Naver -> Kakao -> Google -> Apple
+- 버튼 순서 설정 가능, 기본 순서: Naver -> Kakao -> Google -> GitHub -> Apple
 - Blade 기본 UI 제공, 애플리케이션에서 view publish 또는 override 가능해야 함
 
 ## Out of scope (이번 버전)
@@ -115,3 +124,4 @@ Google, Kakao, Naver 로그인을 하나의 Laravel 패키지에서 통합 관�
 - Google 계정에 대한 remote revoke (access token을 저장하지 않는 credential 플로우이므로 미지원)
 - Naver remote revoke (adapter 경계만 존재, 구현은 추후)
 - Socialite 및 Socialite 기반 provider 확장
+- GitHub 측 연결 해제/계정 상태 변경 수신 (OAuth App에는 해당 웹훅이 없으며 `github_app_authorization` 이벤트는 GitHub App 전용)

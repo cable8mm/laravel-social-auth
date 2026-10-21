@@ -45,6 +45,14 @@ Validation note: the local PHPUnit, Dusk, Pint, Composer checks, and manual live
 
 - [ ] Apple Developer Service ID, private key, redirect URI, and live login verification
 
+## GitHub Login
+
+- [x] PRODUCT_SPEC / ARCHITECTURE / TECH_STACK updated for GitHub (requirements confirmed by the project owner)
+- [x] `GitHubTokenVerifier` + `GitHubProvider`: state check, code exchange, user + verified primary email, grant-delete revoke
+- [x] Config, button (redirect to GitHub authorize), translations, default button order
+- [x] Unit/feature tests against GitHub's documented response shapes
+- [ ] Register a GitHub OAuth App, set the callback URL, fill `.env`, and verify login/connect/disconnect against the live GitHub boundary (AGENTS.md TASK_EXECUTION step 8)
+
 ## Remaining
 
 - [ ] Verify the Kakao account status webhook against the live Kakao webhook test tool using a public HTTPS endpoint

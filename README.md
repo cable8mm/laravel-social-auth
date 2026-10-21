@@ -8,7 +8,7 @@
 ![Packagist Downloads](https://img.shields.io/packagist/dt/cable8mm/laravel-social-auth)
 ![Packagist License](https://img.shields.io/packagist/l/cable8mm/laravel-social-auth)
 
-Laravel SNS 인증 패키지 (Google GIS · Kakao JS SDK · Naver JS SDK · Sign in with Apple).  
+Laravel SNS 인증 패키지 (Google GIS · Kakao JS SDK · Naver JS SDK · Sign in with Apple · GitHub OAuth).  
 **Socialite를 사용하지 않습니다.** 서버에서 credential/token을 직접 검증합니다.
 
 ![workbench](docs/assets/workbench.png)
@@ -184,6 +184,10 @@ APPLE_KEY_ID=your-apple-key-id
 APPLE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\nyour-key\n-----END PRIVATE KEY-----"
 APPLE_REDIRECT_URI=http://localhost:8000/social-auth/apple/callback
 
+GITHUB_CLIENT_ID=your-github-oauth-app-client-id
+GITHUB_CLIENT_SECRET=your-github-oauth-app-client-secret
+GITHUB_REDIRECT_URI=http://localhost:8000/social-auth/github/callback
+
 ```
 
 토큰 저장, provider 원격 revoke, 마지막 로그인 수단 보호, provider 이메일 검증 정책은 패키지의 보안 정책으로 항상 활성화됩니다. 별도의 `SOCIAL_AUTH_*` 환경 변수를 추가할 필요가 없습니다.
@@ -279,6 +283,14 @@ php artisan optimize:clear
 ```
 
 `term_codes`는 애플리케이션마다 다르므로 패키지가 기본값을 제공하지 않습니다. 필수 약관의 코드가 없거나 네이버 약관 동의 내역을 확인하지 못하면 가입을 중단하고 로그인 실패 주소로 이동합니다. 확인된 동의 시각은 기존 `terms_accepted_at`, `privacy_policy_accepted_at`, `marketing_accepted_at` 컬럼에 저장됩니다. 네이버 로그인 플러스의 약관 동의 내역은 네이버의 agreement API를 통해 확인합니다. [네이버 공식 개발가이드](https://developers.naver.com/docs/login/devguide/devguide.md)
+
+### GitHub
+
+1. GitHub **Settings → Developer settings → OAuth Apps**에서 OAuth App을 등록합니다.
+2. Authorization callback URL에 `GITHUB_REDIRECT_URI`(`/social-auth/github/callback`)를 등록하고 client ID와 client secret을 `.env`에 추가합니다.
+3. GitHub는 공식 JS SDK가 없으므로 버튼을 누르면 GitHub 인가 화면으로 이동하고, Laravel 서버가 authorization code를 access token으로 교환합니다. scope는 `read:user user:email`입니다.
+4. 이메일은 GitHub 이메일 목록에서 `primary`이면서 `verified`인 주소만 사용하고 이 경우 인증 완료로 처리합니다. 없으면 email은 null입니다.
+5. 연결 해제 시 저장된 token으로 GitHub grant 삭제를 시도합니다. GitHub OAuth App은 연결 해제 웹훅을 제공하지 않으므로 GitHub 측 해제는 수신하지 않습니다. [GitHub 공식 문서](https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/authorizing-oauth-apps)
 
 ### Apple
 
@@ -514,7 +526,7 @@ publish된 파일은 `lang/vendor/social-auth/{locale}/`에 생성됩니다. 바
 | `connected`                     | SNS 계정 연결 성공 flash                        | `:provider` |
 | `disconnected`                  | SNS 계정 연결 해제 성공 flash                   | `:provider` |
 
-`providers.php` key: `naver`, `kakao`, `google`, `apple`. 등록되지 않은 provider는 key의 첫 글자를 대문자로 바꿔 표시합니다.
+`providers.php` key: `naver`, `kakao`, `google`, `github`, `apple`. 등록되지 않은 provider는 key의 첫 글자를 대문자로 바꿔 표시합니다.
 
 `views.php` key (Blade 화면 문구)
 
@@ -629,7 +641,7 @@ composer test:browser
 
 ## 실제 Provider 로그인
 
-개발 환경에서 **실제 Google/Kakao/Naver/Apple 계정 E2E 로그인은 수행하지 않았습니다.**
+개발 환경에서 **실제 Google/Kakao/Naver/Apple/GitHub 계정 E2E 로그인은 수행하지 않았습니다.**
 단위·기능 테스트는 HTTP fake 및 JWT 자체 서명으로 검증합니다.  
 배포 전 콘솔 키로 실제 연동 확인을 권장합니다.
 
