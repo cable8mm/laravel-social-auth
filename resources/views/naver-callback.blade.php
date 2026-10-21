@@ -74,7 +74,7 @@
 
             if (error || !accessToken) {
                 card.classList.add('is-error');
-                status.textContent = query.get('error_description') || hash.get('error_description') || @json(__('social-auth::views.naver_callback.failed', ['provider' => \Cable8mm\LaravelSocialAuth\Support\ProviderLabel::for('naver')]));
+                status.textContent = @json(__('social-auth::views.naver_callback.failed', ['provider' => \Cable8mm\LaravelSocialAuth\Support\ProviderLabel::for('naver')]));
                 return;
             }
 

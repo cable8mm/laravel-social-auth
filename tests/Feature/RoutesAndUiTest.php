@@ -102,7 +102,7 @@ class RoutesAndUiTest extends TestCase
             'email' => 'same@example.com',
             'email_verified' => true,
         ]);
-        Session::put(config('social-auth.session.intended'), '/login');
+        Session::put(config('social-auth.session.intended'), '/dashboard');
 
         $response = $this->post(route('social-auth.consent.submit'), [
             'terms_of_service' => '1',
@@ -113,6 +113,54 @@ class RoutesAndUiTest extends TestCase
         $response->assertSessionHas('error', '이미 가입된 이메일 주소입니다. 기존 계정으로 로그인한 후 프로필에서 이 SNS 계정을 연결해 주세요.');
         $this->assertFalse(Session::has(config('social-auth.session.pending_registration')));
         $this->assertSame(1, User::where('email', 'same@example.com')->count());
+    }
+
+    public function test_consent_for_an_account_linked_meanwhile_returns_to_login_and_clears_pending(): void
+    {
+        app()->setLocale('ko');
+        $owner = User::create([
+            'name' => 'Owner',
+            'email' => 'owner@example.com',
+            'password' => bcrypt('secret'),
+        ]);
+        SocialAccount::create([
+            'user_id' => $owner->id,
+            'provider' => 'google',
+            'provider_id' => 'linked-meanwhile',
+        ]);
+
+        Session::put(config('social-auth.session.pending_registration'), [
+            'provider' => 'google',
+            'provider_id' => 'linked-meanwhile',
+            'email' => null,
+            'email_verified' => false,
+        ]);
+
+        $response = $this->post(route('social-auth.consent.submit'), [
+            'terms_of_service' => '1',
+            'privacy_policy' => '1',
+        ]);
+
+        $response->assertRedirect('/login');
+        $response->assertSessionHas('error', '이 구글 계정은 이미 다른 회원 계정에 연결되어 있습니다.');
+        $this->assertFalse(Session::has(config('social-auth.session.pending_registration')));
+        $this->assertSame(1, User::count());
+    }
+
+    public function test_consent_without_required_terms_keeps_pending_and_returns_to_consent(): void
+    {
+        Session::put(config('social-auth.session.pending_registration'), [
+            'provider' => 'google',
+            'provider_id' => 'needs-consent',
+            'email' => null,
+            'email_verified' => false,
+        ]);
+
+        $response = $this->from(route('social-auth.consent'))
+            ->post(route('social-auth.consent.submit'), ['terms_of_service' => '1']);
+
+        $response->assertRedirect(route('social-auth.consent'));
+        $this->assertTrue(Session::has(config('social-auth.session.pending_registration')));
     }
 
     public function test_callback_invalid_state(): void
@@ -151,6 +199,15 @@ class RoutesAndUiTest extends TestCase
         $response->assertSee("form.method = 'POST'", false);
         $response->assertSee('form.submit()');
         $response->assertSee('window.history.replaceState');
+    }
+
+    public function test_naver_callback_never_displays_the_provider_error_description(): void
+    {
+        $response = $this->get(route('social-auth.callback', ['provider' => 'naver', 'error' => 'access_denied', 'error_description' => 'Attacker supplied text']));
+
+        $response->assertOk();
+        $response->assertDontSee('error_description');
+        $response->assertDontSee('Attacker supplied text');
     }
 
     public function test_callback_without_provider_payload_is_rejected_as_cancelled(): void

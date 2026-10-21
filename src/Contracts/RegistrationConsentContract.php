@@ -23,7 +23,7 @@ interface RegistrationConsentContract
     /**
      * Return all terms configuration.
      *
-     * @return array<string, array{label: string, url: ?string, required: bool}>
+     * @return array<string, array{label: ?string, url: ?string, required: bool}>
      */
     public function allTerms(): array;
 }

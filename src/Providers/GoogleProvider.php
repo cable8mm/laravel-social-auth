@@ -27,6 +27,11 @@ class GoogleProvider extends AbstractProvider
         $expectedNonce = Session::get($sessionKey);
         Session::forget($sessionKey);
 
+        // The nonce is the replay protection for the credential flow; a session that never requested one is rejected.
+        if (! is_string($expectedNonce) || $expectedNonce === '') {
+            throw SocialAuthException::invalidNonce();
+        }
+
         $clientId = $this->getClientId();
         if (empty($clientId)) {
             throw SocialAuthException::invalidConfiguration('Google client_id is required');

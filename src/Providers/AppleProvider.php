@@ -27,11 +27,13 @@ final class AppleProvider extends AbstractProvider
             throw SocialAuthException::verificationFailed('apple', 'Missing authorization response');
         }
 
+        $expectedNonce = Session::pull(config('social-auth.session.nonce', 'social_auth.nonce'));
+        if (! is_string($expectedNonce) || $expectedNonce === '') {
+            throw SocialAuthException::invalidNonce();
+        }
+
         $verifier = $this->verifier();
-        $claims = $verifier->verify(
-            $identityToken,
-            Session::pull(config('social-auth.session.nonce', 'social_auth.nonce')),
-        );
+        $claims = $verifier->verify($identityToken, $expectedNonce);
         $tokens = $verifier->exchangeCode($code);
 
         $name = null;

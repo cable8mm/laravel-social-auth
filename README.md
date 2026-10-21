@@ -198,7 +198,7 @@ GITHUB_REDIRECT_URI=http://localhost:8000/social-auth/github/callback
 
 1. Google Cloud Console → OAuth 2.0 클라이언트 ID (웹)
 2. 승인된 JavaScript 원본에 앱 도메인 추가
-3. GIS 버튼 렌더링 전 `/social-auth/nonce` 에서 nonce를 받아 세션 저장 후 JWT `nonce` claim 비교 (replay 방지)
+3. GIS 버튼 렌더링 전 `/social-auth/nonce` 에서 nonce를 받아 세션 저장 후 JWT `nonce` claim 비교 (replay 방지). 세션에 nonce가 없으면 callback을 거부합니다.
 
 #### Google RISC 이벤트 수신
 
@@ -414,7 +414,7 @@ One Tap은 로그인된 사용자에게는 렌더링되지 않습니다. Google 
 ### 약관 동의
 
 신규 SNS 사용자는 pending 세션 저장 후 `/social-auth/consent` 로 이동합니다.  
-필수 약관 URL은 `config/social-auth.php` 의 `consent` 섹션에서 설정합니다.
+필수 약관 URL은 `config/social-auth.php` 의 `consent` 섹션에서 설정합니다. 약관 이름은 기본적으로 `social-auth::views.consent.terms.<key>` 번역을 사용하며, 약관의 `label`에 문자열을 지정하면 그 값이 우선합니다.
 
 기본 동의 화면에는 `모두 선택` 체크박스가 제공됩니다. 이를 선택하면 필수·선택 약관이 모두 체크되고, 개별 약관을 하나라도 해제하면 `모두 선택`도 자동으로 해제됩니다.
 
@@ -545,6 +545,7 @@ publish된 파일은 `lang/vendor/social-auth/{locale}/`에 생성됩니다. 바
 | `consent.legend`                        | 약관 목록 legend (스크린 리더용)                            |             |
 | `consent.required` / `consent.optional` | 약관별 필수/선택 표시                                       |             |
 | `consent.view_original`                 | 약관 원문 링크                                              |             |
+| `consent.terms.<key>`                   | 약관 이름 (config의 `label`이 null일 때)                    |             |
 | `consent.submit`                        | 동의하고 가입 완료 버튼                                     |             |
 | `connected_accounts.title`              | 연결된 SNS 계정 목록 제목                                   |             |
 | `connected_accounts.connected`          | 연결됨 상태                                                 |             |
@@ -580,10 +581,12 @@ SocialAuth::generateNonce();
 
 ## 보안
 
-- Google: JWKS 서명 + iss/aud/exp/sub + nonce
+- Google: JWKS 서명 + iss/aud/exp/sub + nonce (세션 nonce 필수)
+- Apple: state + identity token nonce (세션 nonce 필수)
 - Kakao/Naver: CSRF state + 서버 token/profile 검증
 - 토큰 로그 금지, raw 민감 필드 제거
 - session regenerate, rate limit
+- 웹훅: 검증된 Kakao/Google SET의 `jti`와 Naver 연결 끊기 callback의 `signature`를 30일간 기억해 같은 전달이 다시 오면 무시
 - 토큰은 암호화되어 저장되며, 연결 해제 시 provider 원격 revoke를 시도한 뒤 로컬 연결을 삭제
 
 ## 테스트

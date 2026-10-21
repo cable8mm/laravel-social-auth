@@ -7,7 +7,6 @@ namespace Cable8mm\LaravelSocialAuth\Http\Controllers\SocialAuth;
 use Cable8mm\LaravelSocialAuth\Contracts\RegistrationConsentContract;
 use Cable8mm\LaravelSocialAuth\Exceptions\SocialAuthException;
 use Cable8mm\LaravelSocialAuth\Services\SocialLoginManager;
-use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -61,18 +60,12 @@ class SocialRegistrationController extends Controller
                 return response()->json(['error' => $e->getMessage()], 422);
             }
 
-            return redirect()->back()->with('error', $e->getMessage());
-        } catch (UniqueConstraintViolationException) {
-            $exception = SocialAuthException::emailAlreadyRegistered();
-            $this->manager->clearPendingRegistration();
-
-            if ($request->expectsJson()) {
-                return response()->json(['error' => $exception->getMessage()], 422);
-            }
-
-            return redirect()
-                ->to($this->manager->consumeIntendedUrl())
-                ->with('error', $exception->getMessage());
+            // Missing consent keeps the pending registration, so the user can retry on the consent screen.
+            // Any failure that cleared it cannot be retried there.
+            return ($this->manager->hasPendingRegistration()
+                ? redirect()->back()
+                : redirect()->to(config('social-auth.redirects.failure', '/login')))
+                ->with('error', $e->getMessage());
         }
     }
 }

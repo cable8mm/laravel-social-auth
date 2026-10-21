@@ -78,6 +78,9 @@ class ViewTranslationTest extends TestCase
                 '(Optional)',
                 'View full text',
                 'Agree and complete sign-up',
+                'Terms of Service',
+                'Privacy Policy',
+                'Marketing communications',
             ]],
             'ko' => ['ko', [
                 '카카오 계정으로 가입',
@@ -89,6 +92,9 @@ class ViewTranslationTest extends TestCase
                 '(선택)',
                 '원문 보기',
                 '동의하고 가입 완료',
+                '이용약관',
+                '개인정보 처리방침',
+                '마케팅 정보 수신 동의',
             ]],
         ];
     }
@@ -113,6 +119,25 @@ class ViewTranslationTest extends TestCase
         foreach ($expected as $text) {
             $response->assertSee($text);
         }
+    }
+
+    public function test_configured_consent_label_overrides_the_translation(): void
+    {
+        app()->setLocale('en');
+        config(['social-auth.consent.required_terms.terms_of_service.label' => 'Acme Terms']);
+        Session::put(config('social-auth.session.pending_registration'), [
+            'provider' => 'kakao',
+            'provider_id' => 'x',
+            'email' => null,
+            'email_verified' => false,
+        ]);
+
+        $response = $this->get(route('social-auth.consent'));
+
+        $response->assertOk();
+        $response->assertSee('Acme Terms');
+        $response->assertDontSee('Terms of Service');
+        $response->assertSee('Privacy Policy');
     }
 
     /**

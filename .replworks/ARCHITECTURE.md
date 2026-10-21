@@ -79,6 +79,10 @@ When a provider HTTP call fails (Kakao token/profile, Naver profile/agreement, A
 **Consent completion** (`SocialRegistrationController::store`):
 Validate consent payload -> inside a DB transaction, create the `User` row (email/email_verified_at per policy, password null, and mapped consent fields) and the `SocialAccount` row together -> log the new user in.
 
+If the provider account was linked, or the email registered, by another request after the callback (detected up front or as a unique-constraint violation), the pending registration is cleared and the user returns to the failure redirect with `account_already_linked` or `email_already_registered`. Only missing required consent keeps the pending registration and returns to the consent screen.
+
+Consent term labels default to `social-auth::views.consent.terms.<key>`; a non-null `label` in the term config overrides the translation.
+
 Consent keys are mapped to user columns by `config/social-auth.php` under `consent.user_fields`. The default mapping is `terms_of_service` -> `terms_accepted_at`, `privacy_policy` -> `privacy_policy_accepted_at`, and `marketing` -> `marketing_accepted_at`. Accepted terms receive the current timestamp; unchecked terms receive `null`. A field can be set to `null` to opt out of persisting that consent value.
 
 Provider-managed consent is opt-in under `consent.providers`. For Naver, the application maps its Naver Login Plus `termCode` values to the local consent keys. When enabled, `NaverTokenVerifier` fetches the agreement list using the access token, and registration proceeds without the local consent screen only when every required local term has a matching provider agreement. Provider agreement timestamps are stored in the configured user consent fields. Missing required agreements or agreement API failures stop registration and return a safe error to the failure redirect. The Kakao configuration namespace is reserved for a future Kakao Sync implementation.
@@ -91,13 +95,14 @@ Reject if `protect_last_login_method` is true and this is the user's only login 
 
 ## Security architecture
 
-- **Google**: replay protection via a nonce minted server-side and stored in session before the GIS button renders (`ChallengeGenerator::googleNonce`), compared against the JWT's `nonce` claim. This is a distinct mechanism from OAuth `state` — Google's credential flow is not a redirect/code exchange.
+- **Google**: replay protection via a nonce minted server-side and stored in session before the GIS button renders (`ChallengeGenerator::googleNonce`), compared against the JWT's `nonce` claim. A callback whose session holds no nonce is rejected. This is a distinct mechanism from OAuth `state` — Google's credential flow is not a redirect/code exchange.
 - **Google RISC**: verifies signed historical security event tokens with Google's JWKS, issuer, and the configured Google client ID as audience. The package dispatches events; application listeners own session termination and account protection.
 - **Kakao / Naver**: standard OAuth `state` parameter, minted the same way, compared on callback before any token exchange call is made.
 - **Kakao account status webhook**: verifies SET RS256 signature with Kakao JWKS, issuer, audience, and event structure before dispatching or mutating a local social account.
 - **Naver disconnect callback**: verifies the client ID and HMAC-SHA256 signature before decrypting the AES-128-CBC user identifier and removing its local social account.
+- **Webhook replay**: after verification, `SocialWebhookController` remembers each Kakao/Google SET `jti` and each Naver disconnect `signature` in the cache for 30 days; a repeated delivery gets the normal success response and changes nothing.
 - **GitHub**: standard OAuth `state`, minted the same way, compared on callback before any token exchange call is made. The browser is redirected to GitHub's authorize URL (no JS SDK); GitHub redirects back to the callback with `code` and `state` via GET.
-- **Apple**: standard OAuth `state` plus an ID-token `nonce`, both compared on callback before accepting the identity.
+- **Apple**: standard OAuth `state` plus an ID-token `nonce`, both compared on callback before accepting the identity. A callback whose session holds no nonce is rejected before the code exchange.
 - **Apple Server-to-Server Notifications**: verifies the signed `signedPayload` JWS with Apple's JWKS, issuer, audience, and event type. The package dispatches status events and removes only the local Apple connection for `consent-revoked` and `account-deleted`.
 - **Email trust boundary**: Google uses the `email_verified` claim in the JWT. Kakao uses the nested `kakao_account.is_email_verified` and `kakao_account.is_email_valid` flags; local email verification is granted only when both are true. Naver treats email presence in the profile response as sufficient, since Naver does not return unconfirmed emails. GitHub ignores the public profile `email` and uses only the `/user/emails` entry with `primary: true` and `verified: true`; when none exists the email is null.
 - **Token storage vs remote revoke**: the published config enables encrypted token storage and remote revoke by default. `ConfigurationValidator` rejects `store_tokens=false` combined with `remote_revoke_enabled=true` if an application changes those policies in its published config.

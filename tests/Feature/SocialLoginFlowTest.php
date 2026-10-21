@@ -6,6 +6,7 @@ namespace Cable8mm\LaravelSocialAuth\Tests\Feature;
 
 use Cable8mm\LaravelSocialAuth\Contracts\NicknameGeneratorContract;
 use Cable8mm\LaravelSocialAuth\Data\ProviderUser;
+use Cable8mm\LaravelSocialAuth\Events\SocialAccountDisconnected;
 use Cable8mm\LaravelSocialAuth\Exceptions\SocialAuthException;
 use Cable8mm\LaravelSocialAuth\Models\SocialAccount;
 use Cable8mm\LaravelSocialAuth\Services\SocialAccountService;
@@ -514,6 +515,70 @@ class SocialLoginFlowTest extends TestCase
             'provider' => 'kakao',
             'provider_id' => 'k-revoke-failure',
         ]);
+    }
+
+    public function test_kakao_disconnect_unlinks_with_the_access_token_as_bearer(): void
+    {
+        Event::fake([SocialAccountDisconnected::class]);
+
+        $user = User::create([
+            'name' => 'User',
+            'email' => 'user@example.com',
+            'password' => bcrypt('secret'),
+        ]);
+
+        SocialAccount::create([
+            'user_id' => $user->id,
+            'provider' => 'kakao',
+            'provider_id' => '1234567890',
+            'access_token' => 'kakao-access-token',
+        ]);
+
+        // Response shape from the Kakao Login REST API "Unlink" reference.
+        Http::fake([
+            'https://kapi.kakao.com/v1/user/unlink' => Http::response(['id' => 1234567890]),
+        ]);
+
+        $this->app->make(SocialLoginManager::class)->disconnect('kakao', $user);
+
+        Http::assertSent(fn ($request) => $request->url() === 'https://kapi.kakao.com/v1/user/unlink'
+            && $request->method() === 'POST'
+            && $request->hasHeader('Authorization', 'Bearer kakao-access-token')
+            && ! isset($request['access_token']));
+        Event::assertDispatched(SocialAccountDisconnected::class, fn ($event) => $event->remoteRevoked);
+    }
+
+    public function test_naver_disconnect_deletes_the_token_with_client_credentials(): void
+    {
+        Event::fake([SocialAccountDisconnected::class]);
+
+        $user = User::create([
+            'name' => 'User',
+            'email' => 'user@example.com',
+            'password' => bcrypt('secret'),
+        ]);
+
+        SocialAccount::create([
+            'user_id' => $user->id,
+            'provider' => 'naver',
+            'provider_id' => 'naver-revoke-user',
+            'access_token' => 'naver-access-token',
+        ]);
+
+        // Only the HTTP status is read; no body shape is assumed.
+        Http::fake([
+            'https://nid.naver.com/oauth2.0/token' => Http::response(),
+        ]);
+
+        $this->app->make(SocialLoginManager::class)->disconnect('naver', $user);
+
+        Http::assertSent(fn ($request) => $request->url() === 'https://nid.naver.com/oauth2.0/token'
+            && $request['grant_type'] === 'delete'
+            && $request['client_id'] === 'test-naver-client-id'
+            && $request['client_secret'] === 'test-naver-secret'
+            && $request['access_token'] === 'naver-access-token'
+            && $request['service_provider'] === 'NAVER');
+        Event::assertDispatched(SocialAccountDisconnected::class, fn ($event) => $event->remoteRevoked);
     }
 
     public function test_enabled_providers_order(): void

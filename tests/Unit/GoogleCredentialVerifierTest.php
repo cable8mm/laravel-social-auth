@@ -109,7 +109,7 @@ class GoogleCredentialVerifierTest extends TestCase
         $verifier = new GoogleCredentialVerifier($this->clientId);
 
         $this->expectException(SocialAuthException::class);
-        $verifier->verify($token);
+        $verifier->verify($token, 'unused-nonce');
     }
 
     public function test_invalid_audience_fails(): void
@@ -129,7 +129,7 @@ class GoogleCredentialVerifierTest extends TestCase
         $verifier = new GoogleCredentialVerifier($this->clientId);
 
         $this->expectException(SocialAuthException::class);
-        $verifier->verify($token);
+        $verifier->verify($token, 'unused-nonce');
     }
 
     public function test_expired_token_fails(): void
@@ -149,7 +149,7 @@ class GoogleCredentialVerifierTest extends TestCase
         $verifier = new GoogleCredentialVerifier($this->clientId);
 
         $this->expectException(SocialAuthException::class);
-        $verifier->verify($token);
+        $verifier->verify($token, 'unused-nonce');
     }
 
     public function test_nonce_mismatch_fails(): void
@@ -189,6 +189,6 @@ class GoogleCredentialVerifierTest extends TestCase
         $verifier = new GoogleCredentialVerifier($this->clientId);
 
         $this->expectException(SocialAuthException::class);
-        $verifier->verify($token);
+        $verifier->verify($token, 'unused-nonce');
     }
 }

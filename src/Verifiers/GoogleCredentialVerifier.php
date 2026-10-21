@@ -30,7 +30,7 @@ class GoogleCredentialVerifier
      *
      * @throws SocialAuthException
      */
-    public function verify(string $credential, ?string $expectedNonce = null): array
+    public function verify(string $credential, string $expectedNonce): array
     {
         try {
             $keys = $this->getJwks();
@@ -44,10 +44,7 @@ class GoogleCredentialVerifier
         $this->assertAudience($claims);
         $this->assertExpiration($claims);
         $this->assertSubject($claims);
-
-        if ($expectedNonce !== null) {
-            $this->assertNonce($claims, $expectedNonce);
-        }
+        $this->assertNonce($claims, $expectedNonce);
 
         return $claims;
     }

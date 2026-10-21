@@ -62,6 +62,7 @@ Validation note: the local PHPUnit, Dusk, Pint, Composer checks, and manual live
 - [ ] Verify the Naver disconnect callback against Naver's live callback delivery using a public HTTPS endpoint
 - [ ] Register and verify Google RISC delivery against a public HTTPS endpoint using the Google RISC verification stream
 - [ ] Register and verify Apple Server-to-Server Notification delivery against a public HTTPS endpoint
+- [ ] Live-verify Kakao disconnect on the Workbench after the unlink request moved to `Authorization: Bearer` (expect `remote_revoked: true`)
 
 ## Code review (2026-10-22)
 
@@ -69,13 +70,14 @@ Findings from a read-only review of `main` at 073d752. Each fix task includes th
 
 ### Fix
 
-- [ ] Require the Google nonce: `GoogleProvider::verify` passes `null` when the session has no nonce and `GoogleCredentialVerifier::verify` then skips the check, so a leaked credential can be replayed from a session that never called `/nonce`. Reject a missing session nonce with `invalidNonce()`; add a callback test without a session nonce (`src/Providers/GoogleProvider.php:27`, `src/Verifiers/GoogleCredentialVerifier.php:48`)
-- [ ] Require the Apple nonce the same way; `sub` comes from the browser id_token, so a valid state plus any code plus another user's id_token passes today. Add Apple callback tests for missing/mismatched nonce (`src/Providers/AppleProvider.php:33`, `src/Verifiers/AppleTokenVerifier.php:86`)
-- [ ] Send the Kakao unlink access token as `Authorization: Bearer` (Kakao REST docs), not as a form field; remote revoke always fails today. Add a success test with `Http::assertSent` on the header; add a request-shape test for Naver revoke too (`src/Verifiers/KakaoTokenVerifier.php:100`)
-- [ ] Translate consent term labels: `consent.required_terms.*.label` / `optional_terms.*.label` are Korean strings in config and rendered raw, so `en` apps show Korean. Use `social-auth::views` keys, config label as an optional override (`config/social-auth.php:178-190`, `resources/views/consent.blade.php:208`)
-- [ ] Consent completion failures: a `UniqueConstraintViolationException` on `(provider, provider_id)` is reported as "email already registered" and redirects to the intended URL instead of `redirects.failure`; `accountAlreadyLinked` from `finishRegistration` returns to the consent screen with the pending registration still in session (`src/Http/Controllers/SocialAuth/SocialRegistrationController.php:59-76`)
-- [ ] Webhook replay: check the Naver disconnect `timestamp` against a time window; remember Kakao/Google SET `jti` for its lifetime and ignore repeats (`src/Verifiers/NaverDisconnectCallbackVerifier.php:33`, `KakaoAccountStatusWebhookVerifier`, `GoogleRiscWebhookVerifier`)
-- [ ] Naver callback page shows `error_description` from the URL; show only the generic translated message (`resources/views/naver-callback.blade.php:80`)
+- [x] Require the Google nonce: `GoogleProvider::verify` passes `null` when the session has no nonce and `GoogleCredentialVerifier::verify` then skips the check, so a leaked credential can be replayed from a session that never called `/nonce`. Reject a missing session nonce with `invalidNonce()`; add a callback test without a session nonce (`src/Providers/GoogleProvider.php:27`, `src/Verifiers/GoogleCredentialVerifier.php:48`)
+- [x] Require the Apple nonce the same way; `sub` comes from the browser id_token, so a valid state plus any code plus another user's id_token passes today. Add Apple callback tests for missing/mismatched nonce (`src/Providers/AppleProvider.php:33`, `src/Verifiers/AppleTokenVerifier.php:86`)
+- [x] Send the Kakao unlink access token as `Authorization: Bearer` (Kakao REST docs), not as a form field; remote revoke always fails today. Add a success test with `Http::assertSent` on the header; add a request-shape test for Naver revoke too (`src/Verifiers/KakaoTokenVerifier.php:100`)
+- [x] Translate consent term labels: `consent.required_terms.*.label` / `optional_terms.*.label` are Korean strings in config and rendered raw, so `en` apps show Korean. Use `social-auth::views` keys, config label as an optional override (`config/social-auth.php:178-190`, `resources/views/consent.blade.php:208`)
+- [x] Consent completion failures: a `UniqueConstraintViolationException` on `(provider, provider_id)` is reported as "email already registered" and redirects to the intended URL instead of `redirects.failure`; `accountAlreadyLinked` from `finishRegistration` returns to the consent screen with the pending registration still in session (`src/Http/Controllers/SocialAuth/SocialRegistrationController.php:59-76`)
+- [x] Webhook replay: remember verified Kakao/Google SET `jti` and Naver disconnect `signature` for 30 days and ignore repeats (`src/Verifiers/NaverDisconnectCallbackVerifier.php:33`, `KakaoAccountStatusWebhookVerifier`, `GoogleRiscWebhookVerifier`)
+- [ ] Naver disconnect `timestamp` freshness window: blocked until a live callback confirms the timestamp unit (seconds vs milliseconds); see Remaining
+- [x] Naver callback page shows `error_description` from the URL; show only the generic translated message (`resources/views/naver-callback.blade.php:80`)
 
 ### Fix after choosing the approach
 

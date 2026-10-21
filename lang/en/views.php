@@ -33,6 +33,11 @@ return [
         'legend' => 'Terms of service consent',
         'required' => 'Required',
         'optional' => 'Optional',
+        'terms' => [
+            'terms_of_service' => 'Terms of Service',
+            'privacy_policy' => 'Privacy Policy',
+            'marketing' => 'Marketing communications',
+        ],
         'view_original' => 'View full text',
         'submit' => 'Agree and complete sign-up',
     ],

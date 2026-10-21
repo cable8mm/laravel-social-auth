@@ -140,6 +140,43 @@ class KakaoAccountStatusWebhookTest extends TestCase
         $this->assertDatabaseHas('users', ['id' => $user->id]);
     }
 
+    public function test_replayed_delivery_does_not_remove_a_relinked_account(): void
+    {
+        $user = User::query()->create(['email' => 'user@example.com']);
+        $link = fn () => SocialAccount::query()->create([
+            'user_id' => $user->id,
+            'provider' => 'kakao',
+            'provider_id' => 'kakao-user-3',
+        ]);
+        $link();
+        $set = $this->makeSet($this->generateKeyPair(), [
+            'https://schemas.openid.net/secevent/risc/event-type/account-purged' => [
+                'subject' => [
+                    'subject_type' => 'iss-sub',
+                    'iss' => 'https://kauth.kakao.com',
+                    'sub' => 'kakao-user-3',
+                ],
+            ],
+        ]);
+        $deliver = fn () => $this->call(
+            'POST',
+            route('social-auth.webhooks.kakao'),
+            [],
+            [],
+            [],
+            ['CONTENT_TYPE' => 'application/secevent+jwt'],
+            $set,
+        );
+
+        $deliver()->assertStatus(202);
+        $this->assertDatabaseMissing('social_accounts', ['provider_id' => 'kakao-user-3']);
+
+        $link();
+        $deliver()->assertStatus(202);
+
+        $this->assertDatabaseHas('social_accounts', ['provider_id' => 'kakao-user-3']);
+    }
+
     public function test_invalid_kakao_webhook_is_rejected(): void
     {
         $this->call(
