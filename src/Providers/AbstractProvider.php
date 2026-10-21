@@ -6,6 +6,7 @@ namespace Cable8mm\LaravelSocialAuth\Providers;
 
 use Cable8mm\LaravelSocialAuth\Contracts\ProviderContract;
 use Cable8mm\LaravelSocialAuth\Data\ProviderUser;
+use Cable8mm\LaravelSocialAuth\Models\SocialAccount;
 
 abstract class AbstractProvider implements ProviderContract
 {
@@ -68,7 +69,7 @@ abstract class AbstractProvider implements ProviderContract
         return $mapped;
     }
 
-    public function revoke(?string $accessToken): bool
+    public function revoke(SocialAccount $account): bool
     {
         return false;
     }

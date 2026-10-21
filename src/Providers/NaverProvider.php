@@ -6,6 +6,7 @@ namespace Cable8mm\LaravelSocialAuth\Providers;
 
 use Cable8mm\LaravelSocialAuth\Data\ProviderUser;
 use Cable8mm\LaravelSocialAuth\Exceptions\SocialAuthException;
+use Cable8mm\LaravelSocialAuth\Models\SocialAccount;
 use Cable8mm\LaravelSocialAuth\Verifiers\NaverTokenVerifier;
 use Illuminate\Support\Facades\Session;
 
@@ -64,8 +65,10 @@ class NaverProvider extends AbstractProvider
         return $providerUser->withConsents($agreements);
     }
 
-    public function revoke(?string $accessToken): bool
+    public function revoke(SocialAccount $account): bool
     {
+        $accessToken = $account->access_token;
+
         if (empty($accessToken)) {
             return false;
         }

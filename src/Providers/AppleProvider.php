@@ -6,6 +6,7 @@ namespace Cable8mm\LaravelSocialAuth\Providers;
 
 use Cable8mm\LaravelSocialAuth\Data\ProviderUser;
 use Cable8mm\LaravelSocialAuth\Exceptions\SocialAuthException;
+use Cable8mm\LaravelSocialAuth\Models\SocialAccount;
 use Cable8mm\LaravelSocialAuth\Verifiers\AppleTokenVerifier;
 use Illuminate\Support\Facades\Session;
 
@@ -60,8 +61,10 @@ final class AppleProvider extends AbstractProvider
         );
     }
 
-    public function revoke(?string $accessToken): bool
+    public function revoke(SocialAccount $account): bool
     {
+        $accessToken = $account->access_token;
+
         return $accessToken !== null && $accessToken !== ''
             ? $this->verifier()->revoke($accessToken)
             : false;

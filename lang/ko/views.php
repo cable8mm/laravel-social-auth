@@ -19,6 +19,11 @@ return [
             'register' => '네이버로 시작하기',
             'connect' => '네이버 계정 연결',
         ],
+        'github' => [
+            'login' => 'GitHub로 로그인',
+            'register' => 'GitHub로 시작하기',
+            'connect' => 'GitHub 계정 연결',
+        ],
     ],
     'consent' => [
         'eyebrow' => ':provider 계정으로 가입',

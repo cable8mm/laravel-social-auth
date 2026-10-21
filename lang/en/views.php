@@ -19,6 +19,11 @@ return [
             'register' => 'Sign up with NAVER',
             'connect' => 'Connect NAVER account',
         ],
+        'github' => [
+            'login' => 'Sign in with GitHub',
+            'register' => 'Sign up with GitHub',
+            'connect' => 'Connect GitHub account',
+        ],
     ],
     'consent' => [
         'eyebrow' => 'Sign up with :provider',

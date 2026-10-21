@@ -45,6 +45,17 @@ Validation note: the local PHPUnit, Dusk, Pint, Composer checks, and manual live
 
 - [ ] Apple Developer Service ID, private key, redirect URI, and live login verification
 
+## GitHub Login
+
+- [x] PRODUCT_SPEC / ARCHITECTURE / TECH_STACK updated for GitHub (requirements confirmed by the project owner; GitHub App chosen over OAuth App)
+- [x] `GitHubTokenVerifier` + `GitHubProvider`: state check, code exchange, user + verified primary email, refresh, grant-delete revoke
+- [x] `ProviderContract::revoke(SocialAccount)` aligned with ARCHITECTURE so GitHub can refresh an expired token before revoking
+- [x] GitHub `raw` limited to seven fields so pending registration fits a cookie session
+- [x] Config, button (redirect to GitHub authorize), translations, default button order
+- [x] Unit/feature tests against GitHub's documented response shapes
+- [x] Live verification with a registered GitHub App on the Workbench (2026-10-22): sign-up with consent, re-login, connect from profile, disconnect with a valid token, disconnect with an expired token (refresh then grant delete, `remote_revoked: true`), and disconnect after the user revoked on GitHub (refresh fails, local row removed, `remote_revoked: false`)
+- [ ] Verify the default intended redirect after social sign-up (live sign-up bounced `/social-auth/consent` -> `/login` -> `/`)
+
 ## Remaining
 
 - [ ] Verify the Kakao account status webhook against the live Kakao webhook test tool using a public HTTPS endpoint

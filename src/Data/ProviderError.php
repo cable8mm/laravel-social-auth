@@ -30,6 +30,8 @@ final class ProviderError
      * - Naver profile: {"resultcode": "024", "message"}
      * - Naver agreement: {"error", "detail": {"reason"}}
      * - Apple token: {"error", "error_description"}
+     * - GitHub token: {"error", "error_description", "error_uri"} (sent with HTTP 200)
+     * - GitHub REST: {"message", "documentation_url"}
      *
      * @param  list<string|null>  $secrets  Values sent with the request that must never be kept.
      */

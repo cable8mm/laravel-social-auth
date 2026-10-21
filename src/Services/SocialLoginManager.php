@@ -15,6 +15,7 @@ use Cable8mm\LaravelSocialAuth\Events\SocialUserRegistered;
 use Cable8mm\LaravelSocialAuth\Exceptions\SocialAuthException;
 use Cable8mm\LaravelSocialAuth\Models\SocialAccount;
 use Cable8mm\LaravelSocialAuth\Providers\AppleProvider;
+use Cable8mm\LaravelSocialAuth\Providers\GitHubProvider;
 use Cable8mm\LaravelSocialAuth\Providers\GoogleProvider;
 use Cable8mm\LaravelSocialAuth\Providers\KakaoProvider;
 use Cable8mm\LaravelSocialAuth\Providers\NaverProvider;
@@ -46,6 +47,7 @@ class SocialLoginManager
             'kakao' => KakaoProvider::class,
             'naver' => NaverProvider::class,
             'apple' => AppleProvider::class,
+            'github' => GitHubProvider::class,
         ];
 
         foreach ($map as $name => $class) {
@@ -264,7 +266,7 @@ class SocialLoginManager
         if ($shouldRemoteRevoke && $account->access_token) {
             try {
                 $provider = $this->provider($providerName);
-                $remoteRevoked = $provider->revoke($account->access_token);
+                $remoteRevoked = $provider->revoke($account);
             } catch (\Throwable) {
                 // Remote revoke failure — continue based on config; default is still delete local
                 $remoteRevoked = false;
