@@ -1,63 +1,10 @@
 @extends(config('social-auth.consent.layout', 'layouts.app'))
 
 @section('content')
-    <style>
-        :root {
-            color: #18181b;
-            background: #f4f4f5;
-            font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-        }
-
-        * { box-sizing: border-box; }
-        body { margin: 0; min-width: 320px; }
-
-        .social-auth-callback {
-            align-items: center;
-            display: flex;
-            justify-content: center;
-            min-height: 100vh;
-            padding: 1.5rem;
-        }
-
-        .social-auth-callback__card {
-            align-items: center;
-            background: #fff;
-            border: 1px solid #e4e4e7;
-            border-radius: 1rem;
-            box-shadow: 0 1.25rem 3rem rgb(24 24 27 / 8%);
-            display: flex;
-            gap: .875rem;
-            max-width: 28rem;
-            padding: 1.25rem 1.5rem;
-            width: 100%;
-        }
-
-        .social-auth-callback__spinner {
-            animation: social-auth-spin .8s linear infinite;
-            border: .2rem solid #e4e4e7;
-            border-radius: 999px;
-            border-top-color: #18181b;
-            flex: 0 0 auto;
-            height: 1.25rem;
-            width: 1.25rem;
-        }
-
-        .social-auth-callback__status { font-size: .9375rem; }
-        .social-auth-callback__card.is-error { color: #be123c; }
-        .social-auth-callback__card.is-error .social-auth-callback__spinner { display: none; }
-
-        @keyframes social-auth-spin { to { transform: rotate(360deg); } }
-
-        @media (prefers-color-scheme: dark) {
-            :root { color: #f4f4f5; background: #111113; }
-            .social-auth-callback__card { background: #1c1c1f; border-color: #3f3f46; }
-            .social-auth-callback__spinner { border-color: #3f3f46; border-top-color: #f4f4f5; }
-        }
-    </style>
-    <main class="social-auth-callback">
-        <div class="social-auth-callback__card" id="social-auth-callback-card">
-            <span class="social-auth-callback__spinner" aria-hidden="true"></span>
-            <p class="social-auth-callback__status" id="social-auth-status" role="status" aria-live="polite">
+    <main class="social-auth-callback flex min-h-screen items-center justify-center p-6">
+        <div class="social-auth-callback__card flex w-full max-w-md items-center gap-3.5 rounded-2xl border border-zinc-200 bg-white px-6 py-5 shadow-xl shadow-zinc-900/5 dark:border-zinc-700 dark:bg-zinc-900" id="social-auth-callback-card">
+            <span class="social-auth-callback__spinner size-5 shrink-0 animate-spin rounded-full border-[0.2rem] border-zinc-200 border-t-zinc-900 dark:border-zinc-700 dark:border-t-zinc-100" id="social-auth-callback-spinner" aria-hidden="true"></span>
+            <p class="social-auth-callback__status text-[0.9375rem]" id="social-auth-status" role="status" aria-live="polite">
                 {{ __('social-auth::views.naver_callback.checking') }}
             </p>
         </div>
@@ -73,7 +20,8 @@
             const error = hash.get('error') || query.get('error');
 
             if (error || !accessToken) {
-                card.classList.add('is-error');
+                card.classList.add('is-error', 'text-rose-700', 'dark:text-rose-300');
+                document.getElementById('social-auth-callback-spinner').classList.add('hidden');
                 status.textContent = @json(__('social-auth::views.naver_callback.failed', ['provider' => \Cable8mm\LaravelSocialAuth\Support\ProviderLabel::for('naver')]));
                 return;
             }

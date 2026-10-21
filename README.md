@@ -43,7 +43,7 @@ Laravel session 로그인
 
 - PHP 8.3+
 - Laravel 12 or Laravel 13
-- SNS 가입을 사용하는 경우 `users.email` / `users.password` nullable 필요
+- SNS 가입을 사용하는 경우 `users.name` / `users.email` / `users.password` nullable 필요
 
 ## 설치
 
@@ -65,7 +65,7 @@ Laravel 패키지 자동 발견이 활성화되어 있으면 Service Provider가
 
 #### 1. 설치 명령 실행
 
-설정 파일과 SNS 가입에 필요한 `users.email` / `users.password` nullable migration을 한 번에 publish합니다. 브라우저용 JS는 publish하지 않고 Composer가 설치한 vendor 파일을 Vite에서 직접 import합니다.
+설정 파일과 SNS 가입에 필요한 `users.name` / `users.email` / `users.password` nullable migration을 한 번에 publish합니다. 브라우저용 JS는 publish하지 않고 Composer가 설치한 vendor 파일을 Vite에서 직접 import합니다.
 
 ```bash
 php artisan social-auth:install
@@ -121,14 +121,14 @@ import "../../vendor/cable8mm/laravel-social-auth/resources/js/social-auth.js";
 
 #### users 컬럼 migration만 수동으로 publish하는 경우
 
-SNS 가입은 provider가 이메일을 제공하지 않거나 비밀번호를 사용하지 않는 경우를 지원하므로 `users.email`과 `users.password`가 nullable이어야 합니다. 또한 약관에 동의한 시각을 저장할 다음 nullable timestamp 컬럼이 필요합니다. 이 단계는 필수입니다.
+SNS 가입은 provider가 이름이나 이메일을 제공하지 않거나 비밀번호를 사용하지 않는 경우를 지원하므로 `users.name`, `users.email`, `users.password`가 nullable이어야 합니다. provider가 이름을 주지 않으면 패키지는 `users.name`을 null로 둡니다. 기본 이름이 필요하면 애플리케이션의 User 모델(예: `creating` 이벤트)에서 채우세요. 또한 약관에 동의한 시각을 저장할 다음 nullable timestamp 컬럼이 필요합니다. 이 단계는 필수입니다.
 
 ```bash
 php artisan vendor:publish --tag=social-auth-user-columns
 php artisan migrate
 ```
 
-이 migration은 `email`과 `password`를 nullable로 변경하고 다음 컬럼을 추가합니다.
+두 개의 migration이 publish됩니다. `make_user_name_nullable`은 `name`을 nullable로 변경하고, `make_user_credentials_nullable`은 `email`과 `password`를 nullable로 변경하고 다음 컬럼을 추가합니다.
 
 - `terms_accepted_at`
 - `privacy_policy_accepted_at`
@@ -146,14 +146,16 @@ php artisan vendor:publish --tag=social-auth-views
 
 애플리케이션의 `users` 테이블에서 이미 다음 조건을 만족한다면 `social-auth-user-columns` publish를 건너뛸 수 있습니다.
 
+- `users.name`이 nullable
 - `users.email`이 nullable
 - `users.password`가 nullable
 - `users.terms_accepted_at`, `users.privacy_policy_accepted_at`, `users.marketing_accepted_at` 컬럼이 존재
 
 ```php
+$table->string('name')->nullable();
 $table->string('email')->nullable()->unique();
 $table->string('password')->nullable();
-$table->string('nickname')->nullable(); // 선택
+$table->string('nickname')->nullable(); // 선택. Naver 닉네임은 다른 회원과 겹칠 수 있으므로 unique 제약을 두지 마세요
 $table->timestamp('terms_accepted_at')->nullable();
 $table->timestamp('privacy_policy_accepted_at')->nullable();
 $table->timestamp('marketing_accepted_at')->nullable();
@@ -162,6 +164,8 @@ $table->timestamp('marketing_accepted_at')->nullable();
 패키지는 애플리케이션의 `users` 마이그레이션을 자동으로 변경하지 않습니다.
 
 이미 이전 버전의 `social-auth-user-columns` migration을 실행한 애플리케이션은 기존 migration 파일을 다시 실행하지 않습니다. 그런 경우에는 동일한 세 컬럼을 추가하는 별도 애플리케이션 migration을 만들고 `php artisan migrate`를 실행하세요.
+
+`users.name` nullable migration은 별도 파일이므로, 이전 버전을 설치한 애플리케이션도 `php artisan vendor:publish --tag=social-auth-user-columns`를 다시 실행하면 이미 publish된 migration은 건너뛰고 이 migration만 추가됩니다. 이후 `php artisan migrate`를 실행하세요.
 
 ## .env 예시
 
@@ -576,6 +580,8 @@ SocialAuth::generateNonce();
 | password                | 항상 null                                      |
 | email_verified_at       | provider 검증 플래그 따름                      |
 | Kakao name              | users.name 자동 매핑 안 함                     |
+| provider 이름 없음      | users.name = null (기본값은 애플리케이션 몫)   |
+| nickname                | Naver는 provider 닉네임, 그 외는 generator     |
 | 마지막 로그인 수단 해제 | 기본 거부                                      |
 | remote revoke           | 기본 활성화 (provider별 지원 범위 내에서 시도) |
 

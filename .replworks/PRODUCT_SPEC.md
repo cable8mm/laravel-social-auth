@@ -27,6 +27,7 @@ Google, Kakao, Naver, Apple, GitHub 로그인을 하나의 Laravel 패키지에�
 - 이메일이 응답에 있으면 로컬 email 인증 완료로 처리, 없으면 로컬 email은 null
 - 이름과 닉네임 매핑은 설정 가능해야 함
 - Naver 연결 끊기 Callback을 검증하고 외부 연결 해제 시 로컬 Naver SNS 연결만 제거함. 로컬 사용자 삭제는 애플리케이션 정책으로 남김
+- 연결 해제 시 저장된 access token으로 Naver 토큰 삭제(remote revoke)를 시도함
 
 ### Apple
 
@@ -101,8 +102,10 @@ Google, Kakao, Naver, Apple, GitHub 로그인을 하나의 Laravel 패키지에�
 
 ### 이름과 닉네임
 
-- provider별 이름 매핑은 설정 가능 (Google/Naver/GitHub는 name 매핑 가능, Kakao는 name 매핑 안 함)
-- 닉네임은 모든 provider 공통으로 항상 nickname generator가 생성 (provider 닉네임 자동 사용 금지)
+- provider별 이름 매핑은 설정 가능 (Google/Naver/GitHub/Apple은 name 매핑 가능, Kakao는 name 매핑 안 함)
+- provider가 이름을 주지 않으면 users.name은 null. 기본 이름을 채우는 것은 애플리케이션 몫이므로 패키지는 users.name이 nullable이어야 함
+- 닉네임 사용 여부는 provider가 주는 값의 품질에 따라 provider별로 설정 가능. 기본값은 Naver만 provider 닉네임을 사용하고, Kakao처럼 값이 부정확한 provider는 사용하지 않음
+- provider 닉네임을 사용하지 않거나 값이 비어 있으면 nickname generator가 생성
 
 ## 다국어 메시지
 
@@ -124,6 +127,5 @@ Google, Kakao, Naver, Apple, GitHub 로그인을 하나의 Laravel 패키지에�
 ## Out of scope (이번 버전)
 
 - Google 계정에 대한 remote revoke (access token을 저장하지 않는 credential 플로우이므로 미지원)
-- Naver remote revoke (adapter 경계만 존재, 구현은 추후)
 - Socialite 및 Socialite 기반 provider 확장
 - GitHub 측 승인 취소 수신 (`github_app_authorization` 웹훅. 공개 HTTPS endpoint가 필요하며 이번 버전에서는 구현하지 않음)

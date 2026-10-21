@@ -19,7 +19,7 @@ final class InstallCommandTest extends TestCase
         parent::setUp();
 
         $this->publishedConfig = config_path('social-auth.php');
-        $this->publishedMigrations = glob(database_path('migrations/*_make_user_credentials_nullable.php')) ?: [];
+        $this->publishedMigrations = glob(database_path('migrations/*_make_user_*_nullable.php')) ?: [];
 
         File::delete($this->publishedConfig);
     }
@@ -28,7 +28,7 @@ final class InstallCommandTest extends TestCase
     {
         File::delete($this->publishedConfig);
 
-        foreach (glob(database_path('migrations/*_make_user_credentials_nullable.php')) ?: [] as $migration) {
+        foreach (glob(database_path('migrations/*_make_user_*_nullable.php')) ?: [] as $migration) {
             if (! in_array($migration, $this->publishedMigrations, true)) {
                 File::delete($migration);
             }
@@ -46,9 +46,30 @@ final class InstallCommandTest extends TestCase
         $this->assertFileExists($this->publishedConfig);
         $this->assertFileDoesNotExist(resource_path('js/vendor/social-auth.js'));
 
-        $migrations = glob(database_path('migrations/*_make_user_credentials_nullable.php')) ?: [];
+        $this->assertCount(1, $this->newlyPublished('credentials'));
+        $this->assertCount(1, $this->newlyPublished('name'));
+    }
 
-        $this->assertCount(1, array_diff($migrations, $this->publishedMigrations));
+    public function test_republishing_adds_only_the_name_migration_for_an_existing_install(): void
+    {
+        // An application that installed before the name migration existed has only the credentials one.
+        $this->artisan('vendor:publish', ['--tag' => 'social-auth-user-columns'])->assertExitCode(0);
+        File::delete($this->newlyPublished('name'));
+
+        $this->artisan('vendor:publish', ['--tag' => 'social-auth-user-columns'])->assertExitCode(0);
+
+        $this->assertCount(1, $this->newlyPublished('credentials'));
+        $this->assertCount(1, $this->newlyPublished('name'));
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function newlyPublished(string $column): array
+    {
+        $migrations = glob(database_path("migrations/*_make_user_{$column}_nullable.php")) ?: [];
+
+        return array_values(array_diff($migrations, $this->publishedMigrations));
     }
 
     public function test_install_tells_the_user_to_run_migrations(): void

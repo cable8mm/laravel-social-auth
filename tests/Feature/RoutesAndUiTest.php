@@ -81,6 +81,8 @@ class RoutesAndUiTest extends TestCase
         $response->assertSee('href="/privacy"', false);
         $response->assertSee('<!DOCTYPE html>', false);
         $response->assertSee('Laravel Social Auth', false);
+        // Styling comes from the host app's Tailwind build, not an injected stylesheet.
+        $response->assertDontSee('<style', false);
     }
 
     public function test_duplicate_registration_email_fallback_returns_to_login_with_safe_message(): void
@@ -199,6 +201,7 @@ class RoutesAndUiTest extends TestCase
         $response->assertSee("form.method = 'POST'", false);
         $response->assertSee('form.submit()');
         $response->assertSee('window.history.replaceState');
+        $response->assertDontSee('<style', false);
     }
 
     public function test_naver_callback_never_displays_the_provider_error_description(): void

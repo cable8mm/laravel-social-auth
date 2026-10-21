@@ -1,216 +1,45 @@
 @extends(config('social-auth.consent.layout', 'layouts.app'))
 
 @section('content')
-    <style>
-        .social-auth-consent-page {
-            align-items: center;
-            background: #f5f6f8;
-            display: flex;
-            font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-            justify-content: center;
-            line-height: 1.5;
-            min-height: 100vh;
-            padding: 1.5rem 1rem;
-        }
-
-        .social-auth-consent {
-            background: #fff;
-            border: 1px solid #e3e5e8;
-            border-radius: 1rem;
-            box-shadow: 0 1rem 3rem rgb(17 24 39 / 8%);
-            max-width: 30rem;
-            padding: 2rem;
-            width: 100%;
-        }
-
-        .social-auth-consent__eyebrow {
-            color: #6b7280;
-            font-size: .8125rem;
-            font-weight: 700;
-            letter-spacing: .04em;
-            margin: 0 0 .5rem;
-            text-transform: uppercase;
-        }
-
-        h1 {
-            font-size: clamp(1.5rem, 5vw, 1.875rem);
-            letter-spacing: -.03em;
-            line-height: 1.2;
-            margin: 0;
-        }
-
-        .social-auth-consent__intro {
-            color: #59616d;
-            font-size: .9375rem;
-            margin: .75rem 0 1.5rem;
-        }
-
-        .social-auth-consent__error {
-            background: #fff1f2;
-            border: 1px solid #fecdd3;
-            border-radius: .625rem;
-            color: #be123c;
-            font-size: .875rem;
-            margin-bottom: 1rem;
-            padding: .75rem .875rem;
-        }
-
-        .social-auth-consent__terms {
-            border: 0;
-            margin: 0;
-            padding: 0;
-        }
-
-        .social-auth-consent__all {
-            align-items: center;
-            background: #f8fafc;
-            border: 1px solid #e5e7eb;
-            border-radius: .625rem;
-            display: flex;
-            gap: .75rem;
-            margin-bottom: .5rem;
-            padding: .875rem;
-        }
-
-        .social-auth-consent__all input {
-            accent-color: #111827;
-            flex: 0 0 auto;
-            height: 1.125rem;
-            width: 1.125rem;
-        }
-
-        .social-auth-consent__all label {
-            cursor: pointer;
-            flex: 1;
-            font-size: .9375rem;
-            font-weight: 700;
-        }
-
-        .social-auth-consent__term {
-            align-items: flex-start;
-            border-top: 1px solid #edf0f2;
-            display: flex;
-            gap: .75rem;
-            padding: 1rem 0;
-        }
-
-        .social-auth-consent__term input {
-            accent-color: #111827;
-            flex: 0 0 auto;
-            height: 1.125rem;
-            margin: .125rem 0 0;
-            width: 1.125rem;
-        }
-
-        .social-auth-consent__term label {
-            cursor: pointer;
-            flex: 1;
-            font-size: .9375rem;
-        }
-
-        .social-auth-consent__term a {
-            color: inherit;
-            font-weight: 650;
-            text-decoration-thickness: 1px;
-            text-underline-offset: 3px;
-        }
-
-        .social-auth-consent__original-link {
-            flex: 0 0 auto;
-            white-space: nowrap;
-        }
-
-        .social-auth-consent__badge {
-            color: #6b7280;
-            font-size: .8125rem;
-            margin-left: .25rem;
-            white-space: nowrap;
-        }
-
-        .social-auth-consent__submit {
-            background: #111827;
-            border: 0;
-            border-radius: .625rem;
-            color: #fff;
-            cursor: pointer;
-            font: inherit;
-            font-size: .9375rem;
-            font-weight: 700;
-            margin-top: .75rem;
-            min-height: 3rem;
-            padding: .75rem 1rem;
-            transition: background-color 150ms ease, transform 150ms ease;
-            width: 100%;
-        }
-
-        .social-auth-consent__submit:hover { background: #374151; }
-        .social-auth-consent__submit:active { transform: translateY(1px); }
-        .social-auth-consent__submit:focus-visible { outline: 3px solid rgb(59 130 246 / 45%); outline-offset: 2px; }
-
-        .sr-only {
-            height: 1px;
-            margin: -1px;
-            overflow: hidden;
-            padding: 0;
-            position: absolute;
-            width: 1px;
-            clip: rect(0, 0, 0, 0);
-            white-space: nowrap;
-        }
-
-        @media (prefers-color-scheme: dark) {
-            .social-auth-consent-page { background: #111315; color: #f3f4f6; }
-            .social-auth-consent { background: #1b1e22; border-color: #30343a; box-shadow: 0 1rem 3rem rgb(0 0 0 / 22%); }
-            .social-auth-consent__eyebrow, .social-auth-consent__intro, .social-auth-consent__badge { color: #a5acb7; }
-            .social-auth-consent__error { background: #351b22; border-color: #71303d; color: #fda4af; }
-            .social-auth-consent__all { background: #20242a; border-color: #30343a; }
-            .social-auth-consent__term { border-color: #30343a; }
-            .social-auth-consent__submit { background: #f3f4f6; color: #111827; }
-            .social-auth-consent__submit:hover { background: #d1d5db; }
-        }
-
-        @media (max-width: 30rem) {
-            .social-auth-consent { border-radius: .75rem; padding: 1.5rem; }
-        }
-</style>
-<div class="social-auth-consent-page">
-    <main class="social-auth-consent">
-        <p class="social-auth-consent__eyebrow">{{ __('social-auth::views.consent.eyebrow', ['provider' => \Cable8mm\LaravelSocialAuth\Support\ProviderLabel::for((string) ($pending['provider'] ?? 'SNS'))]) }}</p>
-        <h1>{{ __('social-auth::views.consent.title') }}</h1>
-        <p class="social-auth-consent__intro">{{ __('social-auth::views.consent.intro') }}</p>
+<div class="social-auth-consent-page flex min-h-screen items-center justify-center bg-zinc-100 px-4 py-6 leading-normal text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100">
+    <main class="social-auth-consent w-full max-w-[30rem] rounded-xl border border-zinc-200 bg-white p-6 shadow-xl shadow-zinc-900/5 sm:rounded-2xl sm:p-8 dark:border-zinc-800 dark:bg-zinc-900 dark:shadow-black/20">
+        <p class="social-auth-consent__eyebrow mb-2 text-[0.8125rem] font-bold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">{{ __('social-auth::views.consent.eyebrow', ['provider' => \Cable8mm\LaravelSocialAuth\Support\ProviderLabel::for((string) ($pending['provider'] ?? 'SNS'))]) }}</p>
+        <h1 class="text-2xl leading-tight font-bold tracking-tight sm:text-3xl">{{ __('social-auth::views.consent.title') }}</h1>
+        <p class="social-auth-consent__intro mt-3 mb-6 text-[0.9375rem] text-zinc-600 dark:text-zinc-400">{{ __('social-auth::views.consent.intro') }}</p>
 
         @if(session('error'))
-            <div class="social-auth-consent__error" role="alert">{{ session('error') }}</div>
+            <div class="social-auth-consent__error mb-4 rounded-lg border border-rose-200 bg-rose-50 px-3.5 py-3 text-sm text-rose-700 dark:border-rose-900 dark:bg-rose-950 dark:text-rose-300" role="alert">{{ session('error') }}</div>
         @endif
 
         <form method="POST" action="{{ route('social-auth.consent.submit') }}" data-social-auth-consent-form>
             @csrf
 
-            <div class="social-auth-consent__all">
-                <input id="social-auth-consent-all" name="consent_all" type="checkbox" data-social-auth-consent-all>
-                <label for="social-auth-consent-all">{{ __('social-auth::views.consent.select_all') }}</label>
+            <div class="social-auth-consent__all mb-2 flex items-center gap-3 rounded-lg border border-zinc-200 bg-zinc-50 p-3.5 dark:border-zinc-800 dark:bg-zinc-800/50">
+                <input id="social-auth-consent-all" name="consent_all" type="checkbox" class="size-[1.125rem] shrink-0 accent-zinc-900 dark:accent-zinc-100" data-social-auth-consent-all>
+                <label for="social-auth-consent-all" class="flex-1 cursor-pointer text-[0.9375rem] font-bold">{{ __('social-auth::views.consent.select_all') }}</label>
             </div>
 
-            <fieldset class="social-auth-consent__terms">
+            <fieldset class="social-auth-consent__terms m-0 border-0 p-0">
                 <legend class="sr-only">{{ __('social-auth::views.consent.legend') }}</legend>
 
                 @foreach($terms as $key => $term)
-                    <div class="social-auth-consent__term">
+                    <div class="social-auth-consent__term flex items-start gap-3 border-t border-zinc-100 py-4 dark:border-zinc-800">
                         <input
                             id="social-auth-term-{{ $key }}"
                             type="checkbox"
                             name="{{ $key }}"
                             value="1"
+                            class="mt-0.5 size-[1.125rem] shrink-0 accent-zinc-900 dark:accent-zinc-100"
                             data-social-auth-consent
                             @if($term['required'] ?? false) required @endif
                         >
-                        <label for="social-auth-term-{{ $key }}">
+                        <label for="social-auth-term-{{ $key }}" class="flex-1 cursor-pointer text-[0.9375rem]">
                             {{ $term['label'] ?? (\Illuminate\Support\Facades\Lang::has('social-auth::views.consent.terms.'.$key) ? __('social-auth::views.consent.terms.'.$key) : $key) }}
-                            <span class="social-auth-consent__badge">({{ ($term['required'] ?? false) ? __('social-auth::views.consent.required') : __('social-auth::views.consent.optional') }})</span>
+                            <span class="social-auth-consent__badge ml-1 whitespace-nowrap text-[0.8125rem] text-zinc-500 dark:text-zinc-400">({{ ($term['required'] ?? false) ? __('social-auth::views.consent.required') : __('social-auth::views.consent.optional') }})</span>
                         </label>
                         @if(!empty($term['url']))
                             <a
-                                class="social-auth-consent__original-link"
+                                class="social-auth-consent__original-link shrink-0 whitespace-nowrap text-[0.9375rem] font-semibold text-inherit underline decoration-1 underline-offset-[3px]"
                                 href="{{ $term['url'] }}"
                                 target="_blank"
                                 rel="noopener"
@@ -220,7 +49,7 @@
                 @endforeach
             </fieldset>
 
-            <button class="social-auth-consent__submit" type="submit">{{ __('social-auth::views.consent.submit') }}</button>
+            <button class="social-auth-consent__submit mt-3 min-h-12 w-full cursor-pointer rounded-lg border-0 bg-zinc-900 px-4 py-3 text-[0.9375rem] font-bold text-white transition hover:bg-zinc-700 focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-blue-500/45 active:translate-y-px dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-300" type="submit">{{ __('social-auth::views.consent.submit') }}</button>
         </form>
     </main>
 </div>
