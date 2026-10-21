@@ -1,5 +1,25 @@
 # Release Notes
 
+## v1.3.0 - 2026-10-21
+
+### What's Changed
+
+* chore(docs): reorganize project docs into .replworks and rename FRAMEWORK.md to TECH_STACK.md by [@cable8mm](https://github.com/cable8mm) in https://github.com/cable8mm/laravel-social-auth/pull/37
+* feat: add GitHub login (GitHub App) by [@replworks-bot](https://github.com/replworks-bot) in https://github.com/cable8mm/laravel-social-auth/pull/38
+* fix: keep the sign-up start page as the post-consent redirect by [@replworks-bot](https://github.com/replworks-bot) in https://github.com/cable8mm/laravel-social-auth/pull/39
+* chore(docs): add 2026-10-22 code review findings to TASKS.md by [@replworks-bot](https://github.com/replworks-bot) in https://github.com/cable8mm/laravel-social-auth/pull/40
+* fix: close the review's Fix items (nonce, Kakao unlink, consent, webhooks) by [@replworks-bot](https://github.com/replworks-bot) in https://github.com/cable8mm/laravel-social-auth/pull/41
+* chore: apply the owner's docs-vs-code decisions from the code review by [@replworks-bot](https://github.com/replworks-bot) in https://github.com/cable8mm/laravel-social-auth/pull/42
+* chore: clean up unused code and config from the code review by [@replworks-bot](https://github.com/replworks-bot) in https://github.com/cable8mm/laravel-social-auth/pull/43
+* fix: bind connect intent to the issued state instead of a global key by [@replworks-bot](https://github.com/replworks-bot) in https://github.com/cable8mm/laravel-social-auth/pull/44
+* fix: follow Naver's login dev guide for disconnect callbacks and revoke by [@replworks-bot](https://github.com/replworks-bot) in https://github.com/cable8mm/laravel-social-auth/pull/45
+
+### New Contributors
+
+* [@replworks-bot](https://github.com/replworks-bot) made their first contribution in https://github.com/cable8mm/laravel-social-auth/pull/38
+
+**Full Changelog**: https://github.com/cable8mm/laravel-social-auth/compare/v1.2.1...v1.3.0
+
 ## v1.2.1 - 2026-10-21
 
 ### What's Changed
