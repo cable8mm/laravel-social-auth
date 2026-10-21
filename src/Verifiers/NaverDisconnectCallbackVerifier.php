@@ -8,6 +8,12 @@ use Cable8mm\LaravelSocialAuth\Exceptions\SocialAuthException;
 
 class NaverDisconnectCallbackVerifier
 {
+    /**
+     * Naver sends the callback once, right after the user disconnects, with the timestamp in Unix seconds;
+     * the window only absorbs clock difference between the two servers.
+     */
+    private const MAX_CLOCK_SKEW_SECONDS = 300;
+
     public function __construct(
         private readonly string $clientId,
         private readonly string $clientSecret,
@@ -35,6 +41,10 @@ class NaverDisconnectCallbackVerifier
 
         if (! hash_equals($expectedSignature, $signature)) {
             throw SocialAuthException::verificationFailed('naver', 'Invalid disconnect callback signature');
+        }
+
+        if (! ctype_digit($timestamp) || abs(time() - (int) $timestamp) > self::MAX_CLOCK_SKEW_SECONDS) {
+            throw SocialAuthException::verificationFailed('naver', 'Stale disconnect callback');
         }
 
         $decoded = base64_decode(strtr($encryptedUniqueId, '-_', '+/'), true);

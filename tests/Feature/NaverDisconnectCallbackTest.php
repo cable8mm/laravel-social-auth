@@ -7,6 +7,7 @@ namespace Cable8mm\LaravelSocialAuth\Tests\Feature;
 use Cable8mm\LaravelSocialAuth\Models\SocialAccount;
 use Cable8mm\LaravelSocialAuth\Tests\Fixtures\User;
 use Cable8mm\LaravelSocialAuth\Tests\TestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 class NaverDisconnectCallbackTest extends TestCase
 {
@@ -64,6 +65,39 @@ class NaverDisconnectCallbackTest extends TestCase
         $this->post(route('social-auth.webhooks.naver'), $callback)->assertNoContent();
 
         $this->assertDatabaseHas('social_accounts', ['provider_id' => 'naver-user-3']);
+    }
+
+    /**
+     * @return array<string, array{int}>
+     */
+    public static function timestampsOutsideTheWindow(): array
+    {
+        return [
+            'ten minutes old' => [-600],
+            'ten minutes ahead' => [600],
+        ];
+    }
+
+    #[DataProvider('timestampsOutsideTheWindow')]
+    public function test_validly_signed_callback_outside_the_time_window_is_rejected(int $offsetSeconds): void
+    {
+        $user = User::query()->create(['email' => 'user@example.com']);
+        SocialAccount::query()->create([
+            'user_id' => $user->id,
+            'provider' => 'naver',
+            'provider_id' => 'naver-user-4',
+        ]);
+        $timestamp = (string) (time() + $offsetSeconds);
+        $encryptedUniqueId = $this->encryptUniqueId('naver-user-4');
+
+        $this->post(route('social-auth.webhooks.naver'), [
+            'clientId' => self::CLIENT_ID,
+            'encryptUniqueId' => $encryptedUniqueId,
+            'timestamp' => $timestamp,
+            'signature' => $this->signature($encryptedUniqueId, $timestamp),
+        ])->assertStatus(400);
+
+        $this->assertDatabaseHas('social_accounts', ['provider_id' => 'naver-user-4']);
     }
 
     public function test_invalid_signature_is_rejected(): void
