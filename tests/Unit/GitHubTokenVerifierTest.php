@@ -102,6 +102,39 @@ class GitHubTokenVerifierTest extends TestCase
         }
     }
 
+    public function test_refresh_returns_new_token_pair(): void
+    {
+        Http::fake([
+            'https://github.com/login/oauth/access_token' => Http::response([
+                'access_token' => 'ghu_new',
+                'expires_in' => 28800,
+                'refresh_token' => 'ghr_new',
+                'refresh_token_expires_in' => 15897600,
+                'scope' => '',
+                'token_type' => 'bearer',
+            ]),
+        ]);
+
+        $tokens = (new GitHubTokenVerifier('client-id', 'client-secret', null))->refresh('ghr_old');
+
+        $this->assertSame('ghu_new', $tokens['access_token']);
+        Http::assertSent(fn (Request $request) => $request['grant_type'] === 'refresh_token'
+            && $request['refresh_token'] === 'ghr_old'
+            && $request['client_secret'] === 'client-secret');
+    }
+
+    public function test_refresh_error_returned_with_http_200_yields_null(): void
+    {
+        Http::fake([
+            'https://github.com/login/oauth/access_token' => Http::response([
+                'error' => 'incorrect_client_credentials',
+                'error_description' => 'The client_id and/or client_secret passed are incorrect.',
+            ]),
+        ]);
+
+        $this->assertNull((new GitHubTokenVerifier('client-id', 'client-secret', null))->refresh('ghr_expired'));
+    }
+
     public function test_revoke_deletes_the_grant_with_basic_auth(): void
     {
         Http::fake([

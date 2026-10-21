@@ -40,12 +40,14 @@ Google, Kakao, Naver, Apple, GitHub 로그인을 하나의 Laravel 패키지에�
 
 ### GitHub
 
-- GitHub OAuth App의 웹 authorization code 흐름을 사용 (GitHub는 공식 JS SDK가 없으므로 브라우저를 GitHub 인가 화면으로 redirect)
+- GitHub App의 사용자 인증(웹 authorization code 흐름)을 사용 (GitHub는 공식 JS SDK가 없으므로 브라우저를 GitHub 인가 화면으로 redirect). OAuth App은 지원 대상이 아님
+- GitHub App에는 Account permissions의 "Email addresses" 읽기 권한이 필요함
 - 서버에서 authorization code를 access token으로 교환하고 state를 검증
 - GitHub의 숫자 `id`를 provider ID로 사용 (`login`은 변경 가능하므로 provider ID로 쓰지 않음)
-- `user:email` scope로 이메일 목록을 조회하고, `primary`이면서 `verified`인 이메일만 로컬 email로 사용하며 이 경우 로컬 이메일 인증 완료로 처리. 그런 이메일이 없으면 로컬 email은 null
+- 이메일 목록을 조회하고, `primary`이면서 `verified`인 이메일만 로컬 email로 사용하며 이 경우 로컬 이메일 인증 완료로 처리. 그런 이메일이 없으면 로컬 email은 null
 - GitHub `name`은 설정으로 users.name에 매핑 가능. 값이 없으면 null
-- 연결 해제 시 저장된 access token으로 GitHub grant 삭제(remote revoke)를 시도하며, 실패해도 로컬 연결 해제는 진행
+- GitHub App의 user access token은 만료됨(8시간, refresh token 6개월). 로그인/연결 시 access token, refresh token, 만료 시각을 저장
+- 연결 해제 시 GitHub grant 삭제(remote revoke)를 시도함. grant 삭제에는 유효한 access token이 필요하므로, access token이 만료됐으면 refresh token으로 먼저 갱신한 뒤 삭제함. refresh token까지 만료되었거나 갱신·삭제가 실패해도 로컬 연결 해제는 진행
 
 ## 핵심 계정 정책
 
@@ -124,4 +126,4 @@ Google, Kakao, Naver, Apple, GitHub 로그인을 하나의 Laravel 패키지에�
 - Google 계정에 대한 remote revoke (access token을 저장하지 않는 credential 플로우이므로 미지원)
 - Naver remote revoke (adapter 경계만 존재, 구현은 추후)
 - Socialite 및 Socialite 기반 provider 확장
-- GitHub 측 연결 해제/계정 상태 변경 수신 (OAuth App에는 해당 웹훅이 없으며 `github_app_authorization` 이벤트는 GitHub App 전용)
+- GitHub 측 승인 취소 수신 (`github_app_authorization` 웹훅. 공개 HTTPS endpoint가 필요하며 이번 버전에서는 구현하지 않음)

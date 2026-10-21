@@ -90,8 +90,8 @@ return [
             'client_id' => env('GITHUB_CLIENT_ID'),
             'client_secret' => env('GITHUB_CLIENT_SECRET'),
             'redirect' => env('GITHUB_REDIRECT_URI'),
+            // GitHub App: grant "Email addresses" (read) under Account permissions; scopes do not apply.
             'authorize_url' => 'https://github.com/login/oauth/authorize',
-            'scopes' => ['read:user', 'user:email'],
             'name_mapping' => 'name',
             'nickname_mapping' => null,
         ],

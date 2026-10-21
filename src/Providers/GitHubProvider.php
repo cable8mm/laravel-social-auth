@@ -6,11 +6,18 @@ namespace Cable8mm\LaravelSocialAuth\Providers;
 
 use Cable8mm\LaravelSocialAuth\Data\ProviderUser;
 use Cable8mm\LaravelSocialAuth\Exceptions\SocialAuthException;
+use Cable8mm\LaravelSocialAuth\Models\SocialAccount;
 use Cable8mm\LaravelSocialAuth\Verifiers\GitHubTokenVerifier;
 use Illuminate\Support\Facades\Session;
 
 final class GitHubProvider extends AbstractProvider
 {
+    /**
+     * Profile fields kept in raw. The full /user response carries dozens of API URL
+     * templates that would overflow a cookie-based session during pending registration.
+     */
+    private const RAW_FIELDS = ['id', 'login', 'name', 'avatar_url', 'html_url', 'type', 'created_at'];
+
     public function getName(): string
     {
         return 'github';
@@ -45,17 +52,36 @@ final class GitHubProvider extends AbstractProvider
             accessToken: $tokens['access_token'] ?? null,
             refreshToken: $tokens['refresh_token'] ?? null,
             tokenExpiresAt: isset($tokens['expires_in']) ? now()->addSeconds((int) $tokens['expires_in']) : null,
-            raw: $this->sanitizeRaw($profile),
+            raw: $this->sanitizeRaw(array_intersect_key($profile, array_flip(self::RAW_FIELDS))),
         );
     }
 
-    public function revoke(?string $accessToken): bool
+    public function revoke(SocialAccount $account): bool
     {
-        if ($accessToken === null || $accessToken === '' || empty($this->config['client_secret'])) {
+        $accessToken = $account->access_token;
+        if (empty($accessToken) || empty($this->getClientId()) || empty($this->config['client_secret'])) {
             return false;
         }
 
-        return $this->verifier()->revoke($accessToken);
+        $verifier = $this->verifier();
+
+        // Grant deletion needs a valid access token; GitHub App user tokens expire after eight hours.
+        $expiresAt = $account->token_expires_at;
+        if ($expiresAt !== null && $expiresAt->lte(now()->addMinute())) {
+            if (empty($account->refresh_token)) {
+                return false;
+            }
+
+            $tokens = $verifier->refresh($account->refresh_token);
+            if ($tokens === null) {
+                return false;
+            }
+
+            // Not persisted: the local account is deleted right after revoke.
+            $accessToken = (string) $tokens['access_token'];
+        }
+
+        return $verifier->revoke($accessToken);
     }
 
     private function verifier(): GitHubTokenVerifier

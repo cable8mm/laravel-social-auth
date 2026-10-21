@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Cable8mm\LaravelSocialAuth\Contracts;
 
 use Cable8mm\LaravelSocialAuth\Data\ProviderUser;
+use Cable8mm\LaravelSocialAuth\Models\SocialAccount;
 
 interface ProviderContract
 {
@@ -26,9 +27,9 @@ interface ProviderContract
     public function verify(array $payload): ProviderUser;
 
     /**
-     * Attempt remote revoke of the access token (if supported).
+     * Attempt remote revoke of the stored account's tokens (if supported).
      */
-    public function revoke(?string $accessToken): bool;
+    public function revoke(SocialAccount $account): bool;
 
     /**
      * Map provider profile fields to local user attributes.

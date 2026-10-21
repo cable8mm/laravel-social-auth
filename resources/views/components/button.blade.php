@@ -41,7 +41,6 @@
     data-google-button-type="standard"
     data-redirect-url="{{ in_array($provider, ['apple', 'github'], true) ? ($p->getConfig()['redirect'] ?? '') : '' }}"
     data-authorize-url="{{ $provider === 'github' ? ($p->getConfig()['authorize_url'] ?? '') : '' }}"
-    data-scope="{{ $provider === 'github' ? implode(' ', $p->getConfig()['scopes'] ?? []) : '' }}"
 >
     @if($provider === 'google')
         {{-- Google GIS button is rendered by JS --}}

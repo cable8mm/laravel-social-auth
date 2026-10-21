@@ -124,6 +124,31 @@ class GitHubTokenVerifier
         return null;
     }
 
+    /**
+     * Exchange a refresh token for a new token pair. The old access and refresh tokens stop working.
+     *
+     * @return array<string, mixed>|null
+     */
+    public function refresh(string $refreshToken): ?array
+    {
+        $response = Http::asForm()
+            ->acceptJson()
+            ->timeout(10)
+            ->post(self::TOKEN_URL, [
+                'client_id' => $this->clientId,
+                'client_secret' => $this->clientSecret,
+                'grant_type' => 'refresh_token',
+                'refresh_token' => $refreshToken,
+            ]);
+
+        // Like the code exchange, refresh errors arrive with HTTP 200 and an error body.
+        if (! $response->successful() || $response->json('error') !== null || empty($response->json('access_token'))) {
+            return null;
+        }
+
+        return $response->json();
+    }
+
     public function revoke(string $accessToken): bool
     {
         $response = Http::withBasicAuth($this->clientId, $this->clientSecret)

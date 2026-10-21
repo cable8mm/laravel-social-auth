@@ -8,7 +8,7 @@
 ![Packagist Downloads](https://img.shields.io/packagist/dt/cable8mm/laravel-social-auth)
 ![Packagist License](https://img.shields.io/packagist/l/cable8mm/laravel-social-auth)
 
-Laravel SNS 인증 패키지 (Google GIS · Kakao JS SDK · Naver JS SDK · Sign in with Apple · GitHub OAuth).  
+Laravel SNS 인증 패키지 (Google GIS · Kakao JS SDK · Naver JS SDK · Sign in with Apple · GitHub App).  
 **Socialite를 사용하지 않습니다.** 서버에서 credential/token을 직접 검증합니다.
 
 ![workbench](docs/assets/workbench.png)
@@ -184,8 +184,8 @@ APPLE_KEY_ID=your-apple-key-id
 APPLE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\nyour-key\n-----END PRIVATE KEY-----"
 APPLE_REDIRECT_URI=http://localhost:8000/social-auth/apple/callback
 
-GITHUB_CLIENT_ID=your-github-oauth-app-client-id
-GITHUB_CLIENT_SECRET=your-github-oauth-app-client-secret
+GITHUB_CLIENT_ID=your-github-app-client-id
+GITHUB_CLIENT_SECRET=your-github-app-client-secret
 GITHUB_REDIRECT_URI=http://localhost:8000/social-auth/github/callback
 
 ```
@@ -286,11 +286,14 @@ php artisan optimize:clear
 
 ### GitHub
 
-1. GitHub **Settings → Developer settings → OAuth Apps**에서 OAuth App을 등록합니다.
-2. Authorization callback URL에 `GITHUB_REDIRECT_URI`(`/social-auth/github/callback`)를 등록하고 client ID와 client secret을 `.env`에 추가합니다.
-3. GitHub는 공식 JS SDK가 없으므로 버튼을 누르면 GitHub 인가 화면으로 이동하고, Laravel 서버가 authorization code를 access token으로 교환합니다. scope는 `read:user user:email`입니다.
-4. 이메일은 GitHub 이메일 목록에서 `primary`이면서 `verified`인 주소만 사용하고 이 경우 인증 완료로 처리합니다. 없으면 email은 null입니다.
-5. 연결 해제 시 저장된 token으로 GitHub grant 삭제를 시도합니다. GitHub OAuth App은 연결 해제 웹훅을 제공하지 않으므로 GitHub 측 해제는 수신하지 않습니다. [GitHub 공식 문서](https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/authorizing-oauth-apps)
+1. GitHub **Settings → Developer settings → GitHub Apps**에서 GitHub App을 등록합니다. OAuth App은 지원 대상이 아닙니다.
+2. Callback URL에 `GITHUB_REDIRECT_URI`(`/social-auth/github/callback`)를 등록합니다. 로그인 용도라면 Webhook의 "Active"는 끄면 됩니다 (localhost는 Webhook URL로 등록할 수 없습니다).
+3. **Permissions → Account permissions → Email addresses**를 **Read-only**로 설정합니다. 이 권한이 없으면 이메일 조회가 403으로 실패해 로그인할 수 없습니다. 권한을 나중에 추가했다면 이미 승인한 사용자는 **Settings → Applications → Authorized GitHub Apps**에서 승인을 취소한 뒤 다시 로그인해야 새 권한이 적용됩니다.
+4. **Client ID**(`Iv`로 시작)와 **Client secrets**에서 생성한 client secret(40자)을 `.env`에 추가합니다. Private key(.pem)와 Webhook secret은 사용하지 않습니다.
+5. GitHub는 공식 JS SDK가 없으므로 버튼을 누르면 GitHub 인가 화면으로 이동하고, Laravel 서버가 authorization code를 토큰으로 교환합니다.
+6. 이메일은 GitHub 이메일 목록에서 `primary`이면서 `verified`인 주소만 사용하고 이 경우 인증 완료로 처리합니다. 없으면 email은 null입니다.
+7. GitHub App의 user access token은 8시간, refresh token은 6개월 뒤 만료됩니다. 연결 해제 시 access token이 만료됐으면 refresh token으로 갱신한 뒤 GitHub grant를 삭제합니다. refresh token도 만료됐다면 로컬 연결만 해제되며, 사용자가 GitHub에서 직접 승인을 취소해야 합니다.
+8. GitHub 측 승인 취소 웹훅(`github_app_authorization`)은 아직 수신하지 않습니다. [GitHub 공식 문서](https://docs.github.com/en/apps/creating-github-apps/authenticating-with-a-github-app/generating-a-user-access-token-for-a-github-app)
 
 ### Apple
 
@@ -641,7 +644,7 @@ composer test:browser
 
 ## 실제 Provider 로그인
 
-개발 환경에서 **실제 Google/Kakao/Naver/Apple/GitHub 계정 E2E 로그인은 수행하지 않았습니다.**
+개발 환경에서 **실제 Google/Kakao/Naver/Apple 계정 E2E 로그인은 수행하지 않았습니다.**
 단위·기능 테스트는 HTTP fake 및 JWT 자체 서명으로 검증합니다.  
 배포 전 콘솔 키로 실제 연동 확인을 권장합니다.
 

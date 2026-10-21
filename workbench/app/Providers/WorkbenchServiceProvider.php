@@ -4,7 +4,12 @@ declare(strict_types=1);
 
 namespace Workbench\App\Providers;
 
+use Cable8mm\LaravelSocialAuth\Events\SocialAccountDisconnected;
+use Cable8mm\LaravelSocialAuth\Events\SocialLoginFailed;
+use Cable8mm\LaravelSocialAuth\Exceptions\SocialAuthException;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\ServiceProvider;
 use Workbench\App\Models\User;
 
@@ -26,6 +31,25 @@ class WorkbenchServiceProvider extends ServiceProvider
         Config::set('cache.default', 'array');
         Config::set('social-auth.user_model', User::class);
         Config::set('auth.providers.users.model', User::class);
+
+        // Record redacted provider error details for live-boundary verification.
+        Event::listen(function (SocialAccountDisconnected $event): void {
+            Log::info('social-auth disconnected', [
+                'provider' => $event->socialAccount->provider,
+                'remote_revoked' => $event->remoteRevoked,
+            ]);
+        });
+
+        Event::listen(function (SocialLoginFailed $event): void {
+            $exception = $event->exception;
+
+            Log::warning('social-auth login failed', [
+                'provider' => $event->provider,
+                'reason' => $event->reason,
+                'technical_reason' => $exception instanceof SocialAuthException ? $exception->reason() : null,
+                'provider_error' => $exception instanceof SocialAuthException ? $exception->providerError()?->toArray() : null,
+            ]);
+        });
 
         if (! app()->environment('testing')) {
             return;
@@ -56,6 +80,13 @@ class WorkbenchServiceProvider extends ServiceProvider
             'social-auth.consent.providers.naver.term_codes.marketing',
             $env('NAVER_MARKETING_CODE', ''),
         );
-        Config::set('social-auth.button_order', ['naver', 'kakao', 'google']);
+        // GitHub is enabled only for live verification, when real OAuth App keys are present.
+        if ($env('GITHUB_CLIENT_ID', '') !== '' && $env('GITHUB_CLIENT_SECRET', '') !== '') {
+            Config::set('social-auth.providers.github.enabled', true);
+            Config::set('social-auth.providers.github.client_id', $env('GITHUB_CLIENT_ID', ''));
+            Config::set('social-auth.providers.github.client_secret', $env('GITHUB_CLIENT_SECRET', ''));
+            Config::set('social-auth.providers.github.redirect', $env('GITHUB_REDIRECT_URI', ''));
+        }
+        Config::set('social-auth.button_order', ['naver', 'kakao', 'google', 'github']);
     }
 }

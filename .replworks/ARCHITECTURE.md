@@ -19,7 +19,7 @@
 - Apple Sign in with Apple Server-to-Server Notification endpoint and JWS delivery
 - Apple JWKS endpoint (https://appleid.apple.com/auth/keys)
 - Sign in with Apple JS SDK — browser runtime and Apple Account authentication
-- GitHub OAuth authorize/token endpoints (https://github.com/login/oauth/authorize, https://github.com/login/oauth/access_token)
+- GitHub App user-authorization endpoints: authorize, code exchange, and token refresh (https://github.com/login/oauth/authorize, https://github.com/login/oauth/access_token)
 - GitHub REST API user, emails, and grant-delete endpoints (https://api.github.com/user, /user/emails, /applications/{client_id}/grant)
 ```
 
@@ -31,13 +31,13 @@ Any code calling these directly requires a live observation before a correspondi
 - `InstallCommand` — publishes the package config and a timestamped nullable user-columns migration; it does not run application migrations.
 - `resources/js/social-auth.js` — browser-side provider SDK orchestration, imported by the host application's existing Vite entry.
 - `SocialLoginManager` — orchestration: resolves providers, drives registration/link/unlink flows, owns the "last login method" rule.
-- `ProviderContract` — `key()`, `isEnabled()`, `jsSdkUrl()`, `authenticate(Request): SocialUser`, `revoke(SocialAccount): bool`.
+- `ProviderContract` — `key()`, `isEnabled()`, `jsSdkUrl()`, `authenticate(Request): SocialUser`, `revoke(SocialAccount): bool`. `revoke` receives the stored account so a provider can use its refresh token and expiry, not just the access token.
 - `GoogleProvider` / `KakaoProvider` / `NaverProvider` / `AppleProvider` / `GitHubProvider` — implement `ProviderContract`, each delegates credential/token verification to its Verifier.
 - `GoogleCredentialVerifier` — JWT signature (via JWKS), issuer, audience, expiry, nonce.
 - `KakaoTokenVerifier` — authorization code -> token exchange, profile fetch.
 - `NaverTokenVerifier` — access token -> profile fetch, resultcode check, and optional Login Plus agreement lookup.
 - `AppleTokenVerifier` — authorization code exchange, client-secret JWT generation, identity-token verification, and revoke.
-- `GitHubTokenVerifier` — authorization code -> token exchange (GitHub returns OAuth errors with HTTP 200, so an `error` body is treated as a failure), user and email-list fetch, and grant-delete revoke (HTTP Basic auth with client ID/secret).
+- `GitHubTokenVerifier` — authorization code -> token exchange (GitHub returns OAuth errors with HTTP 200, so an `error` body is treated as a failure), user and email-list fetch, refresh-token exchange, and grant-delete revoke (HTTP Basic auth with client ID/secret).
 - `SocialUser` — normalized, already-sanitized DTO returned by every provider.
 - `PendingSocialRegistration` — session-serializable snapshot of a `SocialUser`, held between callback and consent completion. No `User` row exists until consent succeeds.
 - `SocialAccount` (model) — `social_accounts` table; `access_token` and `refresh_token` use Laravel's `encrypted` cast.
@@ -87,7 +87,7 @@ Provider-managed consent is opt-in under `consent.providers`. For Naver, the app
 Authenticate provider -> reject if the provider account already belongs to another user, or is already linked to this user -> create `SocialAccount` -> fire `SocialAccountLinked`.
 
 **Unlinking** (`SocialLinkController::disconnect`):
-Reject if `protect_last_login_method` is true and this is the user's only login method (no password, no email, at most one social account) -> attempt provider-specific remote revoke when a stored access token exists -> delete local row regardless of remote revoke outcome -> fire `SocialAccountUnlinked`.
+Reject if `protect_last_login_method` is true and this is the user's only login method (no password, no email, at most one social account) -> attempt provider-specific remote revoke with the stored `SocialAccount` when it has an access token -> for GitHub, if the access token is expired (or expires within 60 seconds) and a refresh token exists, refresh first and revoke with the new access token; the refreshed tokens are not persisted because the row is deleted next -> delete local row regardless of remote revoke outcome -> fire `SocialAccountUnlinked`.
 
 ## Security architecture
 
@@ -102,3 +102,4 @@ Reject if `protect_last_login_method` is true and this is the user's only login 
 - **Email trust boundary**: Google uses the `email_verified` claim in the JWT. Kakao uses the nested `kakao_account.is_email_verified` and `kakao_account.is_email_valid` flags; local email verification is granted only when both are true. Naver treats email presence in the profile response as sufficient, since Naver does not return unconfirmed emails. GitHub ignores the public profile `email` and uses only the `/user/emails` entry with `primary: true` and `verified: true`; when none exists the email is null.
 - **Token storage vs remote revoke**: the published config enables encrypted token storage and remote revoke by default. `ConfigurationValidator` rejects `store_tokens=false` combined with `remote_revoke_enabled=true` if an application changes those policies in its published config.
 - Sensitive tokens are stripped from the `raw` blob before it is passed into `SocialUser` / persisted (see each Provider's `authenticate()`).
+- GitHub keeps only `id`, `login`, `name`, `avatar_url`, `html_url`, `type`, and `created_at` in `raw`. The full `/user` response carries dozens of API URL templates; together with the tokens it pushes the pending registration past the 4KB browser cookie limit when the application uses the `cookie` session driver, which silently drops the session. A `name_mapping` key for GitHub must therefore be one of these fields.
