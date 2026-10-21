@@ -33,6 +33,11 @@ return [
         'legend' => '서비스 약관 동의',
         'required' => '필수',
         'optional' => '선택',
+        'terms' => [
+            'terms_of_service' => '이용약관',
+            'privacy_policy' => '개인정보 처리방침',
+            'marketing' => '마케팅 정보 수신 동의',
+        ],
         'view_original' => '원문 보기',
         'submit' => '동의하고 가입 완료',
     ],

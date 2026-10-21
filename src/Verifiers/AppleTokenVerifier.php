@@ -59,7 +59,7 @@ final class AppleTokenVerifier
     /**
      * @return array<string, mixed>
      */
-    public function verify(string $identityToken, ?string $expectedNonce = null): array
+    public function verify(string $identityToken, string $expectedNonce): array
     {
         try {
             $claims = (array) JWT::decode($identityToken, JWK::parseKeySet($this->jwks()));
@@ -83,7 +83,7 @@ final class AppleTokenVerifier
             throw SocialAuthException::verificationFailed('apple', 'Missing subject');
         }
 
-        if ($expectedNonce !== null && ! hash_equals($expectedNonce, (string) ($claims['nonce'] ?? ''))) {
+        if (! hash_equals($expectedNonce, (string) ($claims['nonce'] ?? ''))) {
             throw SocialAuthException::invalidNonce();
         }
 

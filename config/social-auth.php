@@ -173,21 +173,22 @@ return [
             'privacy_policy' => 'privacy_policy_accepted_at',
             'marketing' => 'marketing_accepted_at',
         ],
+        // A null label uses the package translation (social-auth::views.consent.terms.<key>).
         'required_terms' => [
             'terms_of_service' => [
-                'label' => '이용약관',
+                'label' => null,
                 'url' => env('SOCIAL_AUTH_TERMS_URL', '/terms'),
                 'required' => true,
             ],
             'privacy_policy' => [
-                'label' => '개인정보 처리방침',
+                'label' => null,
                 'url' => env('SOCIAL_AUTH_PRIVACY_URL', '/privacy'),
                 'required' => true,
             ],
         ],
         'optional_terms' => [
             'marketing' => [
-                'label' => '마케팅 정보 수신 동의',
+                'label' => null,
                 'url' => env('SOCIAL_AUTH_MARKETING_URL', null),
                 'required' => false,
             ],

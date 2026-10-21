@@ -14,10 +14,14 @@ use Cable8mm\LaravelSocialAuth\Verifiers\NaverDisconnectCallbackVerifier;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
+use Illuminate\Support\Facades\Cache;
 use Symfony\Component\HttpFoundation\Response;
 
 class SocialWebhookController extends Controller
 {
+    /** How long a verified delivery is remembered so a replay of it is ignored. */
+    private const REPLAY_WINDOW_DAYS = 30;
+
     public function __construct(
         private readonly SocialAccountService $accountService,
     ) {}
@@ -28,6 +32,10 @@ class SocialWebhookController extends Controller
             $claims = (new KakaoAccountStatusWebhookVerifier(
                 (string) config('social-auth.providers.kakao.client_id'),
             ))->verify($request->getContent());
+
+            if (! $this->isFirstDelivery('kakao', $claims['jti'])) {
+                return response()->json(null, 202);
+            }
 
             foreach ($claims['events'] as $eventType => $event) {
                 if (! is_array($event)) {
@@ -80,6 +88,10 @@ class SocialWebhookController extends Controller
             $claims = (new GoogleRiscWebhookVerifier(
                 (string) config('social-auth.providers.google.client_id'),
             ))->verify($request->getContent());
+
+            if (! $this->isFirstDelivery('google', $claims['jti'])) {
+                return response()->json(null, 202);
+            }
 
             foreach ($claims['events'] as $eventType => $event) {
                 if (! is_array($event)) {
@@ -150,6 +162,11 @@ class SocialWebhookController extends Controller
                 $request->input('signature'),
             );
 
+            // The signature covers the user ID and timestamp, so it identifies one callback.
+            if (! $this->isFirstDelivery('naver', (string) $request->input('signature'))) {
+                return response()->noContent();
+            }
+
             $account = $this->accountService->findByProvider('naver', $providerId);
             if ($account !== null) {
                 event(new SocialAccountStatusChanged(
@@ -165,6 +182,19 @@ class SocialWebhookController extends Controller
         } catch (SocialAuthException) {
             return response()->json(['error' => 'invalid_request'], 400);
         }
+    }
+
+    /**
+     * Records a verified delivery and reports whether it was seen before. Call only after verification,
+     * so unverified requests cannot mark an ID as delivered.
+     */
+    private function isFirstDelivery(string $provider, string $deliveryId): bool
+    {
+        return Cache::add(
+            "social_auth.webhook_delivery.{$provider}.".hash('sha256', $deliveryId),
+            true,
+            now()->addDays(self::REPLAY_WINDOW_DAYS),
+        );
     }
 
     /**

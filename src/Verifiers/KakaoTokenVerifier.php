@@ -99,13 +99,12 @@ class KakaoTokenVerifier
 
     public function revoke(string $accessToken): bool
     {
-        $response = Http::asForm()
+        // Kakao unlink takes the user access token as a Bearer header and returns 200 with the user ID on success.
+        $response = Http::withToken($accessToken)
+            ->asForm()
             ->timeout(10)
-            ->post('https://kapi.kakao.com/v1/user/unlink', [
-                'access_token' => $accessToken,
-            ]);
+            ->post('https://kapi.kakao.com/v1/user/unlink');
 
-        // Kakao unlink can also use Admin key; access_token based unlink returns 200 on success
         return $response->successful();
     }
 }

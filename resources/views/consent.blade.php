@@ -205,7 +205,7 @@
                             @if($term['required'] ?? false) required @endif
                         >
                         <label for="social-auth-term-{{ $key }}">
-                            {{ $term['label'] }}
+                            {{ $term['label'] ?? (\Illuminate\Support\Facades\Lang::has('social-auth::views.consent.terms.'.$key) ? __('social-auth::views.consent.terms.'.$key) : $key) }}
                             <span class="social-auth-consent__badge">({{ ($term['required'] ?? false) ? __('social-auth::views.consent.required') : __('social-auth::views.consent.optional') }})</span>
                         </label>
                         @if(!empty($term['url']))

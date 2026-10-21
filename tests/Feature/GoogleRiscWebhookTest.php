@@ -94,6 +94,26 @@ class GoogleRiscWebhookTest extends TestCase
         });
     }
 
+    public function test_replayed_risc_event_is_dispatched_once(): void
+    {
+        Event::fake();
+        $set = $this->makeSet($this->generateKeyPair());
+        $deliver = fn () => $this->call(
+            'POST',
+            route('social-auth.webhooks.google'),
+            [],
+            [],
+            [],
+            ['CONTENT_TYPE' => 'application/secevent+jwt'],
+            $set,
+        );
+
+        $deliver()->assertStatus(202);
+        $deliver()->assertStatus(202);
+
+        Event::assertDispatchedTimes(SocialAccountStatusChanged::class, 1);
+    }
+
     public function test_invalid_risc_event_is_rejected(): void
     {
         $this->call(

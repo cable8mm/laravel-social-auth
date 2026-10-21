@@ -22,6 +22,7 @@ use Cable8mm\LaravelSocialAuth\Providers\NaverProvider;
 use Carbon\CarbonImmutable;
 use Illuminate\Contracts\Auth\StatefulGuard;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
@@ -165,7 +166,16 @@ class SocialLoginManager
 
         $providerUser = $this->hydrateProviderUser($pending);
 
-        return $this->finishRegistration($providerUser, $consents);
+        try {
+            return $this->finishRegistration($providerUser, $consents);
+        } catch (UniqueConstraintViolationException) {
+            // Another request registered this email or linked this provider account after the callback.
+            $this->clearPendingRegistration();
+
+            throw $this->accountService->findByProvider($providerUser->provider, $providerUser->providerId) !== null
+                ? SocialAuthException::accountAlreadyLinked($providerUser->provider)
+                : SocialAuthException::emailAlreadyRegistered();
+        }
     }
 
     /**
@@ -407,8 +417,14 @@ class SocialLoginManager
         array $consents,
         array $consentTimestamps = [],
     ): array {
-        // Double-check not linked in the meantime
-        $this->accountService->ensureNotLinkedToOtherUser($providerUser);
+        // Double-check not linked in the meantime; a pending registration for a linked account cannot complete.
+        try {
+            $this->accountService->ensureNotLinkedToOtherUser($providerUser);
+        } catch (SocialAuthException $e) {
+            $this->clearPendingRegistration();
+
+            throw $e;
+        }
 
         $user = DB::transaction(function () use ($providerUser, $consents, $consentTimestamps) {
             $user = $this->createUser($providerUser, $consents, $consentTimestamps);

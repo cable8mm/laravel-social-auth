@@ -39,6 +39,33 @@ class NaverDisconnectCallbackTest extends TestCase
         $this->assertDatabaseHas('users', ['id' => $user->id]);
     }
 
+    public function test_replayed_callback_does_not_remove_a_relinked_account(): void
+    {
+        $user = User::query()->create(['email' => 'user@example.com']);
+        $link = fn () => SocialAccount::query()->create([
+            'user_id' => $user->id,
+            'provider' => 'naver',
+            'provider_id' => 'naver-user-3',
+        ]);
+        $link();
+        $timestamp = (string) time();
+        $encryptedUniqueId = $this->encryptUniqueId('naver-user-3');
+        $callback = [
+            'clientId' => self::CLIENT_ID,
+            'encryptUniqueId' => $encryptedUniqueId,
+            'timestamp' => $timestamp,
+            'signature' => $this->signature($encryptedUniqueId, $timestamp),
+        ];
+
+        $this->post(route('social-auth.webhooks.naver'), $callback)->assertNoContent();
+        $this->assertDatabaseMissing('social_accounts', ['provider_id' => 'naver-user-3']);
+
+        $link();
+        $this->post(route('social-auth.webhooks.naver'), $callback)->assertNoContent();
+
+        $this->assertDatabaseHas('social_accounts', ['provider_id' => 'naver-user-3']);
+    }
+
     public function test_invalid_signature_is_rejected(): void
     {
         $encryptedUniqueId = $this->encryptUniqueId('naver-user-2');
