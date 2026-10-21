@@ -25,7 +25,6 @@ class SocialLoginController extends Controller
     public function nonce(Request $request): JsonResponse
     {
         $this->manager->rememberIntendedUrl($request->query('redirect'));
-        $this->rememberConnectingProvider($request);
 
         return response()->json(['nonce' => $this->manager->generateNonce()]);
     }
@@ -33,9 +32,10 @@ class SocialLoginController extends Controller
     public function state(Request $request): JsonResponse
     {
         $this->manager->rememberIntendedUrl($request->query('redirect'));
-        $this->rememberConnectingProvider($request);
+        $state = $this->manager->generateState();
+        $this->rememberConnectIntent($request, $state);
 
-        return response()->json(['state' => $this->manager->generateState()]);
+        return response()->json(['state' => $state]);
     }
 
     public function callback(Request $request, string $provider): View|RedirectResponse|JsonResponse
@@ -47,10 +47,13 @@ class SocialLoginController extends Controller
             ]);
         }
 
+        // Decided before the provider consumes the state: only a callback carrying the state issued for a connect is a connect.
+        $connecting = $this->isConnecting($request, $provider);
+
         try {
-            if ($this->isConnecting($provider)) {
+            if ($connecting) {
                 $account = $this->manager->connect($provider, $request->all(), Auth::user());
-                Session::forget(config('social-auth.session.connecting_provider', 'social_auth.connecting_provider'));
+                Session::forget($this->connectIntentKey());
 
                 if ($request->expectsJson()) {
                     return response()->json([
@@ -74,9 +77,8 @@ class SocialLoginController extends Controller
 
             return redirect()->to($result['redirect']);
         } catch (SocialAuthException $e) {
-            $connecting = $this->isConnecting($provider);
             if ($connecting) {
-                Session::forget(config('social-auth.session.connecting_provider', 'social_auth.connecting_provider'));
+                Session::forget($this->connectIntentKey());
             } else {
                 event(new SocialLoginFailed($provider, $e->failureReason(), $e));
             }
@@ -93,23 +95,38 @@ class SocialLoginController extends Controller
         }
     }
 
-    private function rememberConnectingProvider(Request $request): void
+    /**
+     * Redirect-based providers come back to the callback, so a connect is recognised by the state issued for it.
+     * Any new state replaces the intent, so a later login state can never be mistaken for a connect.
+     */
+    private function rememberConnectIntent(Request $request, string $state): void
     {
         $provider = $request->query('provider');
 
         if ($request->query('context') !== 'connect' || ! Auth::check() || ! is_string($provider) || $provider === '') {
+            Session::forget($this->connectIntentKey());
+
             return;
         }
 
-        Session::put(
-            config('social-auth.session.connecting_provider', 'social_auth.connecting_provider'),
-            $provider,
-        );
+        Session::put($this->connectIntentKey(), ['provider' => $provider, 'state' => $state]);
     }
 
-    private function isConnecting(string $provider): bool
+    private function isConnecting(Request $request, string $provider): bool
     {
+        $intent = Session::get($this->connectIntentKey());
+        $state = $request->input('state');
+
         return Auth::check()
-            && Session::get(config('social-auth.session.connecting_provider', 'social_auth.connecting_provider')) === $provider;
+            && is_array($intent)
+            && ($intent['provider'] ?? null) === $provider
+            && is_string($intent['state'] ?? null)
+            && is_string($state)
+            && hash_equals($intent['state'], $state);
+    }
+
+    private function connectIntentKey(): string
+    {
+        return config('social-auth.session.connect_intent', 'social_auth.connect_intent');
     }
 }
