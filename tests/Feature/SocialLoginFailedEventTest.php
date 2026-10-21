@@ -146,6 +146,7 @@ class SocialLoginFailedEventTest extends TestCase
         ]);
 
         Http::fake([
+            // Shape from Naver's profile API reference (/v1/nid/me); the live Naver login check ran against this API.
             'https://openapi.naver.com/v1/nid/me' => Http::response([
                 'resultcode' => '00',
                 'response' => [
@@ -153,6 +154,7 @@ class SocialLoginFailedEventTest extends TestCase
                     'email' => 'naver-missing@example.com',
                 ],
             ]),
+            // Shape from Naver Login Plus agreement API reference (/v1/nid/agreement); no live response recorded yet.
             'https://openapi.naver.com/v1/nid/agreement' => Http::response([
                 'result' => 'success',
                 'agreementInfos' => [

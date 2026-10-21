@@ -113,6 +113,11 @@ class SocialAuthException extends Exception
         return self::message('already_connected', ['provider' => ProviderLabel::for($provider)]);
     }
 
+    public static function notConnected(string $provider): self
+    {
+        return self::message('not_connected', ['provider' => ProviderLabel::for($provider)]);
+    }
+
     public static function cannotDisconnectLastMethod(): self
     {
         return self::message('cannot_disconnect_last_method');

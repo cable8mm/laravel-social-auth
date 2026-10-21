@@ -270,7 +270,7 @@ class SocialLoginManager
         $account = $this->accountService->findForUser($user, $providerName);
 
         if ($account === null) {
-            throw SocialAuthException::providerNotFound($providerName);
+            throw SocialAuthException::notConnected($providerName);
         }
 
         if (! $this->accountService->canDisconnect($user, $account)) {

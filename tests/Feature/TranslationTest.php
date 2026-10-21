@@ -58,6 +58,11 @@ class TranslationTest extends TestCase
                 'You already have a Naver account connected.',
                 '이미 네이버 계정이 연결되어 있습니다.',
             ],
+            'notConnected' => [
+                fn () => SocialAuthException::notConnected('kakao'),
+                'Your Kakao account is not connected.',
+                '카카오 계정이 연결되어 있지 않습니다.',
+            ],
             'cannotDisconnectLastMethod' => [
                 fn () => SocialAuthException::cannotDisconnectLastMethod(),
                 'Cannot disconnect the last login method. Please set a password or connect another account first.',

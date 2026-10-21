@@ -40,7 +40,6 @@ return [
             'client_secret' => env('GOOGLE_CLIENT_SECRET'), // optional for GIS JWT flow
             'one_tap' => (bool) env('GOOGLE_ONE_TAP', false),
             'js_sdk_url' => 'https://accounts.google.com/gsi/client',
-            'scopes' => ['openid', 'email', 'profile'],
             'name_mapping' => 'name', // maps provider name field → users.name
             'nickname_mapping' => null, // use nickname generator
         ],
@@ -52,7 +51,6 @@ return [
             'client_secret' => env('KAKAO_CLIENT_SECRET'),
             'redirect' => env('KAKAO_REDIRECT_URI'),
             'js_sdk_url' => 'https://t1.kakaocdn.net/kakao_js_sdk/2.7.2/kakao.min.js',
-            'scopes' => ['profile_nickname', 'account_email'],
             'name_mapping' => null, // Kakao name is not auto-mapped
             'nickname_mapping' => null,
         ],
@@ -63,7 +61,6 @@ return [
             'client_secret' => env('NAVER_CLIENT_SECRET'),
             'redirect' => env('NAVER_REDIRECT_URI'),
             'js_sdk_url' => 'https://static.nid.naver.com/js/naveridlogin_js_sdk_2.0.2.js',
-            'scopes' => [],
             'name_mapping' => 'name',
             'nickname_mapping' => 'nickname',
         ],
@@ -80,7 +77,6 @@ return [
             'private_key' => env('APPLE_PRIVATE_KEY'),
             'redirect' => env('APPLE_REDIRECT_URI'),
             'js_sdk_url' => 'https://appleid.cdn-apple.com/appleauth/static/jsapi/appleid/1/en_US/appleid.auth.js',
-            'scopes' => ['name', 'email'],
             'name_mapping' => 'name',
             'nickname_mapping' => null,
         ],
@@ -113,10 +109,6 @@ return [
         'prefix' => 'social-auth',
         'middleware' => ['web'],
         'webhook_middleware' => [],
-        'callback' => '{provider}/callback',
-        'consent' => 'consent',
-        'connect' => '{provider}/connect',
-        'disconnect' => '{provider}/disconnect',
     ],
 
     'webhooks' => [
@@ -161,11 +153,6 @@ return [
                     'privacy_policy' => env('NAVER_PRIVACY_POLICY_CODE'),
                     'marketing' => env('NAVER_MARKETING_CODE'),
                 ],
-            ],
-            // Reserved for a future Kakao Sync implementation.
-            'kakao' => [
-                'enabled' => false,
-                'term_codes' => [],
             ],
         ],
         'user_fields' => [

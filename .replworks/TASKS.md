@@ -109,6 +109,6 @@ Sensitive: touches how an authenticated callback is told apart from login/sign-u
 
 ### Cleanup
 
-- [ ] Remove unused code/config: `Blade::componentNamespace('...\View\Components')` (directory does not exist), `routes.callback/consent/connect/disconnect`, `providers.*.scopes`, reserved `consent.providers.kakao`, the first `if` in `SocialAccountService::canDisconnect` (covered by the second)
-- [ ] Small fixes: `(int)` user-key casts in `SocialAccountService::ensureNotLinkedToOtherUser` break UUID/ULID users; `disconnect` of an unlinked provider throws `providerNotFound`; `updateTokens` skips profile refresh when `store_tokens=false`; `loginUser` always sets remember=true; Workbench comment says "OAuth App" for GitHub
-- [ ] Tests: annotate the source of the Naver profile/agreement/token-delete fakes (MOCK_RULES); drop overlap between the two last-login-method tests and between `test_nonce_and_state_generation` and the route tests
+- [x] Remove unused code/config: `Blade::componentNamespace('...\View\Components')` (directory does not exist), `routes.callback/consent/connect/disconnect`, `providers.*.scopes`, reserved `consent.providers.kakao`, the first `if` in `SocialAccountService::canDisconnect` (covered by the second)
+- [x] Small fixes (`loginUser`'s remember=true stays: SNS logins are expected to stay signed in, decided 2026-10-22): `(int)` user-key casts in `SocialAccountService::ensureNotLinkedToOtherUser` break UUID/ULID users; `disconnect` of an unlinked provider throws `providerNotFound`; `updateTokens` skips profile refresh when `store_tokens=false`; Workbench comment says "OAuth App" for GitHub
+- [x] Tests: annotate the source of the Naver profile/agreement/token-delete fakes (MOCK_RULES); drop overlap between the two last-login-method tests and between `test_nonce_and_state_generation` and the route tests

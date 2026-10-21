@@ -10,6 +10,7 @@ return [
     'provider_request_failed' => 'Verification failed for provider [:provider]',
     'account_already_linked' => 'This :provider account is already linked to another user.',
     'already_connected' => 'You already have a :provider account connected.',
+    'not_connected' => 'Your :provider account is not connected.',
     'cannot_disconnect_last_method' => 'Cannot disconnect the last login method. Please set a password or connect another account first.',
     'consent_required' => 'You must accept the required terms and conditions to complete registration.',
     'email_already_registered' => 'This email address is already registered. Sign in to your existing account, then connect this social account from your profile.',
