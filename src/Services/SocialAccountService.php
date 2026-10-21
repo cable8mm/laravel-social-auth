@@ -68,20 +68,22 @@ class SocialAccountService
 
     public function updateTokens(SocialAccount $account, ProviderUser $providerUser): void
     {
-        if (! config('social-auth.store_tokens', true)) {
-            return;
-        }
-
-        $account->update([
-            'access_token' => $providerUser->accessToken,
-            'refresh_token' => $providerUser->refreshToken,
-            'token_expires_at' => $providerUser->tokenExpiresAt,
+        $attributes = [
             'email' => $providerUser->email ?? $account->email,
             'name' => $providerUser->name ?? $account->name,
             'nickname' => $providerUser->nickname ?? $account->nickname,
             'avatar' => $providerUser->avatar ?? $account->avatar,
             'raw' => $providerUser->raw,
-        ]);
+        ];
+
+        // The profile is refreshed on every login; tokens only when the application stores them.
+        if (config('social-auth.store_tokens', true)) {
+            $attributes['access_token'] = $providerUser->accessToken;
+            $attributes['refresh_token'] = $providerUser->refreshToken;
+            $attributes['token_expires_at'] = $providerUser->tokenExpiresAt;
+        }
+
+        $account->update($attributes);
     }
 
     public function clearTokens(SocialAccount $account): void
@@ -106,13 +108,12 @@ class SocialAccountService
             return;
         }
 
-        if ($currentUser !== null && (int) $existing->user_id === (int) $currentUser->getKey()) {
+        // Compared as strings so UUID/ULID user keys work as well as integer keys.
+        if ($currentUser !== null && (string) $existing->user_id === (string) $currentUser->getKey()) {
             throw SocialAuthException::alreadyConnected($providerUser->provider);
         }
 
-        if ($currentUser === null || (int) $existing->user_id !== (int) $currentUser->getKey()) {
-            throw SocialAuthException::accountAlreadyLinked($providerUser->provider);
-        }
+        throw SocialAuthException::accountAlreadyLinked($providerUser->provider);
     }
 
     public function canDisconnect(Model $user, SocialAccount $account): bool
@@ -121,20 +122,8 @@ class SocialAccountService
             return true;
         }
 
-        $password = $user->getAttribute('password');
-        $email = $user->getAttribute('email');
-        $accountsCount = $this->listForUser($user)->count();
-
-        // Reject if this is the only login method
-        if (empty($password) && empty($email) && $accountsCount <= 1) {
-            return false;
-        }
-
-        // Also reject if password is empty and only one social account remains
-        if (empty($password) && $accountsCount <= 1) {
-            return false;
-        }
-
-        return true;
+        // An email alone cannot log in, so without a password the last social account is the only login method.
+        return ! empty($user->getAttribute('password'))
+            || $this->listForUser($user)->count() > 1;
     }
 }

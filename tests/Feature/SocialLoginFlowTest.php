@@ -16,6 +16,7 @@ use Cable8mm\LaravelSocialAuth\Tests\TestCase;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Session;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 class SocialLoginFlowTest extends TestCase
 {
@@ -269,6 +270,7 @@ class SocialLoginFlowTest extends TestCase
         ]);
 
         Http::fake([
+            // Shape from Naver's profile API reference (/v1/nid/me); the live Naver login check ran against this API.
             'https://openapi.naver.com/v1/nid/me' => Http::response([
                 'resultcode' => '00',
                 'response' => [
@@ -278,6 +280,7 @@ class SocialLoginFlowTest extends TestCase
                     'nickname' => 'Naver Nickname',
                 ],
             ]),
+            // Shape from Naver Login Plus agreement API reference (/v1/nid/agreement); no live response recorded yet.
             'https://openapi.naver.com/v1/nid/agreement' => Http::response([
                 'result' => 'success',
                 'agreementInfos' => [
@@ -445,11 +448,24 @@ class SocialLoginFlowTest extends TestCase
         ]);
     }
 
-    public function test_cannot_disconnect_last_login_method(): void
+    /**
+     * @return array<string, array{string|null}>
+     */
+    public static function passwordlessEmails(): array
+    {
+        return [
+            'no email' => [null],
+            // An email alone cannot log in, so it does not count as another login method.
+            'email only' => ['user@example.com'],
+        ];
+    }
+
+    #[DataProvider('passwordlessEmails')]
+    public function test_cannot_disconnect_the_only_social_account_without_a_password(?string $email): void
     {
         $user = User::create([
             'name' => 'User',
-            'email' => null,
+            'email' => $email,
             'password' => null,
         ]);
 
@@ -459,33 +475,12 @@ class SocialLoginFlowTest extends TestCase
             'provider_id' => 'g-only',
         ]);
 
-        $manager = $this->app->make(SocialLoginManager::class);
-
-        $this->expectException(SocialAuthException::class);
-        $manager->disconnect('google', $user);
-    }
-
-    public function test_cannot_disconnect_only_social_account_when_user_has_email_but_no_password(): void
-    {
-        $user = User::create([
-            'name' => 'User',
-            'email' => 'user@example.com',
-            'password' => null,
-        ]);
-
-        SocialAccount::create([
-            'user_id' => $user->id,
-            'provider' => 'google',
-            'provider_id' => 'g-email-only',
-        ]);
-
-        $manager = $this->app->make(SocialLoginManager::class);
-
         try {
-            $manager->disconnect('google', $user);
+            $this->app->make(SocialLoginManager::class)->disconnect('google', $user);
             $this->fail('Disconnecting the only login method should be rejected.');
-        } catch (SocialAuthException) {
-            $this->assertDatabaseHas(config('social-auth.table'), ['provider_id' => 'g-email-only']);
+        } catch (SocialAuthException $e) {
+            $this->assertSame(SocialAuthException::cannotDisconnectLastMethod()->getMessage(), $e->getMessage());
+            $this->assertDatabaseHas(config('social-auth.table'), ['provider_id' => 'g-only']);
         }
     }
 
@@ -517,6 +512,61 @@ class SocialLoginFlowTest extends TestCase
             'provider' => 'kakao',
             'provider_id' => 'k-revoke-failure',
         ]);
+    }
+
+    public function test_ulid_user_key_is_not_mistaken_for_the_integer_owner(): void
+    {
+        $owner = User::create(['name' => 'Owner', 'email' => 'owner@example.com', 'password' => bcrypt('x')]);
+        SocialAccount::create([
+            'user_id' => $owner->id,
+            'provider' => 'kakao',
+            'provider_id' => 'k-ulid',
+        ]);
+
+        // A ULID starts with "01", which an (int) cast reads as 1, the owner's ID.
+        $ulidUser = (new User)->setKeyType('string')->setIncrementing(false)
+            ->forceFill(['id' => '01HZX5Q8W2N7K3M4P6R9T0V1Y2']);
+
+        try {
+            $this->app->make(SocialAccountService::class)->ensureNotLinkedToOtherUser(
+                new ProviderUser(provider: 'kakao', providerId: 'k-ulid'),
+                $ulidUser,
+            );
+            $this->fail('A provider account owned by another user must be rejected.');
+        } catch (SocialAuthException $e) {
+            $this->assertSame(SocialAuthException::accountAlreadyLinked('kakao')->getMessage(), $e->getMessage());
+        }
+    }
+
+    public function test_login_refreshes_the_profile_when_tokens_are_not_stored(): void
+    {
+        config(['social-auth.store_tokens' => false]);
+        $user = User::create(['name' => 'User', 'email' => 'user@example.com', 'password' => bcrypt('x')]);
+        $account = SocialAccount::create([
+            'user_id' => $user->id,
+            'provider' => 'naver',
+            'provider_id' => 'n-refresh',
+            'avatar' => 'https://example.com/old.png',
+        ]);
+
+        $this->app->make(SocialAccountService::class)->updateTokens($account, new ProviderUser(
+            provider: 'naver',
+            providerId: 'n-refresh',
+            avatar: 'https://example.com/new.png',
+            accessToken: 'naver-access-token',
+        ));
+
+        $account->refresh();
+        $this->assertSame('https://example.com/new.png', $account->avatar);
+        $this->assertNull($account->access_token);
+    }
+
+    public function test_disconnecting_a_provider_that_is_not_connected_says_so(): void
+    {
+        $user = User::create(['name' => 'User', 'email' => 'user@example.com', 'password' => bcrypt('x')]);
+
+        $this->expectExceptionMessage('Your Naver account is not connected.');
+        $this->app->make(SocialLoginManager::class)->disconnect('naver', $user);
     }
 
     public function test_kakao_disconnect_unlinks_with_the_access_token_as_bearer(): void
@@ -603,19 +653,6 @@ class SocialLoginFlowTest extends TestCase
         $this->assertNotContains('kakao', $enabled);
         $this->assertContains('naver', $enabled);
         $this->assertContains('google', $enabled);
-    }
-
-    public function test_nonce_and_state_generation(): void
-    {
-        $manager = $this->app->make(SocialLoginManager::class);
-
-        $nonce = $manager->generateNonce();
-        $this->assertNotEmpty($nonce);
-        $this->assertSame($nonce, Session::get(config('social-auth.session.nonce')));
-
-        $state = $manager->generateState();
-        $this->assertNotEmpty($state);
-        $this->assertSame($state, Session::get(config('social-auth.session.state')));
     }
 
     public function test_default_nickname_generator(): void

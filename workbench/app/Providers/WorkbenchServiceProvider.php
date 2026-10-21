@@ -80,7 +80,7 @@ class WorkbenchServiceProvider extends ServiceProvider
             'social-auth.consent.providers.naver.term_codes.marketing',
             $env('NAVER_MARKETING_CODE', ''),
         );
-        // GitHub is enabled only for live verification, when real OAuth App keys are present.
+        // GitHub is enabled only for live verification, when real GitHub App keys are present.
         if ($env('GITHUB_CLIENT_ID', '') !== '' && $env('GITHUB_CLIENT_SECRET', '') !== '') {
             Config::set('social-auth.providers.github.enabled', true);
             Config::set('social-auth.providers.github.client_id', $env('GITHUB_CLIENT_ID', ''));

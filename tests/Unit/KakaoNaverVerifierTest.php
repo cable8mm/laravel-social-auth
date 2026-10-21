@@ -92,6 +92,7 @@ class KakaoNaverVerifierTest extends TestCase
     public function test_naver_profile_success(): void
     {
         Http::fake([
+            // Shape from Naver's profile API reference (/v1/nid/me); the live Naver login check ran against this API.
             'https://openapi.naver.com/v1/nid/me' => Http::response([
                 'resultcode' => '00',
                 'message' => 'success',
@@ -116,6 +117,7 @@ class KakaoNaverVerifierTest extends TestCase
     public function test_naver_no_email(): void
     {
         Http::fake([
+            // Shape from Naver's profile API reference (/v1/nid/me); the live Naver login check ran against this API.
             'https://openapi.naver.com/v1/nid/me' => Http::response([
                 'resultcode' => '00',
                 'message' => 'success',
@@ -134,6 +136,7 @@ class KakaoNaverVerifierTest extends TestCase
     public function test_naver_invalid_token_fails(): void
     {
         Http::fake([
+            // Shape from Naver's profile API reference (/v1/nid/me); the live Naver login check ran against this API.
             'https://openapi.naver.com/v1/nid/me' => Http::response([
                 'resultcode' => '024',
                 'message' => 'Authentication failed',
@@ -148,6 +151,7 @@ class KakaoNaverVerifierTest extends TestCase
     public function test_naver_service_agreements_are_keyed_by_term_code(): void
     {
         Http::fake([
+            // Shape from Naver Login Plus agreement API reference (/v1/nid/agreement); no live response recorded yet.
             'https://openapi.naver.com/v1/nid/agreement' => Http::response([
                 'result' => 'success',
                 'accessToken' => 'naver-access-token',
@@ -173,6 +177,7 @@ class KakaoNaverVerifierTest extends TestCase
     public function test_naver_invalid_service_agreement_response_fails(): void
     {
         Http::fake([
+            // Shape from Naver Login Plus agreement API reference (/v1/nid/agreement); no live response recorded yet.
             'https://openapi.naver.com/v1/nid/agreement' => Http::response([
                 'result' => 'failure',
             ], 200),

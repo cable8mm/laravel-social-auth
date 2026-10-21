@@ -523,6 +523,7 @@ publish된 파일은 `lang/vendor/social-auth/{locale}/`에 생성됩니다. 바
 | `provider_request_failed`       | `providerRequestFailed()`                       | `:provider` |
 | `account_already_linked`        | `accountAlreadyLinked()`                        | `:provider` |
 | `already_connected`             | `alreadyConnected()`                            | `:provider` |
+| `not_connected`                 | `notConnected()`                                | `:provider` |
 | `cannot_disconnect_last_method` | `cannotDisconnectLastMethod()`                  |             |
 | `consent_required`              | `consentRequired()`                             |             |
 | `email_already_registered`      | `emailAlreadyRegistered()`                      |             |

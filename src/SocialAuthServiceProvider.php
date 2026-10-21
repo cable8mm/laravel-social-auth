@@ -110,8 +110,6 @@ class SocialAuthServiceProvider extends ServiceProvider
             ], 'social-auth-user-columns');
         }
 
-        Blade::componentNamespace('Cable8mm\\LaravelSocialAuth\\View\\Components', 'social-auth');
-
         // Register anonymous Blade components from package views
         Blade::anonymousComponentPath(dirname(__DIR__).'/resources/views/components', 'social-auth');
     }
