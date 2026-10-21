@@ -46,16 +46,19 @@ class NaverTokenVerifier
         return $body['response'];
     }
 
+    /**
+     * Naver Token Revocation (RFC 7009). Revoking the access token also revokes its refresh token.
+     * Success is HTTP 200 with no body; failures carry error/error_description with a 4xx/5xx status.
+     */
     public function revoke(string $accessToken, string $clientId, string $clientSecret): bool
     {
         $response = Http::asForm()
             ->timeout(10)
-            ->post('https://nid.naver.com/oauth2.0/token', [
-                'grant_type' => 'delete',
+            ->post('https://nid.naver.com/oauth2.0/revoke', [
                 'client_id' => $clientId,
                 'client_secret' => $clientSecret,
-                'access_token' => $accessToken,
-                'service_provider' => 'NAVER',
+                'token' => $accessToken,
+                'token_type_hint' => 'access_token',
             ]);
 
         return $response->successful();

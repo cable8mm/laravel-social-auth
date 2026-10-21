@@ -653,7 +653,7 @@ class SocialLoginFlowTest extends TestCase
         Event::assertDispatched(SocialAccountDisconnected::class, fn ($event) => $event->remoteRevoked);
     }
 
-    public function test_naver_disconnect_deletes_the_token_with_client_credentials(): void
+    public function test_naver_disconnect_revokes_the_token_with_client_credentials(): void
     {
         Event::fake([SocialAccountDisconnected::class]);
 
@@ -670,20 +670,44 @@ class SocialLoginFlowTest extends TestCase
             'access_token' => 'naver-access-token',
         ]);
 
-        // Only the HTTP status is read; no body shape is assumed.
+        // Naver login dev guide 4.3 Token Revocation: success is HTTP 200 with no body.
         Http::fake([
-            'https://nid.naver.com/oauth2.0/token' => Http::response(),
+            'https://nid.naver.com/oauth2.0/revoke' => Http::response(),
         ]);
 
         $this->app->make(SocialLoginManager::class)->disconnect('naver', $user);
 
-        Http::assertSent(fn ($request) => $request->url() === 'https://nid.naver.com/oauth2.0/token'
-            && $request['grant_type'] === 'delete'
+        Http::assertSent(fn ($request) => $request->url() === 'https://nid.naver.com/oauth2.0/revoke'
             && $request['client_id'] === 'test-naver-client-id'
             && $request['client_secret'] === 'test-naver-secret'
-            && $request['access_token'] === 'naver-access-token'
-            && $request['service_provider'] === 'NAVER');
+            && $request['token'] === 'naver-access-token'
+            && $request['token_type_hint'] === 'access_token');
         Event::assertDispatched(SocialAccountDisconnected::class, fn ($event) => $event->remoteRevoked);
+    }
+
+    public function test_naver_revoke_failure_still_removes_the_local_account(): void
+    {
+        Event::fake([SocialAccountDisconnected::class]);
+        $user = User::create(['name' => 'User', 'email' => 'user@example.com', 'password' => bcrypt('secret')]);
+        SocialAccount::create([
+            'user_id' => $user->id,
+            'provider' => 'naver',
+            'provider_id' => 'naver-revoke-failure',
+            'access_token' => 'naver-access-token',
+        ]);
+
+        // Naver login dev guide 4.3 Token Revocation: failed client authentication.
+        Http::fake([
+            'https://nid.naver.com/oauth2.0/revoke' => Http::response([
+                'error' => 'unauthorized_client',
+                'error_description' => 'Client authentication failed.',
+            ], 401),
+        ]);
+
+        $this->app->make(SocialLoginManager::class)->disconnect('naver', $user);
+
+        $this->assertDatabaseMissing(config('social-auth.table'), ['provider_id' => 'naver-revoke-failure']);
+        Event::assertDispatched(SocialAccountDisconnected::class, fn ($event) => ! $event->remoteRevoked);
     }
 
     public function test_enabled_providers_order(): void

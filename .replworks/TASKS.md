@@ -60,6 +60,7 @@ Validation note: the local PHPUnit, Dusk, Pint, Composer checks, and manual live
 
 - [ ] Verify the Kakao account status webhook against the live Kakao webhook test tool using a public HTTPS endpoint
 - [ ] Verify the Naver disconnect callback against Naver's live callback delivery using a public HTTPS endpoint
+- [ ] Live-verify Naver disconnect from the profile with `/oauth2.0/revoke` (expect `remote_revoked: true` and the app gone from Naver's connected services)
 - [ ] Register and verify Google RISC delivery against a public HTTPS endpoint using the Google RISC verification stream
 - [ ] Register and verify Apple Server-to-Server Notification delivery against a public HTTPS endpoint
 - [x] Live-verify connect from the profile on the Workbench after the connect-intent fix: Google (via `POST /google/connect`), Kakao, Naver, GitHub; and a Kakao connect with a second profile tab opened mid-flow (2026-10-22: all four connected to the signed-in user, no extra user created; Kakao reconnect completed with a second tab opened mid-flow)
@@ -77,7 +78,8 @@ Findings from a read-only review of `main` at 073d752. Each fix task includes th
 - [x] Translate consent term labels: `consent.required_terms.*.label` / `optional_terms.*.label` are Korean strings in config and rendered raw, so `en` apps show Korean. Use `social-auth::views` keys, config label as an optional override (`config/social-auth.php:178-190`, `resources/views/consent.blade.php:208`)
 - [x] Consent completion failures: a `UniqueConstraintViolationException` on `(provider, provider_id)` is reported as "email already registered" and redirects to the intended URL instead of `redirects.failure`; `accountAlreadyLinked` from `finishRegistration` returns to the consent screen with the pending registration still in session (`src/Http/Controllers/SocialAuth/SocialRegistrationController.php:59-76`)
 - [x] Webhook replay: remember verified Kakao/Google SET `jti` and Naver disconnect `signature` for 30 days and ignore repeats (`src/Verifiers/NaverDisconnectCallbackVerifier.php:33`, `KakaoAccountStatusWebhookVerifier`, `GoogleRiscWebhookVerifier`)
-- [ ] Naver disconnect `timestamp` freshness window: blocked until a live callback confirms the timestamp unit (seconds vs milliseconds); see Remaining
+- [x] Naver disconnect `timestamp` freshness window: Unix seconds per Naver's login dev guide 4.4.1 (found 2026-10-22); reject more than 5 minutes from the server clock
+- [x] Naver revoke: the dev guide's 4.3 Token Revocation documents `POST /oauth2.0/revoke` (`token`, `token_type_hint`, 200 with no body); the old `grant_type=delete` call on `/oauth2.0/token` is no longer documented. Switched, with success and failure tests
 - [x] Naver callback page shows `error_description` from the URL; show only the generic translated message (`resources/views/naver-callback.blade.php:80`)
 
 ### Fix after choosing the approach

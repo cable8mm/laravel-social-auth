@@ -594,6 +594,7 @@ SocialAuth::generateNonce();
 - 토큰 로그 금지, raw 민감 필드 제거
 - session regenerate, rate limit
 - 웹훅: 검증된 Kakao/Google SET의 `jti`와 Naver 연결 끊기 callback의 `signature`를 30일간 기억해 같은 전달이 다시 오면 무시
+- Naver 연결 끊기 callback: `timestamp`(Unix 초)가 서버 시각과 5분 넘게 차이 나면 거부. Naver는 callback을 한 번만 보내고 재시도하지 않으므로 서버 시각이 맞아야 합니다
 - 토큰은 암호화되어 저장되며, 연결 해제 시 provider 원격 revoke를 시도한 뒤 로컬 연결을 삭제
 
 ## 테스트

@@ -27,7 +27,7 @@ Google, Kakao, Naver, Apple, GitHub 로그인을 하나의 Laravel 패키지에�
 - 이메일이 응답에 있으면 로컬 email 인증 완료로 처리, 없으면 로컬 email은 null
 - 이름과 닉네임 매핑은 설정 가능해야 함
 - Naver 연결 끊기 Callback을 검증하고 외부 연결 해제 시 로컬 Naver SNS 연결만 제거함. 로컬 사용자 삭제는 애플리케이션 정책으로 남김
-- 연결 해제 시 저장된 access token으로 Naver 토큰 삭제(remote revoke)를 시도함
+- 연결 해제 시 저장된 access token으로 Naver 토큰 폐기(Token Revocation, remote revoke)를 시도함
 
 ### Apple
 

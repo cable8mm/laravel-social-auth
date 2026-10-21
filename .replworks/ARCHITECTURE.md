@@ -13,6 +13,7 @@
 - Kakao JS SDK — browser runtime, app-switch vs web fallback behavior
 - Naver profile API (https://openapi.naver.com/v1/nid/me)
 - Naver Login Plus agreement API (https://openapi.naver.com/v1/nid/agreement)
+- Naver token revocation (https://nid.naver.com/oauth2.0/revoke)
 - Naver disconnect callback (encrypted user ID + HMAC-SHA256)
 - Naver JS SDK — browser runtime, app-switch vs web fallback behavior
 - Apple authorization/token/revoke endpoints (https://appleid.apple.com)
@@ -36,7 +37,7 @@ Any code calling these directly requires a live observation before a correspondi
 - `GoogleProvider` / `KakaoProvider` / `NaverProvider` / `AppleProvider` / `GitHubProvider` — `verify()` checks the session nonce (Google, Apple) and/or OAuth state (Kakao, Naver, GitHub, Apple), then delegates to the provider's verifier. `NaverProvider::withProviderConsent()` adds Login Plus agreements when provider-managed consent is enabled.
 - `GoogleCredentialVerifier` — JWT signature (via JWKS), issuer, audience, expiry, subject, nonce.
 - `KakaoTokenVerifier` — authorization code -> token exchange, profile fetch, and unlink revoke (`Authorization: Bearer`).
-- `NaverTokenVerifier` — access token -> profile fetch, resultcode check, optional Login Plus agreement lookup, and token-delete revoke.
+- `NaverTokenVerifier` — access token -> profile fetch, resultcode check, optional Login Plus agreement lookup, and token revocation (`POST /oauth2.0/revoke` with `token_type_hint=access_token`; revoking the access token also revokes its refresh token).
 - `AppleTokenVerifier` — authorization code exchange, client-secret JWT generation, identity-token verification, and revoke.
 - `GitHubTokenVerifier` — authorization code -> token exchange (GitHub returns OAuth errors with HTTP 200, so an `error` body is treated as a failure), user and email-list fetch, refresh-token exchange, and grant-delete revoke (HTTP Basic auth with client ID/secret).
 - `ProviderUser` (`Data\`) — normalized, already-sanitized DTO returned by every provider. Its `toArray()` is the pending registration kept in the session between callback and consent completion; no `User` row exists until consent succeeds.
@@ -54,7 +55,7 @@ Any code calling these directly requires a live observation before a correspondi
 - `SocialWebhookController` — Kakao account-status, Google RISC, Apple server-to-server, and Naver disconnect endpoints: verifies each delivery, ignores replays, dispatches `SocialAccountStatusChanged`, and applies the safe default token/connection cleanup.
 - `KakaoAccountStatusWebhookVerifier` — verifies Kakao account-status SET signatures with Kakao's JWKS, issuer, audience, and event structure.
 - `GoogleRiscWebhookVerifier` — verifies Google RISC SET signatures, issuer, audience, and event structure.
-- `NaverDisconnectCallbackVerifier` — verifies the client ID, HMAC signature, and decrypts Naver's AES-128-CBC user identifier.
+- `NaverDisconnectCallbackVerifier` — verifies the client ID, HMAC signature, and timestamp window, and decrypts Naver's AES-128-CBC user identifier.
 - `AppleServerNotificationVerifier` — verifies Apple signed notification JWS signatures with Apple's JWKS, issuer, audience, and event structure.
 - Blade — anonymous components `x-social-auth::buttons`, `button`, `one-tap`, `connected-accounts`, and the `consent` and `naver-callback` views; styled only with Tailwind CSS utility classes from the host application's build.
 
@@ -101,7 +102,7 @@ Reject if `protect_last_login_method` is true and this is the user's only login 
 - **Google RISC**: verifies signed historical security event tokens with Google's JWKS, issuer, and the configured Google client ID as audience. The package dispatches events; application listeners own session termination and account protection.
 - **Kakao / Naver**: standard OAuth `state` parameter, minted the same way, compared on callback before any token exchange call is made.
 - **Kakao account status webhook**: verifies SET RS256 signature with Kakao JWKS, issuer, audience, and event structure before dispatching or mutating a local social account.
-- **Naver disconnect callback**: verifies the client ID and HMAC-SHA256 signature before decrypting the AES-128-CBC user identifier and removing its local social account.
+- **Naver disconnect callback**: verifies the client ID and HMAC-SHA256 signature, then rejects a `timestamp` more than 5 minutes from the server clock (Unix seconds per Naver's login dev guide 4.4.1; Naver sends the callback once and never retries), before decrypting the AES-128-CBC user identifier and removing its local social account.
 - **Webhook replay**: after verification, `SocialWebhookController` remembers each Kakao/Google SET `jti` and each Naver disconnect `signature` in the cache for 30 days; a repeated delivery gets the normal success response and changes nothing.
 - **GitHub**: standard OAuth `state`, minted the same way, compared on callback before any token exchange call is made. The browser is redirected to GitHub's authorize URL (no JS SDK); GitHub redirects back to the callback with `code` and `state` via GET.
 - **Apple**: standard OAuth `state` plus an ID-token `nonce`, both compared on callback before accepting the identity. A callback whose session holds no nonce is rejected before the code exchange.
