@@ -62,3 +62,37 @@ Validation note: the local PHPUnit, Dusk, Pint, Composer checks, and manual live
 - [ ] Verify the Naver disconnect callback against Naver's live callback delivery using a public HTTPS endpoint
 - [ ] Register and verify Google RISC delivery against a public HTTPS endpoint using the Google RISC verification stream
 - [ ] Register and verify Apple Server-to-Server Notification delivery against a public HTTPS endpoint
+
+## Code review (2026-10-22)
+
+Findings from a read-only review of `main` at 073d752. Each fix task includes the test that would have caught it.
+
+### Fix
+
+- [ ] Require the Google nonce: `GoogleProvider::verify` passes `null` when the session has no nonce and `GoogleCredentialVerifier::verify` then skips the check, so a leaked credential can be replayed from a session that never called `/nonce`. Reject a missing session nonce with `invalidNonce()`; add a callback test without a session nonce (`src/Providers/GoogleProvider.php:27`, `src/Verifiers/GoogleCredentialVerifier.php:48`)
+- [ ] Require the Apple nonce the same way; `sub` comes from the browser id_token, so a valid state plus any code plus another user's id_token passes today. Add Apple callback tests for missing/mismatched nonce (`src/Providers/AppleProvider.php:33`, `src/Verifiers/AppleTokenVerifier.php:86`)
+- [ ] Send the Kakao unlink access token as `Authorization: Bearer` (Kakao REST docs), not as a form field; remote revoke always fails today. Add a success test with `Http::assertSent` on the header; add a request-shape test for Naver revoke too (`src/Verifiers/KakaoTokenVerifier.php:100`)
+- [ ] Translate consent term labels: `consent.required_terms.*.label` / `optional_terms.*.label` are Korean strings in config and rendered raw, so `en` apps show Korean. Use `social-auth::views` keys, config label as an optional override (`config/social-auth.php:178-190`, `resources/views/consent.blade.php:208`)
+- [ ] Consent completion failures: a `UniqueConstraintViolationException` on `(provider, provider_id)` is reported as "email already registered" and redirects to the intended URL instead of `redirects.failure`; `accountAlreadyLinked` from `finishRegistration` returns to the consent screen with the pending registration still in session (`src/Http/Controllers/SocialAuth/SocialRegistrationController.php:59-76`)
+- [ ] Webhook replay: check the Naver disconnect `timestamp` against a time window; remember Kakao/Google SET `jti` for its lifetime and ignore repeats (`src/Verifiers/NaverDisconnectCallbackVerifier.php:33`, `KakaoAccountStatusWebhookVerifier`, `GoogleRiscWebhookVerifier`)
+- [ ] Naver callback page shows `error_description` from the URL; show only the generic translated message (`resources/views/naver-callback.blade.php:80`)
+
+### Fix after choosing the approach
+
+- [ ] Apple callback in redirect mode: `usePopup: false` with `name email` scope makes Apple return a cross-site `form_post` to a `web`-group route → CSRF 419, and the SameSite=Lax session cookie is not sent so state/nonce are missing. Choose popup mode + `postCallback`, or a CSRF-exempt callback that does not rely on the session (`resources/js/social-auth.js:144-151`, `routes/web.php:20`)
+- [ ] Apple Server-to-Server Notification shape: code expects body `signedPayload` and an object `events`; community reports say the body key is `payload` and `events` is a JSON string. The test fake has no recorded source (MOCK_RULES). Confirm with a live delivery, then fix verifier and fake (`src/Verifiers/AppleServerNotificationVerifier.php:35,57`, `tests/Feature/AppleServerNotificationTest.php:64`)
+
+### [DECISION] Docs vs code — owner decides which side is right; do not implement until decided
+
+- [ ] Component names and contracts: docs list `ConfigurationValidator`, `SocialUser`, `PendingSocialRegistration`, `ChallengeGenerator`, `ProviderProfileMapper`, `SocialAccountRepository`, `DefaultRegistrationConsent`, events `SocialAccountLinked/Unlinked`, `ProviderContract::key/jsSdkUrl/authenticate(Request)`, config `remote_revoke_enabled`, namespace `Cable8mm\SocialAuth`; code has `SocialAuthServiceProvider::validateConfiguration`, `Data\ProviderUser`, `SocialLoginManager::generateNonce/State`, `AbstractProvider::mapProfile`, `Services\SocialAccountService`, `RegistrationConsentService`, events `SocialAccountConnected/Disconnected` (+ `SocialUserLoggedIn/Registered`), `getName/getJsSdkUrl/verify(array)`, `remote_revoke`, `Cable8mm\LaravelSocialAuth`. TECH_STACK.md heading still says `FRAMEWORK.md`
+- [ ] Naver remote revoke: implemented (`NaverProvider::revoke`, `NaverTokenVerifier::revoke`) but PRODUCT_SPEC lists it as out of scope
+- [ ] Connect path: ARCHITECTURE describes `SocialLinkController::connect`; the JS never calls it and connects go through `SocialLoginController::callback` + the `connecting_provider` session key, duplicating the logic
+- [ ] `<style>` blocks in `naver-callback.blade.php` (incl. `:root`/`body` rules) and `consent.blade.php`; TECH_STACK forbids injecting a `<style>` block
+- [ ] Naver nickname: default `nickname_mapping => 'nickname'` stores the Naver nickname in `users.nickname`; PRODUCT_SPEC/ARCHITECTURE say the nickname always comes from the generator (`config/social-auth.php:68`, `SocialLoginManager.php:447`)
+- [ ] `users.name` fallback: with no provider name it becomes the generated nickname; PRODUCT_SPEC says GitHub name is null when absent (default `users.name` is NOT NULL) (`SocialLoginManager.php:465`)
+
+### Cleanup
+
+- [ ] Remove unused code/config: `Blade::componentNamespace('...\View\Components')` (directory does not exist), `routes.callback/consent/connect/disconnect`, `providers.*.scopes`, reserved `consent.providers.kakao`, the first `if` in `SocialAccountService::canDisconnect` (covered by the second)
+- [ ] Small fixes: `(int)` user-key casts in `SocialAccountService::ensureNotLinkedToOtherUser` break UUID/ULID users; `disconnect` of an unlinked provider throws `providerNotFound`; `updateTokens` skips profile refresh when `store_tokens=false`; `loginUser` always sets remember=true; Workbench comment says "OAuth App" for GitHub
+- [ ] Tests: annotate the source of the Naver profile/agreement/token-delete fakes (MOCK_RULES); drop overlap between the two last-login-method tests and between `test_nonce_and_state_generation` and the route tests
