@@ -15,3 +15,4 @@
 CHANGELOG.md export-ignore
 LICENSE.md export-ignore
 phpunit.xml.dist export-ignore
+/workbench export-ignore
