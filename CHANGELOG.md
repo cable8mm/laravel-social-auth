@@ -1,5 +1,15 @@
 # Release Notes
 
+## v1.3.1 - 2026-11-11
+
+### What's Changed
+
+* docs: update workbench image by [@cable8mm](https://github.com/cable8mm) in https://github.com/cable8mm/laravel-social-auth/pull/46
+* chore: stop tracking the workbench/storage symlink by [@replworks-bot](https://github.com/replworks-bot) in https://github.com/cable8mm/laravel-social-auth/pull/47
+* chore: export-ignore the workbench directory from dist archives by [@replworks-bot](https://github.com/replworks-bot) in https://github.com/cable8mm/laravel-social-auth/pull/48
+
+**Full Changelog**: https://github.com/cable8mm/laravel-social-auth/compare/v1.3.0...v1.3.1
+
 ## v1.3.0 - 2026-10-21
 
 ### What's Changed
